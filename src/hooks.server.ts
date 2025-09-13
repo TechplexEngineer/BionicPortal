@@ -1,5 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
+import { getDb } from '$lib/server/db';
+import { sequence } from '@sveltejs/kit/hooks';
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
@@ -23,4 +25,20 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = handleAuth;
+const addDbToLocals: Handle = async ({ event, resolve }) => {
+	if (event.request.url === "http://sveltekit-prerender/[fallback]") {
+		// Don't inject for fallback pre-rendering
+		return resolve(event);
+	}
+	if (!event.platform?.env?.DB) {
+		throw new Error('D1 Database not found in environment variables');
+	}
+
+	event.locals.db = getDb(event.platform.env.DB);
+	return resolve(event);
+}
+
+export const handle: Handle = sequence(
+	handleAuth,
+	addDbToLocals
+);
