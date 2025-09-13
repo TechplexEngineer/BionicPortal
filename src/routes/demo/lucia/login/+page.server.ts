@@ -1,4 +1,4 @@
-import { hash, verify } from '@node-rs/argon2';
+import bcrypt from "bcryptjs";
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
@@ -36,12 +36,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Incorrect username or password' });
 		}
 
-		const validPassword = await verify(existingUser.passwordHash, password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const validPassword = await bcrypt.compare(password, existingUser.passwordHash);
 		if (!validPassword) {
 			return fail(400, { message: 'Incorrect username or password' });
 		}
@@ -65,13 +60,8 @@ export const actions: Actions = {
 		}
 
 		const userId = generateUserId();
-		const passwordHash = await hash(password, {
-			// recommended minimum parameters
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const saltRounds = 12;
+		const passwordHash = await bcrypt.hash(password, saltRounds);
 
 		try {
 			await db.insert(table.user).values({ id: userId, username, passwordHash });
