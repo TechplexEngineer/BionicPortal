@@ -1,16 +1,10 @@
-// import { drizzle } from 'drizzle-orm/libsql';
-// import { createClient } from '@libsql/client';
-// import * as schema from './schema';
-// import { env } from '$env/dynamic/private';
-
-// if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
-
-// const client = createClient({ url: env.DATABASE_URL });
-
-// export const db = drizzle(client, { schema });
-
 import { drizzle } from 'drizzle-orm/d1';
 
-export const getDb = (db: D1Database) => {
+export const getDb = (platform: App.Platform | undefined) => {
+    const db = platform?.env.bionic_events_db;
+    if (!db) {
+        console.error(platform);
+        throw new Error('D1 Database not found in environment variables');
+    }
     return drizzle(db);
 }

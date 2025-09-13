@@ -12,7 +12,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	const { session, user } = await auth.validateSessionToken(sessionToken);
+	const { session, user } = await auth.validateSessionToken(sessionToken, event.locals.db);
 
 	if (session) {
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
@@ -26,19 +26,17 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 const addDbToLocals: Handle = async ({ event, resolve }) => {
-	if (event.request.url === "http://sveltekit-prerender/[fallback]") {
+	const isPrerendering = event.url.hostname === 'sveltekit-prerender';
+	if (isPrerendering) {
 		// Don't inject for fallback pre-rendering
 		return resolve(event);
 	}
-	if (!event.platform?.env?.DB) {
-		throw new Error('D1 Database not found in environment variables');
-	}
 
-	event.locals.db = getDb(event.platform.env.DB);
+	event.locals.db = getDb(event.platform);
 	return resolve(event);
 }
 
 export const handle: Handle = sequence(
-	handleAuth,
-	addDbToLocals
+	addDbToLocals,
+	handleAuth
 );

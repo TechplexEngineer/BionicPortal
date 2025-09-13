@@ -15,7 +15,7 @@
 	},
 	"d1_databases": [
 		{
-			"binding": "bionic_events",
+			"binding": "bionic_events_db",
 			"database_name": "bionic_events",
 			"database_id": "ec7d1cb9-5ec8-4984-be7a-6b195e0cd8c1"
 		}

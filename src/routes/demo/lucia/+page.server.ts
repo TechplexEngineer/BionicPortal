@@ -10,10 +10,10 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	logout: async (event) => {
-		if (!event.locals.session) {
+		if (!event.locals.session || !event.platform) {
 			return fail(401);
 		}
-		await auth.invalidateSession(event.locals.session.id);
+		await auth.invalidateSession(event.locals.session.id, event.platform);
 		auth.deleteSessionTokenCookie(event);
 
 		return redirect(302, '/demo/lucia/login');
