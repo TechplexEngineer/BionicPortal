@@ -7,3 +7,5 @@
 <svelte:head>
 	<title>Compete | N.E.R.D.</title>
 </svelte:head>
+
+<h1>Register to Compete</h1>

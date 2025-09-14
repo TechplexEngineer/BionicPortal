@@ -32,7 +32,8 @@ const addDbToLocals: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	event.locals.db = getDb(event.platform);
+	let db = getDb(event.platform);
+	event.locals.db = db;
 	return resolve(event);
 }
 

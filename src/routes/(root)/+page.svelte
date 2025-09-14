@@ -27,7 +27,7 @@
 						participate in robotics competitions and events. Our mission is to promote STEM
 						education and foster a love for robotics among people of all ages.
 					</p>
-					<a href="/compete" class="btn btn-primary" target="_blank">Register to Compete</a>
+					<a href="/compete" class="btn btn-primary">Register to Compete</a>
 				</div>
 			</div>
 		</div>
@@ -41,7 +41,7 @@
 						participate in robotics competitions and events. Our mission is to promote STEM
 						education and foster a love for robotics among people of all ages.
 					</p>
-					<a href="/volunteer" class="btn btn-primary" target="_blank">Sign up to Volunteer</a>
+					<a href="/volunteer" class="btn btn-primary">Sign up to Volunteer</a>
 				</div>
 			</div>
 		</div>

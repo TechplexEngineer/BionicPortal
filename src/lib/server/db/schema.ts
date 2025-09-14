@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 // Users table
@@ -19,10 +20,16 @@ export const session = sqliteTable('session', {
 export type Session = typeof session.$inferSelect;
 
 // Events table
+export interface EventData {
+	name: string
+	date: Date;
+	location: string;
+	description: string;
+}
 export const events = sqliteTable('events', {
 	id: integer('id').primaryKey(),
-	name: text('name'),
-	description: text('description'),
+	name: text('name').generatedAlwaysAs(sql`json_extract(data, '$.name')`),
+	data: text('data', { mode: 'json' }).$type<EventData>()
 });
 export type Event = typeof events.$inferSelect;
 

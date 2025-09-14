@@ -1,5 +1,5 @@
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-
+import type { schema } from "$lib/server/db/schema";
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
@@ -15,7 +15,7 @@ declare global {
         interface Locals {
             user: import('$lib/server/auth').SessionValidationResult['user'];
             session: import('$lib/server/auth').SessionValidationResult['session'];
-            db: DrizzleD1Database;
+            db: DrizzleD1Database<schema>;
         }
     } // interface Error {}
     // interface Locals {}
