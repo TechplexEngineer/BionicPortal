@@ -9,20 +9,21 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		return redirect(302, '/demo/lucia');
+		return redirect(302, '/dashboard');
 	}
 	return {};
 };
 
 export const actions: Actions = {
 	login: async (event) => {
+		console.log("login action called");
 		const formData = await event.request.formData();
 		const username = formData.get('username');
 		const password = formData.get('password');
 
 		if (!validateUsername(username)) {
 			return fail(400, {
-				message: 'Invalid username (min 3, max 31 characters, alphanumeric only)'
+				message: 'Invalid username (min 3, max 63 characters, alphanumeric only)'
 			});
 		}
 		if (!validatePassword(password)) {
@@ -47,9 +48,11 @@ export const actions: Actions = {
 		const session = await auth.createSession(sessionToken, existingUser.id, db);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		return redirect(302, '/demo/lucia');
+		return redirect(302, '/dashboard');
 	},
 	register: async (event) => {
+		console.log('register action called');
+
 		const formData = await event.request.formData();
 		const username = formData.get('username');
 		const password = formData.get('password');
@@ -65,7 +68,6 @@ export const actions: Actions = {
 		const saltRounds = 12;
 		const passwordHash = await bcrypt.hash(password, saltRounds);
 		const db = getDb(event.platform);
-		console.log("here 1");
 
 		try {
 			await db.insert(table.user).values({ id: userId, username, passwordHash });
@@ -76,7 +78,7 @@ export const actions: Actions = {
 		} catch {
 			return fail(500, { message: 'An error has occurred' });
 		}
-		return redirect(302, '/demo/lucia');
+		return redirect(302, '/dashboard');
 	}
 };
 
@@ -88,12 +90,10 @@ function generateUserId() {
 }
 
 function validateUsername(username: unknown): username is string {
-	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 31 &&
-		/^[a-z0-9_-]+$/.test(username)
-	);
+	if (typeof username !== 'string') {
+		return false;
+	}
+	return username.length >= 3 && username.length <= 63;
 }
 
 function validatePassword(password: unknown): password is string {

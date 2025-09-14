@@ -35,7 +35,9 @@
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@types/bcrypt": "^6.0.0",
+		"@types/bootstrap": "^5.2.10",
 		"@types/glob": "^8.1.0",
+		"@types/md5": "^2.3.5",
 		"@types/node": "^20",
 		"@vitest/browser": "^3.2.3",
 		"drizzle-kit": "^0.30.2",
@@ -58,12 +60,16 @@
 	},
 	"dependencies": {
 		"@cloudflare/vite-plugin": "^1.13.0",
+		"@fortawesome/fontawesome-free": "^7.0.1",
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"bcryptjs": "^3.0.2",
+		"bootstrap": "^5.3.8",
 		"drizzle-orm": "^0.40.0",
 		"glob": "^11.0.3",
-		"miniflare": "^4.20250906.1"
+		"md5": "^2.3.0",
+		"miniflare": "^4.20250906.1",
+		"sass-embedded": "^1.92.1"
 	}
 }
