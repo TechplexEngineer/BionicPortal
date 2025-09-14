@@ -5,6 +5,10 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
+<svelte:head>
+	<title>Dashboard | N.E.R.D.</title>
+</svelte:head>
+
 <div class="container">
 	<h1>Hi, {data?.user.username}!</h1>
 </div>

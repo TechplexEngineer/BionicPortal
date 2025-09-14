@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign In | N.E.R.D.</title>
+	<title>Login | N.E.R.D.</title>
 </svelte:head>
 
 <main class="form-signin w-100 m-auto">
