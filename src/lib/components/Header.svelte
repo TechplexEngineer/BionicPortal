@@ -1,25 +1,26 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { tools } from '$lib/components/routes';
+	import md5 from 'md5';
 
 	interface Props {
 		user: App.Locals['user'] | null;
 	}
 	let { user }: Props = $props();
 
-	import md5 from 'md5';
-
 	function getGravatarUrl(username: string, size: number = 32) {
 		if (!username) return '';
 		const hash = md5(username.trim().toLowerCase());
-		return `https://www.gravatar.com/avatar/${hash}`;
+		return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`; //&d=retro
+	}
+	function getGravatarEditUrl(username: string) {
+		if (!username) return '';
+		const hash = md5(username.trim().toLowerCase());
+		return `https://www.gravatar.com/${hash}`;
 	}
 
 	import userIcon from '@fortawesome/fontawesome-free/svgs/solid/user.svg';
-	console.log('userIcon', userIcon);
-
 	let gravatarUrl = $derived(user ? getGravatarUrl(user.username) : userIcon);
-	//<i class="fa-solid fa-user"></i>
 </script>
 
 <nav class="navbar navbar-expand-lg bg-dark border-bottom border-body mb-2" data-bs-theme="dark">
@@ -53,9 +54,8 @@
 
 		{#if !!user}
 			<div class="dropdown text-end">
-				<a
-					href="#"
-					class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+				<button
+					class="d-block btn btn-link link-body-emphasis text-decoration-none dropdown-toggle"
 					data-bs-toggle="dropdown"
 					aria-expanded="false"
 					data-bs-offset="10,20"
@@ -68,11 +68,12 @@
 						class="rounded-circle"
 						data-bs-offset="10,20"
 					/>
-				</a>
+				</button>
 
 				<ul class="dropdown-menu text-small">
-					<!-- <li><a class="dropdown-item" href="#">New project...</a></li>
-					<li><a class="dropdown-item" href="#">Settings</a></li> -->
+					<li>
+						<a class="dropdown-item" href="https://gravatar.com" target="_blank">Edit Avatar</a>
+					</li>
 					<li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
 					<li><hr class="dropdown-divider" /></li>
 					<li><a class="dropdown-item" href="/logout">Sign out</a></li>
