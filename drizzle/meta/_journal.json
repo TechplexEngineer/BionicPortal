@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1757865107939,
+      "tag": "0000_exotic_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1757867099148,
+      "tag": "0001_unknown_ken_ellis",
+      "breakpoints": true
+    }
+  ]
+}

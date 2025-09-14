@@ -5,7 +5,8 @@ import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 export const user = sqliteTable('user', {
 	id: text('id').primaryKey(),
 	username: text('username').notNull().unique(),
-	passwordHash: text('password_hash').notNull()
+	passwordHash: text('password_hash').notNull(),
+	role: text('role').notNull().default('user'),
 });
 export type User = typeof user.$inferSelect;
 
