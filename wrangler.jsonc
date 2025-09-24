@@ -4,21 +4,25 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "nerd-ccc",
+	"name": "bionic-portal",
 	"compatibility_date": "2025-09-13",
 	"compatibility_flags": [
 		"nodejs_als",
 		"nodejs_compat"
 	],
-	"pages_build_output_dir": ".svelte-kit/cloudflare",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
 	"observability": {
 		"enabled": false
 	},
 	"d1_databases": [
 		{
-			"binding": "bionic_events_db",
-			"database_name": "bionic_events",
-			"database_id": "ec7d1cb9-5ec8-4984-be7a-6b195e0cd8c1",
+			"binding": "bionic_portal_db",
+			"database_name": "bionic_portal_db",
+			"database_id": "529bb626-bce2-47a4-847f-8324d0406c6f",
 			"migrations_dir": "./drizzle"
 		}
 	]

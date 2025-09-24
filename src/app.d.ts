@@ -7,7 +7,7 @@ declare global {
     namespace App {
         interface Platform {
             env: {
-                bionic_events_db: D1Database;
+                bionic_portal_db: D1Database;
             }
             cf: CfProperties
             ctx: ExecutionContext

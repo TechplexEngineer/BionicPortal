@@ -18,7 +18,7 @@
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate:local": "drizzle-kit migrate",
-		"db:migrate:prod": "wrangler d1 migrations apply bionic_events_db --remote",
+		"db:migrate:prod": "wrangler d1 migrations apply bionic_portal_db --remote",
 		"db:studio": "drizzle-kit studio",
 		"deploy": "npm run build && wrangler pages deploy",
 		"cf-typegen": "wrangler types src/worker-configuration.d.ts",
