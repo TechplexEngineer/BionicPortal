@@ -1,7 +1,14 @@
+<script module lang="ts">
+	export const headerState = $state({
+		loginVisible: true
+	});
+</script>
+
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { tools } from '$lib/components/routes';
 	import md5 from 'md5';
+	import userIcon from '@fortawesome/fontawesome-free/svgs/solid/user.svg';
 
 	interface Props {
 		user: App.Locals['user'] | null;
@@ -19,7 +26,6 @@
 		return `https://www.gravatar.com/${hash}`;
 	}
 
-	import userIcon from '@fortawesome/fontawesome-free/svgs/solid/user.svg';
 	let gravatarUrl = $derived(user ? getGravatarUrl(user.username) : userIcon);
 </script>
 
@@ -52,37 +58,39 @@
 			</ul>
 		</div>
 
-		{#if !!user}
-			<div class="dropdown text-end">
-				<button
-					class="d-block btn btn-link link-body-emphasis text-decoration-none dropdown-toggle"
-					data-bs-toggle="dropdown"
-					aria-expanded="false"
-					data-bs-offset="10,20"
-				>
-					<img
-						src={gravatarUrl}
-						alt="mdo"
-						width="32"
-						height="32"
-						class="rounded-circle"
+		{#if headerState.loginVisible}
+			{#if !!user}
+				<div class="dropdown text-end">
+					<button
+						class="d-block btn btn-link link-body-emphasis text-decoration-none dropdown-toggle"
+						data-bs-toggle="dropdown"
+						aria-expanded="false"
 						data-bs-offset="10,20"
-					/>
-				</button>
+					>
+						<img
+							src={gravatarUrl}
+							alt="mdo"
+							width="32"
+							height="32"
+							class="rounded-circle"
+							data-bs-offset="10,20"
+						/>
+					</button>
 
-				<ul class="dropdown-menu text-small">
-					<li>
-						<a class="dropdown-item" href="https://gravatar.com" target="_blank">Edit Avatar</a>
-					</li>
-					<li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
-					<li><hr class="dropdown-divider" /></li>
-					<li><a class="dropdown-item" href="/logout">Sign out</a></li>
-				</ul>
-			</div>
-		{:else}
-			<div class="text-end">
-				<a href="/login" class="btn btn-primary me-2">Sign In / Register</a>
-			</div>
+					<ul class="dropdown-menu text-small">
+						<li>
+							<a class="dropdown-item" href="https://gravatar.com" target="_blank">Edit Avatar</a>
+						</li>
+						<li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
+						<li><hr class="dropdown-divider" /></li>
+						<li><a class="dropdown-item" href="/logout">Sign out</a></li>
+					</ul>
+				</div>
+			{:else}
+				<div class="text-end">
+					<a href="/login" class="btn btn-primary me-2">Sign In / Register</a>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </nav>

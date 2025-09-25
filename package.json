@@ -1,5 +1,5 @@
 {
-	"name": "nerd-ccc",
+	"name": "bionic-portal",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -70,7 +70,6 @@
 		"glob": "^11.0.3",
 		"md5": "^2.3.0",
 		"miniflare": "^4.20250906.1",
-		"sass": "^1.93.2",
-		"sass-embedded": "^1.92.1"
+		"sass": "1.77.6"
 	}
 }
