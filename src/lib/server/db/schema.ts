@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text, unique } from 'drizzle-orm/sqlite-core';
 
 // Users table
 export const user = sqliteTable('user', {
@@ -20,62 +20,95 @@ export const session = sqliteTable('session', {
 });
 export type Session = typeof session.$inferSelect;
 
+export const students = sqliteTable('students', {
+	userid: text('userid').notNull(),
+	firstName: text('first_name').notNull(),
+	lastName: text('last_name').notNull(),
+	data: text('data').notNull(), // json data
+	hidden: integer('hidden', { mode: 'boolean' }).notNull().default(false), // 0=false 1=true
+}, (table) => ([
+	unique('uniqueUserName').on(table.firstName, table.lastName),
+]));
+export type Student = typeof students.$inferSelect;
+
+export const attendance = sqliteTable('attendance', {
+	userid: text('userid').notNull(),
+	date: text('date').notNull(),
+}, (table) => ([
+	unique('uniqueUserDate').on(table.userid, table.date),
+]));
+export type Attendance = typeof attendance.$inferSelect;
+
 // Events table
-export interface EventData {
-	name: string
-	date: Date;
-	location: string;
-	description: string;
-}
-export const events = sqliteTable('events', {
-	id: integer('id').primaryKey(),
-	name: text('name').generatedAlwaysAs(sql`json_extract(data, '$.name')`),
-	data: text('data', { mode: 'json' }).$type<EventData>()
-});
-export type Event = typeof events.$inferSelect;
+// export interface EventData {
+// 	name: string
+// 	date: Date;
+// 	location: string;
+// 	description: string;
+// }
+// export const events = sqliteTable('events', {
+// 	id: integer('id').primaryKey(),
+// 	name: text('name').generatedAlwaysAs(sql`json_extract(data, '$.name')`),
+// 	data: text('data', { mode: 'json' }).$type<EventData>()
+// });
+// export type Event = typeof events.$inferSelect;
 
-// Volunteers For table
-export const volunteers_for = sqliteTable('volunteers_for', {
-	id: integer('id').primaryKey(),
-	volunteering_user_id: integer('volunteering_user_id').references(() => user.id),
-	event_id: integer('event_id').references(() => events.id),
-	created_at: text('created_at'),
-});
-export type VolunteersFor = typeof volunteers_for.$inferSelect;
+// // Events table
+// export interface EventData {
+// 	name: string
+// 	date: Date;
+// 	location: string;
+// 	description: string;
+// }
+// export const events = sqliteTable('events', {
+// 	id: integer('id').primaryKey(),
+// 	name: text('name').generatedAlwaysAs(sql`json_extract(data, '$.name')`),
+// 	data: text('data', { mode: 'json' }).$type<EventData>()
+// });
+// export type Event = typeof events.$inferSelect;
 
-// Attends table
-export const attends = sqliteTable('attends', {
-	id: integer('id').primaryKey(),
-	team_name: text('name'),
-	team_number: integer('number').notNull(),
-	event_id: integer('event_id').references(() => events.id),
-	created_at: text('created_at'),
-});
-export type Attends = typeof attends.$inferSelect;
+// // Volunteers For table
+// export const volunteers_for = sqliteTable('volunteers_for', {
+// 	id: integer('id').primaryKey(),
+// 	volunteering_user_id: integer('volunteering_user_id').references(() => user.id),
+// 	event_id: integer('event_id').references(() => events.id),
+// 	created_at: text('created_at'),
+// });
+// export type VolunteersFor = typeof volunteers_for.$inferSelect;
 
-// Question table
-export const question = sqliteTable('question', {
-	id: integer('id').primaryKey(),
-	config: text('config', { mode: 'json' }),
-});
-export type Question = typeof question.$inferSelect;
+// // Attends table
+// export const attends = sqliteTable('attends', {
+// 	id: integer('id').primaryKey(),
+// 	team_name: text('name'),
+// 	team_number: integer('number').notNull(),
+// 	event_id: integer('event_id').references(() => events.id),
+// 	created_at: text('created_at'),
+// });
+// export type Attends = typeof attends.$inferSelect;
 
-// Team Question Answer table
-export const team_question_answer = sqliteTable('team_question_answer', {
-	id: integer('id').primaryKey(),
-	attends_id: integer('attends_id').references(() => attends.id),
-	question_id: integer('question_id').references(() => question.id),
-	data: text('data', { mode: 'json' }),
-});
-export type TeamQuestionAnswer = typeof team_question_answer.$inferSelect;
+// // Question table
+// export const question = sqliteTable('question', {
+// 	id: integer('id').primaryKey(),
+// 	config: text('config', { mode: 'json' }),
+// });
+// export type Question = typeof question.$inferSelect;
 
-// Volunteer Question Answer table
-export const volunteer_question_answer = sqliteTable('volunteer_question_answer', {
-	id: integer('id').primaryKey(),
-	volunteers_for_id: integer('volunteers_for_id').references(() => volunteers_for.id),
-	question_id: integer('question_id').references(() => question.id),
-	data: text('data', { mode: 'json' }),
-});
-export type VolunteerQuestionAnswer = typeof volunteer_question_answer.$inferSelect;
+// // Team Question Answer table
+// export const team_question_answer = sqliteTable('team_question_answer', {
+// 	id: integer('id').primaryKey(),
+// 	attends_id: integer('attends_id').references(() => attends.id),
+// 	question_id: integer('question_id').references(() => question.id),
+// 	data: text('data', { mode: 'json' }),
+// });
+// export type TeamQuestionAnswer = typeof team_question_answer.$inferSelect;
+
+// // Volunteer Question Answer table
+// export const volunteer_question_answer = sqliteTable('volunteer_question_answer', {
+// 	id: integer('id').primaryKey(),
+// 	volunteers_for_id: integer('volunteers_for_id').references(() => volunteers_for.id),
+// 	question_id: integer('question_id').references(() => question.id),
+// 	data: text('data', { mode: 'json' }),
+// });
+// export type VolunteerQuestionAnswer = typeof volunteer_question_answer.$inferSelect;
 
 

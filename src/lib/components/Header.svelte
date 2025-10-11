@@ -31,7 +31,7 @@
 
 <nav class="navbar navbar-expand-lg bg-dark border-bottom border-body mb-2" data-bs-theme="dark">
 	<div class="container-fluid">
-		<a class="navbar-brand" href="/" title="New England Robotics Derby">N.E.R.D.</a>
+		<a class="navbar-brand" href="/" title="Bionics Team Portal">BionicPortal</a>
 		<button
 			class="navbar-toggler"
 			type="button"

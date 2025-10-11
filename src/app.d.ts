@@ -14,7 +14,7 @@ declare global {
         }
 
         interface Locals {
-            user: User;
+            user: import('$lib/server/auth').SessionValidationResult['user'] //User | null;
             session: import('$lib/server/auth').SessionValidationResult['session'];
             db: DrizzleD1Database<schema>;
         }
