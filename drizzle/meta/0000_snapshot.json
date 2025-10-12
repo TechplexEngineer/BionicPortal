@@ -1,123 +1,52 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "abe03fd9-9fe3-4ac4-abe5-1252e8a1e91d",
+  "id": "5aaec45d-a5a7-48f6-bc5c-9d283aff4938",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "attends": {
-      "name": "attends",
+    "attendance": {
+      "name": "attendance",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
+        "userid": {
+          "name": "userid",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "number": {
-          "name": "number",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "event_id": {
-          "name": "event_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
+        "date": {
+          "name": "date",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "uniqueUserDate": {
+          "name": "uniqueUserDate",
+          "columns": [
+            "userid",
+            "date"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "attends_event_id_events_id_fk": {
-          "name": "attends_event_id_events_id_fk",
-          "tableFrom": "attends",
-          "tableTo": "events",
+        "attendance_userid_students_userid_fk": {
+          "name": "attendance_userid_students_userid_fk",
+          "tableFrom": "attendance",
+          "tableTo": "students",
           "columnsFrom": [
-            "event_id"
+            "userid"
           ],
           "columnsTo": [
-            "id"
+            "userid"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "events": {
-      "name": "events",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "generated": {
-            "as": "(json_extract(data, '$.name'))",
-            "type": "virtual"
-          }
-        },
-        "data": {
-          "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "question": {
-      "name": "question",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "config": {
-          "name": "config",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -167,67 +96,64 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "team_question_answer": {
-      "name": "team_question_answer",
+    "students": {
+      "name": "students",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
+        "userid": {
+          "name": "userid",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "attends_id": {
-          "name": "attends_id",
-          "type": "integer",
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
-        "question_id": {
-          "name": "question_id",
-          "type": "integer",
+        "last_name": {
+          "name": "last_name",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "data": {
           "name": "data",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "team_question_answer_attends_id_attends_id_fk": {
-          "name": "team_question_answer_attends_id_attends_id_fk",
-          "tableFrom": "team_question_answer",
-          "tableTo": "attends",
-          "columnsFrom": [
-            "attends_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         },
-        "team_question_answer_question_id_question_id_fk": {
-          "name": "team_question_answer_question_id_question_id_fk",
-          "tableFrom": "team_question_answer",
-          "tableTo": "question",
-          "columnsFrom": [
-            "question_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+        "hidden": {
+          "name": "hidden",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         }
       },
+      "indexes": {
+        "students_userid_unique": {
+          "name": "students_userid_unique",
+          "columns": [
+            "userid"
+          ],
+          "isUnique": true
+        },
+        "uniqueUserName": {
+          "name": "uniqueUserName",
+          "columns": [
+            "first_name",
+            "last_name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -255,6 +181,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
         }
       },
       "indexes": {
@@ -267,136 +201,6 @@
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "volunteer_question_answer": {
-      "name": "volunteer_question_answer",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "volunteers_for_id": {
-          "name": "volunteers_for_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "question_id": {
-          "name": "question_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "data": {
-          "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "volunteer_question_answer_volunteers_for_id_volunteers_for_id_fk": {
-          "name": "volunteer_question_answer_volunteers_for_id_volunteers_for_id_fk",
-          "tableFrom": "volunteer_question_answer",
-          "tableTo": "volunteers_for",
-          "columnsFrom": [
-            "volunteers_for_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "volunteer_question_answer_question_id_question_id_fk": {
-          "name": "volunteer_question_answer_question_id_question_id_fk",
-          "tableFrom": "volunteer_question_answer",
-          "tableTo": "question",
-          "columnsFrom": [
-            "question_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "volunteers_for": {
-      "name": "volunteers_for",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "volunteering_user_id": {
-          "name": "volunteering_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "event_id": {
-          "name": "event_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "volunteers_for_volunteering_user_id_user_id_fk": {
-          "name": "volunteers_for_volunteering_user_id_user_id_fk",
-          "tableFrom": "volunteers_for",
-          "tableTo": "user",
-          "columnsFrom": [
-            "volunteering_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "volunteers_for_event_id_events_id_fk": {
-          "name": "volunteers_for_event_id_events_id_fk",
-          "tableFrom": "volunteers_for",
-          "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}

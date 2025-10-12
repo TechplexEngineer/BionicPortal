@@ -1,22 +1,24 @@
 <script lang="ts">
-	import type { PageProps } from "./$types";
-	import CountdownCard from "./CountdownCard.svelte";
-	import { headerState } from "$lib/components/Header.svelte";
+	import type { PageProps } from './$types';
+	import CountdownCard from './CountdownCard.svelte';
+	import { headerState } from '$lib/components/Header.svelte';
 	import TableForObjectArray, {
 		type TableColumns
-	} from "$lib/components/TableForObjectArray.svelte";
-	import { enhance } from "$app/forms";
+	} from '$lib/components/TableForObjectArray.svelte';
+	import { enhance } from '$app/forms';
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	headerState.loginVisible = false;
 
 	const notHereColumns: TableColumns = [
-		{ data: "name", title: "Name" },
-		{ data: "id", title: "", renderSnippet: action }
+		{ data: 'name', title: 'Name' },
+		{ data: 'id', title: '', renderSnippet: action }
 	];
 
-	const hereColumns: TableColumns = [{ data: "name", title: "Name" }];
+	const hereColumns: TableColumns = [{ data: 'name', title: 'Name' }];
+
+	const oneDayMiliseconds = 24 * 60 * 60 * 1000; // milliseconds in a day
 </script>
 
 <svelte:head>
@@ -37,6 +39,14 @@
 				<h1>Check In</h1>
 				<a href="/attend/register" class="btn btn-sm btn-secondary">Register</a>
 			</div>
+			{#if form?.error}
+				<div class="alert alert-danger" role="alert">
+					{form.error}
+				</div>
+			{/if}
+			{#if form?.success}
+				<div class="alert alert-success" role="alert">Checked in successfully!</div>
+			{/if}
 			<TableForObjectArray data={data.membersNotHere} columns={notHereColumns} />
 		</div>
 		<div class="col">
@@ -51,7 +61,7 @@
 		<div class="col">
 			<h1>Upcomming Events</h1>
 			{#each data.events as evt}
-				{#if new Date(evt.dateStr).getTime() > Date.now() - 86400000}
+				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
 					<CountdownCard name={evt.name} dateStr={evt.dateStr} />
 				{/if}
 			{/each}
