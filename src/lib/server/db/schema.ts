@@ -23,10 +23,10 @@ export type Session = typeof session.$inferSelect;
 export const students = sqliteTable(
 	"students",
 	{
-		userid: text("userid").notNull(),
+		userid: text("userid").notNull().unique(), //@billericak12.com email
 		firstName: text("first_name").notNull(),
 		lastName: text("last_name").notNull(),
-		data: text("data").notNull(), // json data
+		data: text("data").notNull(), // future expansion
 		hidden: integer("hidden", { mode: "boolean" }).notNull().default(false) // 0=false 1=true
 	},
 	(table) => [unique("uniqueUserName").on(table.firstName, table.lastName)]
@@ -36,7 +36,7 @@ export type Student = typeof students.$inferSelect;
 export const attendance = sqliteTable(
 	"attendance",
 	{
-		userid: text("userid").notNull(),
+		userid: text("userid").notNull(), //@billericak12.com email
 		date: text("date").notNull()
 	},
 	(table) => [unique("uniqueUserDate").on(table.userid, table.date)]
