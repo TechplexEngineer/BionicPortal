@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
-	import CountdownCard from './CountdownCard.svelte';
-	import { headerState } from '$lib/components/Header.svelte';
+	import type { PageProps } from "./$types";
+	import CountdownCard from "./CountdownCard.svelte";
+	import { headerState } from "$lib/components/Header.svelte";
 
 	let { data }: PageProps = $props();
 

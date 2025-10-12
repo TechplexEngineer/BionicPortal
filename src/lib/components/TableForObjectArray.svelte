@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import type { Snippet, SvelteComponent } from 'svelte';
+	import type { Snippet, SvelteComponent } from "svelte";
 
 	export type TableColumns = (
 		| string
@@ -27,7 +27,7 @@
 		data,
 		id,
 		tableName,
-		columns = Object.keys(data[0] || { 'No Data': '' })
+		columns = Object.keys(data[0] || { "No Data": "" })
 	}: Props = $props();
 
 	// export let data: Record<string, string | number>[];
@@ -37,7 +37,7 @@
 	// export let columns: TableColumns = Object.keys(data[0] || { 'No Data': '' });
 	const cols2Render = $derived(
 		columns.map((k) => {
-			if (typeof k === 'string') {
+			if (typeof k === "string") {
 				return {
 					data: k,
 					title: k.charAt(0).toUpperCase() + k.slice(1)
@@ -47,7 +47,7 @@
 		})
 	);
 
-	const style = 'border-right: 1px solid #dee2e6; border-left: 1px solid #dee2e6;';
+	const style = "border-right: 1px solid #dee2e6; border-left: 1px solid #dee2e6;";
 
 	// const exportExcel = () => {
 	// 	const worksheet = XLSX.utils.json_to_sheet(data);

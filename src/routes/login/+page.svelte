@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	import { enhance } from "$app/forms";
+	import type { ActionData } from "./$types";
 
 	let { form }: { form: ActionData } = $props();
 
 	let submitting = $state(false);
-	let visible = $derived(submitting ? 'display: inline-block;' : 'display: none;');
+	let visible = $derived(submitting ? "display: inline-block;" : "display: none;");
 </script>
 
 <svelte:head>
@@ -42,7 +42,7 @@
 		<button class="text-center w-100 py-2 d-inline-block btn btn-link" formaction="?/register">
 			Register
 		</button>
-		<p style="color: red">{form?.message ?? ''}</p>
+		<p style="color: red">{form?.message ?? ""}</p>
 	</form>
 </main>
 
@@ -56,13 +56,13 @@
 		z-index: 2;
 	}
 
-	.form-signin input[type='email'] {
+	.form-signin input[type="email"] {
 		margin-bottom: -1px;
 		border-bottom-right-radius: 0;
 		border-bottom-left-radius: 0;
 	}
 
-	.form-signin input[type='password'] {
+	.form-signin input[type="password"] {
 		margin-bottom: 10px;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;

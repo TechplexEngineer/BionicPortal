@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { PageData } from './$types';
+	import { enhance } from "$app/forms";
+	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();
 </script>

@@ -1,6 +1,6 @@
-import { defineConfig } from 'drizzle-kit';
-import { glob } from 'glob';
-import path from 'path';
+import { defineConfig } from "drizzle-kit";
+import { glob } from "glob";
+import path from "path";
 
 const pathGlob = "./.wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite";
 const files = glob.sync(pathGlob);
@@ -13,8 +13,8 @@ if (!resolvedPath) {
 const dbPath = `file:${resolvedPath}`;
 
 export default defineConfig({
-	schema: './src/lib/server/db/schema.ts',
-	dialect: 'sqlite',
+	schema: "./src/lib/server/db/schema.ts",
+	dialect: "sqlite",
 	dbCredentials: { url: dbPath },
 	verbose: true,
 	strict: true

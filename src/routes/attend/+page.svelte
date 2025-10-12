@@ -1,22 +1,22 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
-	import CountdownCard from './CountdownCard.svelte';
-	import { headerState } from '$lib/components/Header.svelte';
+	import type { PageProps } from "./$types";
+	import CountdownCard from "./CountdownCard.svelte";
+	import { headerState } from "$lib/components/Header.svelte";
 	import TableForObjectArray, {
 		type TableColumns
-	} from '$lib/components/TableForObjectArray.svelte';
-	import { enhance } from '$app/forms';
+	} from "$lib/components/TableForObjectArray.svelte";
+	import { enhance } from "$app/forms";
 
 	let { data }: PageProps = $props();
 
 	headerState.loginVisible = false;
 
 	const notHereColumns: TableColumns = [
-		{ data: 'name', title: 'Name' },
-		{ data: 'id', title: '', renderSnippet: action }
+		{ data: "name", title: "Name" },
+		{ data: "id", title: "", renderSnippet: action }
 	];
 
-	const hereColumns: TableColumns = [{ data: 'name', title: 'Name' }];
+	const hereColumns: TableColumns = [{ data: "name", title: "Name" }];
 </script>
 
 <svelte:head>

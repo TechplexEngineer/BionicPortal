@@ -1,7 +1,7 @@
-import type { Handle } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth';
-import { getDb } from '$lib/server/db';
-import { sequence } from '@sveltejs/kit/hooks';
+import type { Handle } from "@sveltejs/kit";
+import * as auth from "$lib/server/auth";
+import { getDb } from "$lib/server/db";
+import { sequence } from "@sveltejs/kit/hooks";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
@@ -26,7 +26,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 const addDbToLocals: Handle = async ({ event, resolve }) => {
-	const isPrerendering = event.url.hostname === 'sveltekit-prerender';
+	const isPrerendering = event.url.hostname === "sveltekit-prerender";
 	if (isPrerendering) {
 		// Don't inject for fallback pre-rendering
 		return resolve(event);
@@ -35,9 +35,6 @@ const addDbToLocals: Handle = async ({ event, resolve }) => {
 	let db = getDb(event.platform);
 	event.locals.db = db;
 	return resolve(event);
-}
+};
 
-export const handle: Handle = sequence(
-	addDbToLocals,
-	handleAuth
-);
+export const handle: Handle = sequence(addDbToLocals, handleAuth);

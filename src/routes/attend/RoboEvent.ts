@@ -1,4 +1,4 @@
 export interface RoboEvent {
-    name: string;
-    dateStr: string;
+	name: string;
+	dateStr: string;
 }

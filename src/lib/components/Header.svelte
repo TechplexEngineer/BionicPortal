@@ -5,23 +5,23 @@
 </script>
 
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { tools } from '$lib/components/routes';
-	import md5 from 'md5';
-	import userIcon from '@fortawesome/fontawesome-free/svgs/solid/user.svg';
+	import { page } from "$app/stores";
+	import { tools } from "$lib/components/routes";
+	import md5 from "md5";
+	import userIcon from "@fortawesome/fontawesome-free/svgs/solid/user.svg";
 
 	interface Props {
-		user: App.Locals['user'] | null;
+		user: App.Locals["user"] | null;
 	}
 	let { user }: Props = $props();
 
 	function getGravatarUrl(username: string, size: number = 32) {
-		if (!username) return '';
+		if (!username) return "";
 		const hash = md5(username.trim().toLowerCase());
 		return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`; //&d=retro
 	}
 	function getGravatarEditUrl(username: string) {
-		if (!username) return '';
+		if (!username) return "";
 		const hash = md5(username.trim().toLowerCase());
 		return `https://www.gravatar.com/${hash}`;
 	}

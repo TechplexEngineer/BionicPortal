@@ -1,16 +1,16 @@
 <script lang="ts">
 	const event: { name: string; dateStr: string } = $props();
 
-	let boundCounter = $state('?');
+	let boundCounter = $state("?");
 
 	// Set the date we're counting down to
 	const date = new Date(event.dateStr);
 	const countDownDate = date.getTime();
 
-	const formattedDate = date.toLocaleDateString('en-US', {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric'
+	const formattedDate = date.toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric"
 	});
 
 	// Update the count down every 1 second
@@ -30,14 +30,14 @@
 		const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
 		// Display the result in the element with id="demo"
-		boundCounter = days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's ';
+		boundCounter = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
 
 		// If the count down is finished, write some text
 		if (distance < 0) {
-			if (typeof interval != 'undefined') {
+			if (typeof interval != "undefined") {
 				clearInterval(interval);
 			}
-			boundCounter = 'Is Here!';
+			boundCounter = "Is Here!";
 		}
 	};
 	countdown();
