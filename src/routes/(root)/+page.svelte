@@ -1,33 +1,32 @@
-<script>
-</script>
-
 <svelte:head>
-	<title>Home | N.E.R.D.</title>
+	<title>Home | Team 4909</title>
 	<meta
 		name="description"
-		content="New England Robotics Derby (N.E.R.D.) is an annual preseason robotics competition hosted by FIRST Robotics Team 4909 the Billerica Bionics."
+		content="Team 4909 Bionic Robotics is a FIRST Robotics Competition team based in Billerica, MA. We build robots, compete in FRC events, and promote STEM education."
 	/>
 </svelte:head>
 
 <div class="container">
-	<h1>Welcome to N.E.R.D.</h1>
+	<h1>Welcome to Team 4909</h1>
 	<p class="lead">
-		New England Robotics Derby (N.E.R.D.) is an annual preseason robotics competition hosted by <em
-			><strong>FIRST</strong></em
-		> Robotics Team 4909 the Billerica Bionics.
+		Team 4909 Billerica Bionic is a <em>FIRST</em> Robotics Competition team based in Billerica, MA.
+		"Using robots to build kids" - <em>Dean Kamen</em>
 	</p>
 
 	<div class="row">
 		<div class="col-6">
 			<div class="card">
 				<div class="card-body">
-					<h5 class="card-title">Competitors</h5>
-					<p class="card-text">
-						N.E.R.D. is a community of robotics enthusiasts in New England who organize and
-						participate in robotics competitions and events. Our mission is to promote STEM
-						education and foster a love for robotics among people of all ages.
-					</p>
-					<a href="/compete" class="btn btn-primary">Register to Compete</a>
+					<h5 class="card-title">For Parents</h5>
+					<div class="card-text">
+						<ul>
+							<li>See upcoming events</li>
+							<li>Register your student to compete</li>
+							<li>Sign up to volunteer</li>
+							<li>View student attendance</li>
+						</ul>
+					</div>
+					<a href="/compete" class="btn btn-primary">Login</a>
 				</div>
 			</div>
 		</div>
@@ -35,13 +34,14 @@
 		<div class="col-6">
 			<div class="card">
 				<div class="card-body">
-					<h5 class="card-title">Volunteers</h5>
-					<p class="card-text">
-						N.E.R.D. is a community of robotics enthusiasts in New England who organize and
-						participate in robotics competitions and events. Our mission is to promote STEM
-						education and foster a love for robotics among people of all ages.
-					</p>
-					<a href="/volunteer" class="btn btn-primary">Sign up to Volunteer</a>
+					<h5 class="card-title">For Students</h5>
+					<div class="card-text">
+						<ul>
+							<li>Sign up for events</li>
+							<li>View your attendance history</li>
+						</ul>
+					</div>
+					<a href="/volunteer" class="btn btn-primary">Login</a>
 				</div>
 			</div>
 		</div>
