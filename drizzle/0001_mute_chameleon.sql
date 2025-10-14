@@ -1,0 +1,1 @@
+ALTER TABLE `attendance` ADD `timestamp` integer DEFAULT (strftime('%s','now')) NOT NULL;

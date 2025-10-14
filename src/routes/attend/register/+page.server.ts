@@ -37,7 +37,8 @@ export const actions: Actions = {
 		// add user to checked in list for today
 		const b = await locals.db.insert(attendance).values({
 			userid: email,
-			date: new Date().toISOString().split("T")[0] // YYYY-MM-DD
+			date: "JUNK",
+			timestamp: new Date()
 		});
 
 		console.log(a, b);

@@ -3,10 +3,14 @@ import { students, attendance } from "$lib/server/db/schema";
 
 export const load = (async ({ locals }) => {
 
-    // get a list of students, and whether they are checked in or not using a left join
+    // get a list of students that have checked in within the last 6 hours
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
     const membersResult = await locals.db.query.students.findMany({
         with: {
-            attendance: true
+            attendance: {
+                where: (attendance, { gte }) =>
+                    gte(attendance.timestamp, sixHoursAgo)
+            }
         }
     });
 
@@ -15,9 +19,6 @@ export const load = (async ({ locals }) => {
         name: `${m.firstName} ${m.lastName}`,
         here: m.attendance.length > 0
     }))
-
-    console.log('Members:', members);
-
 
     return {
         events: [
@@ -58,8 +59,8 @@ export const load = (async ({ locals }) => {
                 dateStr: "April 15, 2026 17:00:00 EST"
             }
         ],
-        membersNotHere: members.filter((m) => !m.here),
-        membersHere: members.filter((m) => m.here)
+        membersNotHere: members.filter((m) => !m.here).sort((a, b) => a.name.localeCompare(b.name)),
+        membersHere: members.filter((m) => m.here).sort((a, b) => a.name.localeCompare(b.name))
     };
 }) satisfies PageServerLoad;
 
@@ -95,7 +96,8 @@ export const actions = {
         // insert a new attendance record
         await locals.db.insert(attendance).values({
             userid: studentID,
-            date: new Date().toISOString().split("T")[0] // YYYY-MM-DD
+            date: "JUNK",
+            // timestamp: new Date()
         });
 
         return { success: true };

@@ -1,5 +1,6 @@
 import { sqliteTable, integer, text, unique } from "drizzle-orm/sqlite-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
+import { timestamp } from "drizzle-orm/gel-core";
 
 // Users table
 export const user = sqliteTable("user", {
@@ -39,7 +40,8 @@ export const attendance = sqliteTable(
 		userid: text("userid")
 			.notNull()
 			.references(() => students.userid), // foreign key to students.userid
-		date: text("date").notNull()
+		date: text("date").notNull(), // deprecated, use timestamp instead
+		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`(strftime('%s','now'))`) // unix timestamp
 	},
 	(table) => [unique("uniqueUserDate").on(table.userid, table.date)]
 );
