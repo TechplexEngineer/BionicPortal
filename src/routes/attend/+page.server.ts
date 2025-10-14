@@ -97,7 +97,7 @@ export const actions = {
         await locals.db.insert(attendance).values({
             userid: studentID,
             date: "JUNK",
-            // timestamp: new Date()
+            timestamp: new Date()
         });
 
         return { success: true };

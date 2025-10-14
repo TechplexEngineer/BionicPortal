@@ -41,7 +41,7 @@ export const attendance = sqliteTable(
 			.notNull()
 			.references(() => students.userid), // foreign key to students.userid
 		date: text("date").notNull(), // deprecated, use timestamp instead
-		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`(strftime('%s','now'))`) // unix timestamp
+		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`) // unix timestamp
 	},
 	(table) => [unique("uniqueUserDate").on(table.userid, table.date)]
 );
