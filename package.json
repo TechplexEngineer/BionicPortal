@@ -22,7 +22,7 @@
 		"db:studio": "drizzle-kit studio",
 		"deploy": "npm run build && wrangler pages deploy",
 		"cf-typegen": "wrangler types src/worker-configuration.d.ts",
-		"w:tail": "npx wrangler pages deployment tail --project-name bionic-events"
+		"w:tail": "npx wrangler tail"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",

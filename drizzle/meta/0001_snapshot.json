@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f3552efa-9003-4fd9-9def-820892b1eb66",
-  "prevId": "5aaec45d-a5a7-48f6-bc5c-9d283aff4938",
+  "id": "7693952b-6de6-42e5-93bf-723928f96d7c",
+  "prevId": "a27b4172-d867-441e-8c94-5f154ed4001b",
   "tables": {
     "attendance": {
       "name": "attendance",
@@ -14,32 +14,16 @@
           "notNull": true,
           "autoincrement": false
         },
-        "date": {
-          "name": "date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "timestamp": {
           "name": "timestamp",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(strftime('%s','now'))"
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {
-        "uniqueUserDate": {
-          "name": "uniqueUserDate",
-          "columns": [
-            "userid",
-            "date"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "attendance_userid_students_userid_fk": {
           "name": "attendance_userid_students_userid_fk",
