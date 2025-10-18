@@ -72,6 +72,10 @@
 	$light-blue: #4b89b2;
 	$light-grey: #e6e6e6;
 
+	.adminnav {
+		margin-bottom: 15px;
+	}
+
 	.prinav {
 		background-color: $deep-blue;
 		padding: 5px 5px 0 5px;
