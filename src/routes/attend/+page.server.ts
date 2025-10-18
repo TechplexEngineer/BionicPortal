@@ -84,9 +84,20 @@ export const actions = {
         }
 
         // check if the student is already checked in
+        // Only check for attendance records for the current day
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
         const attendanceRecords = await locals.db.query.attendance.findFirst({
-            where: (attendance, { eq }) =>
-                eq(attendance.userid, studentID)
+            where: (attendance, { eq, gte, lte, and }) =>
+                and(
+                    eq(attendance.userid, studentID),
+                    gte(attendance.timestamp, startOfDay),
+                    lte(attendance.timestamp, endOfDay)
+                )
         });
 
         if (attendanceRecords) {
