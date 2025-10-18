@@ -5,8 +5,13 @@ import * as XLSX from "xlsx";
 import { students } from "$lib/server/db/schema";
 import type { Actions } from "./$types";
 
+
+
+
 export const load: PageServerLoad = async ({ }) => {
-	return {};
+	return {
+
+	};
 };
 export const actions: Actions = {
 	importstudents: async ({ request, locals }) => {

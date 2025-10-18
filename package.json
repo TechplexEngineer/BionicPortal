@@ -61,6 +61,7 @@
 	"dependencies": {
 		"@cloudflare/vite-plugin": "^1.13.0",
 		"@fortawesome/fontawesome-free": "^7.0.1",
+		"@leeoniya/ufuzzy": "^1.0.19",
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",

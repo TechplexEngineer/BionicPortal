@@ -9,9 +9,10 @@ function requireLogin() {
 		return redirect(302, "/login");
 	}
 
-	if (locals.user.role != "admin") {
-		return redirect(302, "/login");
-	}
+	// @todo: enforce admin role
+	// if (locals.user.role != "admin") {
+	// 	return redirect(302, "/login");
+	// }
 
 	return locals.user;
 }

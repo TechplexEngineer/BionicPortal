@@ -1,16 +1,30 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import DashHeader, { type Page } from '$lib/components/DashHeader.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+
+	let navPages: Page[] = [
+		{
+			name: 'Dashboard',
+			route: '/dashboard',
+			nested: [
+				{
+					name: 'Overview',
+					route: '/dashboard'
+				}
+			]
+		}
+	];
 </script>
 
 <svelte:head>
-	<title>Dashboard | N.E.R.D.</title>
+	<title>Dashboard | Bionic Portal</title>
 </svelte:head>
 
 <div class="container">
-	<h1>Hi, {data?.user.username}!</h1>
+	<DashHeader pages={navPages} />
 
 	<div class="card mt-4">
 		<div class="card-header">Import Students</div>
