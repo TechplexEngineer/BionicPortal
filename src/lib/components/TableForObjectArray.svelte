@@ -1,6 +1,8 @@
 <script context="module" lang="ts">
 	import type { Snippet, SvelteComponent } from "svelte";
 
+	type value = any;
+
 	export type TableColumns = (
 		| string
 		| {
@@ -8,10 +10,10 @@
 				title: string;
 				render?: renderFn;
 				renderHTML?: renderFn;
-				renderSnippet?: Snippet<[any, any, any]>;
+				renderSnippet?: Snippet<[value, Record<string, any>]>;
 		  }
 	)[];
-	export type renderFn = (val: any, type: any, row: any) => string;
+	export type renderFn = (val: any, row: any) => string;
 </script>
 
 <script lang="ts">
@@ -47,8 +49,6 @@
 		})
 	);
 
-	const style = "border-right: 1px solid #dee2e6; border-left: 1px solid #dee2e6;";
-
 	// const exportExcel = () => {
 	// 	const worksheet = XLSX.utils.json_to_sheet(data);
 	// 	const workbook = XLSX.utils.book_new();
@@ -72,17 +72,17 @@
 		{#each data as row}
 			<tr>
 				{#each cols2Render as colCfg}
-					{#if colCfg.render}
-						<td {style}>{colCfg.render(row[colCfg.data], null, row)}</td>
-					{:else if colCfg.renderHTML}
-						<td {style}>{@html colCfg.renderHTML(row[colCfg.data], null, row)}</td>
-					{:else if colCfg.renderSnippet}
-						<td {style}>
-							{@render colCfg.renderSnippet(row[colCfg.data], null, row)}
-						</td>
-					{:else}
-						<td {style}>{row[colCfg.data]}</td>
-					{/if}
+					<td style="border-right: 1px solid #dee2e6; border-left: 1px solid #dee2e6;">
+						{#if colCfg.render}
+							{colCfg.render(row[colCfg.data], row)}
+						{:else if colCfg.renderHTML}
+							{@html colCfg.renderHTML(row[colCfg.data], row)}
+						{:else if colCfg.renderSnippet}
+							{@render colCfg.renderSnippet(row[colCfg.data], row)}
+						{:else}
+							{row[colCfg.data]}
+						{/if}
+					</td>
 				{/each}
 			</tr>
 		{:else}

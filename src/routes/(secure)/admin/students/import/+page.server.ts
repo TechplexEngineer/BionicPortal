@@ -1,4 +1,4 @@
-import { fail } from 'assert';
+import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from './$types';
 import * as XLSX from 'xlsx';
 import { students } from '$lib/server/db/schema';
