@@ -1,11 +1,12 @@
 <script lang="ts">
-	import type { PageProps } from "./$types";
-	import CountdownCard from "./CountdownCard.svelte";
 	import { headerState } from "$lib/components/Header.svelte";
-	import TableForObjectArray, {
-		type TableColumns
-	} from "$lib/components/TableForObjectArray.svelte";
+	import type { TableColumns } from "$lib/components/TableForObjectArray.svelte";
+	import { onMount } from "svelte";
+	import type { PageProps } from "./$types";
+	import { invalidateAll } from "$app/navigation";
 	import { enhance } from "$app/forms";
+	import TableForObjectArray from "$lib/components/TableForObjectArray.svelte";
+	import CountdownCard from "./CountdownCard.svelte";
 
 	let { data, form }: PageProps = $props();
 
@@ -20,13 +21,23 @@
 
 	const oneDayMiliseconds = 24 * 60 * 60 * 1000; // milliseconds in a day
 
-	import { invalidateAll } from "$app/navigation";
-
 	const FIVE_MINUTES = 5 * 60 * 1000;
 
-	setInterval(() => {
-		invalidateAll();
-	}, FIVE_MINUTES);
+	onMount(() => {
+		const interval = setInterval(() => {
+			invalidateAll();
+		}, FIVE_MINUTES);
+
+		return () => clearInterval(interval);
+	});
+
+	let filterText = $state("");
+
+	let filteredMembersNotHere = $derived.by(() =>
+		data.membersNotHere.filter((member) =>
+			member.name.toLowerCase().includes(filterText.toLowerCase())
+		)
+	);
 </script>
 
 <svelte:head>
@@ -34,19 +45,15 @@
 </svelte:head>
 
 {#snippet action(memberId: string)}
-	<form action="?/checkin" method="post" use:enhance>
+	<form action="?/checkin" method="post" use:enhance onsubmit={() => (filterText = "")}>
 		<input type="hidden" name="userid" value={memberId} />
-		<button class="btn btn-sm btn-primary">Check In</button>
+		<button class="btn btn-sm btn-primary" type="submit">Check In</button>
 	</form>
 {/snippet}
 
 <div class="container mx-auto">
 	<div class="row">
 		<div class="col">
-			<div class="d-flex justify-content-between align-items-center">
-				<h1>Check In</h1>
-				<a href="/attend/register" class="btn btn-sm btn-secondary">Register</a>
-			</div>
 			{#if form?.error}
 				<div class="alert alert-danger" role="alert">
 					{form.error}
@@ -55,7 +62,18 @@
 			{#if form?.success}
 				<div class="alert alert-success" role="alert">Checked in successfully!</div>
 			{/if}
-			<TableForObjectArray data={data.membersNotHere} columns={notHereColumns} />
+			<div class="d-flex justify-content-between align-items-center">
+				<a href="/attend/register" class="btn btn-sm btn-secondary me-1">Register</a>
+
+				<input
+					type="text"
+					class="form-control me-2"
+					placeholder="Filter members..."
+					bind:value={filterText}
+				/>
+			</div>
+
+			<TableForObjectArray data={filteredMembersNotHere} columns={notHereColumns} />
 		</div>
 		<div class="col">
 			<div class="d-flex justify-content-between align-items-center">

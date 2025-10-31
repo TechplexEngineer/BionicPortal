@@ -49,6 +49,7 @@
 		"playwright": "^1.53.0",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
+		"sass": "1.77.6",
 		"svelte": "^5.25.0",
 		"svelte-check": "^4.0.0",
 		"typescript": "^5.0.0",
@@ -72,7 +73,6 @@
 		"glob": "^11.0.3",
 		"md5": "^2.3.0",
 		"miniflare": "^4.20250906.1",
-		"sass": "1.77.6",
 		"xlsx": "^0.18.5"
 	}
 }

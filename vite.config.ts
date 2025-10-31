@@ -33,5 +33,13 @@ export default defineConfig({
 				}
 			}
 		]
+	},
+	css: {
+		preprocessorOptions: {
+			scss: {
+				// api: 'modern-compiler', // or "modern"
+				silenceDeprecations: ['color-functions', 'global-builtin', 'import']
+			}
+		}
 	}
 });
