@@ -20,7 +20,7 @@
 	// import * as XLSX from 'xlsx';
 
 	interface Props {
-		data: Record<string, string | number>[];
+		data: Record<string, any>[];
 		id?: string;
 		tableName?: string;
 		columns?: TableColumns;

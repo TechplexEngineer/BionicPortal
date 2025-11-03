@@ -22,10 +22,11 @@
 	const oneDayMiliseconds = 24 * 60 * 60 * 1000; // milliseconds in a day
 
 	const FIVE_MINUTES = 5 * 60 * 1000;
-
+	console.log("Setting up data invalidation interval for attendance page");
 	onMount(() => {
 		const interval = setInterval(() => {
 			invalidateAll();
+			console.log("Data invalidated for attendance page");
 		}, FIVE_MINUTES);
 
 		return () => clearInterval(interval);
@@ -45,7 +46,15 @@
 </svelte:head>
 
 {#snippet action(memberId: string)}
-	<form action="?/checkin" method="post" use:enhance onsubmit={() => (filterText = "")}>
+	<form
+		action="?/checkin"
+		method="post"
+		use:enhance
+		onsubmit={() =>
+			setTimeout(() => {
+				filterText = "";
+			}, 100)}
+	>
 		<input type="hidden" name="userid" value={memberId} />
 		<button class="btn btn-sm btn-primary" type="submit">Check In</button>
 	</form>
