@@ -56,34 +56,5 @@ export const load = (async ({ locals }) => {
         attend.push(row);
     }
 
-    // type UserId = string;
-    // const attend: Record<UserId, RowData> = {};
-
-    // 
-
-    // // Assuming attendance data is available via students.attendance
-    // for (const student of students) {
-    //     const userId = student.userid;
-    //     const firstName = student.firstName;
-    //     const lastName = student.lastName;
-    //     const attendanceRecords = student.attendance ?? [];
-
-    //     const rowData: RowData = {
-    //         UserID: userId,
-    //         FirstName: firstName,
-    //         LastName: lastName,
-    //         Total: attendanceRecords.length,
-    //         Percent: totalMeetings > 0 ? (attendanceRecords.length / totalMeetings) * 100 : 0,
-    //         Meetings: {}
-    //     };
-
-    //     for (const record of attendanceRecords) {
-    //         const date = record.timestamp.toISOString().slice(0, 10); // 'YYYY-MM-DD'
-    //         rowData.Meetings[date] = "x";
-    //     }
-
-    //     attend[userId] = rowData;
-    // }
-
     return { students, meetings, attend };
 }) satisfies PageServerLoad;

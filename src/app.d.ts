@@ -6,6 +6,7 @@ declare global {
 		interface Platform {
 			env: {
 				bionic_portal_db: D1Database;
+				INTERNAL_API_KEY: string;
 			};
 			cf: CfProperties;
 			ctx: ExecutionContext;
@@ -22,4 +23,4 @@ declare global {
 // interface PageState {}
 
 // interface Platform {}
-export {};
+export { };
