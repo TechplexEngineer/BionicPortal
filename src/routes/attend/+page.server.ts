@@ -43,16 +43,20 @@ export const load = (async ({ locals }) => {
                 dateStr: "Mar 6, 2026 17:00:00 EST"
             },
             {
-                name: "Week 2 - TBD @ TBD",
+                name: "Week 2 - Granite State @ Bedford NH",
                 dateStr: "Mar 13, 2026 17:00:00 EST"
             },
             {
-                name: "Week 4 - TBD @ TBD",
+                name: "Week 3 - Waterbury District Event @ Wilby HS, CT",
+                dateStr: "Mar 20, 2026 17:00:00 EST"
+            },
+            {
+                name: "Week 4 - Greater Boston District Event @ Revere HS MA",
                 dateStr: "Mar 27, 2026 17:00:00 EST"
             },
             {
-                name: "Week 5 - TBD @ TBD",
-                dateStr: "Apr 3, 2026 17:00:00 EST"
+                name: "Week 5 - UVM District Event @ Burlington VT",
+                dateStr: "Apr 2, 2026 17:00:00 EST"
             },
             {
                 name: "Week 7 - District Championship @ Big-E",
