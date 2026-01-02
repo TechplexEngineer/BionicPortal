@@ -25,5 +25,3 @@
 <Header user={data.user} />
 {@render children()}
 
-<style>
-</style>

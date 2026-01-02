@@ -7,6 +7,7 @@
 	import { enhance } from "$app/forms";
 	import TableForObjectArray from "$lib/components/TableForObjectArray.svelte";
 	import CountdownCard from "./CountdownCard.svelte";
+	import uFuzzy from "@leeoniya/ufuzzy";
 
 	let { data, form }: PageProps = $props();
 
@@ -39,6 +40,342 @@
 			member.name.toLowerCase().includes(filterText.toLowerCase())
 		)
 	);
+
+	let shopSearch = $state("");
+
+	const locations = [
+		{
+			location: "W1-A",
+			item: "Gear Motors"
+		},
+		{
+			location: "W2-A",
+			item: "Network Switch"
+		},
+		{
+			location: "W3-A",
+			item: "Wire Loom"
+		},
+		{
+			location: "W4-A",
+			item: "Empty"
+		},
+		{
+			location: "W5-A",
+			item: "Tape"
+		},
+		{
+			location: "W6-A",
+			item: "Empty"
+		},
+		{
+			location: "W7-A",
+			item: "Churro Locker"
+		},
+		{
+			location: "W8-A",
+			item: "Dell Docks"
+		},
+		{
+			location: "W9-A",
+			item: "Oversized HTD"
+		},
+		{
+			location: "W10-A",
+			item: "Odd Bolts"
+		},
+		{
+			location: "W11-A",
+			item: "Zip Square, & Nylon HW"
+		},
+		{
+			location: "W12-A",
+			item: "Tormach"
+		},
+		{
+			location: "W1-B",
+			item: "Mini-CIM 7 Bag"
+		},
+		{
+			location: "W2-B",
+			item: "Empty"
+		},
+		{
+			location: "W3-B",
+			item: "Igus"
+		},
+		{
+			location: "W4-B",
+			item: "Mac Mini & Speakers"
+		},
+		{
+			location: "W5-B",
+			item: "Tape, Gaffers"
+		},
+		{
+			location: "W6-B",
+			item: "Empty"
+		},
+		{
+			location: "W7-B",
+			item: "1/4-20 Overflow"
+		},
+		{
+			location: "W8-B",
+			item: "Empty"
+		},
+		{
+			location: "W9-B",
+			item: "5/16 Bolts, Dust Collector"
+		},
+		{
+			location: "W10-B",
+			item: "Empty"
+		},
+		{
+			location: "W11-B",
+			item: "Nylon HW"
+		},
+		{
+			location: "W12-B",
+			item: "Prusa (Combine with W4-D)"
+		},
+		{
+			location: "W1-C",
+			item: "CIM Motors"
+		},
+		{
+			location: "W2-C",
+			item: "Empty"
+		},
+		{
+			location: "W3-C",
+			item: "Swerve"
+		},
+		{
+			location: "W4-C",
+			item: "Old, Not Forgotten"
+		},
+		{
+			location: "W5-C",
+			item: "Grinding Wheels"
+		},
+		{
+			location: "W6-C",
+			item: "80/20"
+		},
+		{
+			location: "W7-C",
+			item: "Rivet Overflow"
+		},
+		{
+			location: "W8-C",
+			item: "Odd Hardware"
+		},
+		{
+			location: "W9-C",
+			item: "Empty"
+		},
+		{
+			location: "W10-C",
+			item: "Vernier Scale"
+		},
+		{
+			location: "W11-C",
+			item: "Odd Hardware"
+		},
+		{
+			location: "W12-C",
+			item: "Lathe Legs (Combine with Tormach?)"
+		},
+		{
+			location: "W1-D",
+			item: "775 Motors"
+		},
+		{
+			location: "W2-D",
+			item: "Short Ethernet"
+		},
+		{
+			location: "W3-D",
+			item: "Empty"
+		},
+		{
+			location: "W4-D",
+			item: "Prusa"
+		},
+		{
+			location: "W5-D",
+			item: "Grease"
+		},
+		{
+			location: "W6-D",
+			item: "Bags"
+		},
+		{
+			location: "W7-D",
+			item: "#10-32 Overflow"
+		},
+		{
+			location: "W8-D",
+			item: "Electronics Overflow"
+		},
+		{
+			location: "W9-D",
+			item: "Empty"
+		},
+		{
+			location: "W10-D",
+			item: "Empty"
+		},
+		{
+			location: "W11-D",
+			item: "HW Nylon"
+		},
+		{
+			location: "W12-D",
+			item: "Plywood Spacers"
+		},
+		{
+			location: "W1-E",
+			item: "Gear Motors"
+		},
+		{
+			location: "W2-E",
+			item: "Port Savers"
+		},
+		{
+			location: "W3-E",
+			item: "Wire Management"
+		},
+		{
+			location: "W4-E",
+			item: "Backpack"
+		},
+		{
+			location: "W5-E",
+			item: "Glue"
+		},
+		{
+			location: "W6-E",
+			item: "Decorations"
+		},
+		{
+			location: "W7-E",
+			item: "#8-32 Overflow"
+		},
+		{
+			location: "W8-E",
+			item: "Empty"
+		},
+		{
+			location: "W9-E",
+			item: "Spacer Overflow"
+		},
+		{
+			location: "W10-E",
+			item: "Empty"
+		},
+		{
+			location: "W11-E",
+			item: "Grommet"
+		},
+		{
+			location: "W12-E",
+			item: "Empty"
+		},
+		{
+			location: "W1-F",
+			item: "Gear Boxes"
+		},
+		{
+			location: "W2-F",
+			item: "Empty"
+		},
+		{
+			location: "W3-F",
+			item: "Brushes"
+		},
+		{
+			location: "W4-F",
+			item: "Cinder Blocks"
+		},
+		{
+			location: "W5-F",
+			item: "Office, Label Tape, Zip Squares"
+		},
+		{
+			location: "W6-F",
+			item: "Trays"
+		},
+		{
+			location: "W7-F",
+			item: "Misc HW Overflow"
+		},
+		{
+			location: "W8-F",
+			item: "Old Hardware"
+		},
+		{
+			location: "W9-F",
+			item: "Bearing Overflow"
+		},
+		{
+			location: "W10-F",
+			item: "Empty"
+		},
+		{
+			location: "W11-F",
+			item: "Hardware"
+		},
+		{
+			location: "W12-F",
+			item: "4-Jaw Chuck"
+		}
+	];
+
+	const uf = new uFuzzy();
+
+	let filteredLocations = $derived.by(() => {
+		if (shopSearch.trim() === "") {
+			return locations;
+		}
+		const haystack = locations.map((l) => l.item);
+		const result = uf.search(haystack, shopSearch);
+
+		return result[0]?.map((idx) => {
+			return locations[idx];
+		});
+		
+		console.log("Shop search for:", shopSearch);
+		console.log("Matched indexes:", idxs);
+		// idxs can be null when the needle is non-searchable (has no alpha-numeric chars)
+		if (idxs != null && idxs.length > 0) {
+			// sort/rank only when <= 1,000 items
+			let infoThresh = 1e3;
+
+			// if (idxs.length <= infoThresh) {
+			// 	let info = uf.info(idxs, haystack, shopSearch);
+
+			// 	// order is a double-indirection array (a re-order of the passed-in idxs)
+			// 	// this allows corresponding info to be grabbed directly by idx, if needed
+			// 	let order = uf.sort(info, haystack, shopSearch);
+
+			// 	// render post-filtered & ordered matches
+			// 	for (let i = 0; i < order.length; i++) {
+			// 		// using info.idx here instead of idxs because uf.info() may have
+			// 		// further reduced the initial idxs based on prefix/suffix rules
+			// 		console.log(haystack[info.idx[order[i]]]);
+			// 	}
+			// } else {
+			// render pre-filtered but unordered matches
+			for (let i = 0; i < idxs.length; i++) {
+				console.log(haystack[idxs[i]]);
+			}
+			// }
+			
+		}
+	});
 </script>
 
 <svelte:head>
@@ -86,7 +423,7 @@
 		</div>
 		<div class="col">
 			<div class="d-flex justify-content-between align-items-center">
-				<h1>Here</h1>
+				<h2>Here</h2>
 				<span class="badge bg-secondary rounded-pill">
 					{data.membersHere.length}
 				</span>
@@ -94,12 +431,28 @@
 			<TableForObjectArray data={data.membersHere} columns={hereColumns} />
 		</div>
 		<div class="col">
-			<h1>Upcomming Events</h1>
-			{#each data.events as evt}
-				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
-					<CountdownCard name={evt.name} dateStr={evt.dateStr} />
-				{/if}
-			{/each}
+			<div class="overflow-y-auto" style="max-height: 50vh;">
+				<h2>Upcomming Events</h2>
+				{#each data.events as evt}
+					{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
+						<CountdownCard name={evt.name} dateStr={evt.dateStr} />
+					{/if}
+				{/each}
+			</div>
+			<div>
+				<h2>Shop Search</h2>
+				<input
+					type="text"
+					class="form-control me-2"
+					placeholder="Filter locations..."
+					bind:value={shopSearch}
+				/>
+				{#each filteredLocations as loc}
+					<div class="border p-2 my-1">
+						<strong>{loc.location}:</strong> {loc.item}
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 
