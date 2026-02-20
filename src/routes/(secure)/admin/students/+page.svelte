@@ -2,6 +2,7 @@
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
+	import { layoutState } from "../+layout.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
@@ -15,6 +16,8 @@
 		{ data: "hidden", title: "Hidden" },
 		{ data: "userid", title: "Actions", renderSnippet: action }
 	];
+
+	layoutState.pageTitle = "Student Overview";
 </script>
 
 {#snippet action(id: string)}

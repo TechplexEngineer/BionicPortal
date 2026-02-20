@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { PageProps } from './$types';
+	import { enhance } from "$app/forms";
+	import { layoutState } from "../+layout.svelte";
+	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
+
+	layoutState.pageTitle = "Admin Dashboard";
 </script>
 
-<svelte:head>
-	<title>Admin | N.E.R.D.</title>
-</svelte:head>
-
 <div class="container">
-	<h1>Admin Dashboard</h1>
+	<h1>{layoutState.pageTitle}</h1>
 </div>

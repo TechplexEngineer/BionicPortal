@@ -2,15 +2,15 @@
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
+	import { layoutState } from "../../+layout.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
 
-	console.log("data", data);
-
 	const columns: TableColumns = [
 		{ data: "first", title: "First" },
 		{ data: "last", title: "Last" },
+		{ data: "email", title: "Email" },
 		{ data: "total", title: "Total" },
 		{ data: "percent", title: "Percentage" }
 	];
@@ -25,10 +25,12 @@
 	// 	data: "email",
 	// 	title: "Actions"
 	// });
+
+	layoutState.pageTitle = "Student Attendance";
 </script>
 
 <div class="container">
-	<h1>Student Attendance</h1>
+	<h1>{layoutState.pageTitle}</h1>
 
 	<TableForObjectArray data={data.attend} {columns} />
 </div>

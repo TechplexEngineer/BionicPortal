@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import { layoutState } from "../../+layout.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data, form }: PageProps = $props();
+
+	layoutState.pageTitle = "Import Students";
 </script>
 
 <div class="container">
-	<h1>Import Students</h1>
+	<h1>{layoutState.pageTitle}</h1>
 	<div class="card mt-4">
 		<div class="card-header">Import Students</div>
 		<div class="card-body">
