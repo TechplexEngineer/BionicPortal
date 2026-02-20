@@ -1,11 +1,12 @@
-import bcrypt from "bcryptjs";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { fail, redirect } from "@sveltejs/kit";
-import { eq } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 import * as auth from "$lib/server/auth";
 import { getDb } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
+import { sendMagicCode } from "$lib/server/brevo";
+import { env } from "$env/dynamic/private";
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -15,69 +16,88 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
-	login: async (event) => {
-		console.log("login action called");
+	requestCode: async (event) => {
 		const formData = await event.request.formData();
-		const username = formData.get("username");
-		const password = formData.get("password");
+		const email = formData.get("email");
 
-		if (!validateUsername(username)) {
-			return fail(400, {
-				message: "Invalid username (min 3, max 63 characters, alphanumeric only)"
-			});
+		if (typeof email !== "string" || !email.includes("@")) {
+			return fail(400, { message: "Invalid email address" });
 		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: "Invalid password (min 6, max 255 characters)" });
+
+		// Generate a 6-digit code
+		const code = Math.floor(100000 + Math.random() * 900000).toString();
+		const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+		const db = getDb(event.platform);
+
+		try {
+			// Upsert the code
+			await db.insert(table.magicCodes)
+				.values({ email, code, expiresAt })
+				.onConflictDoUpdate({
+					target: table.magicCodes.email,
+					set: { code, expiresAt }
+				});
+
+			if (env.BREVO_API_KEY) {
+				await sendMagicCode(email, code, env.BREVO_API_KEY);
+			} else {
+				console.log(`Bypassing email send (no BREVO_API_KEY). Code for ${email} is: ${code}`);
+			}
+
+			return { success: true, email, message: "Code sent! Please check your email." };
+		} catch (e) {
+			console.error("Failed to request code:", e);
+			return fail(500, { message: "Failed to send code. Please try again later." });
+		}
+	},
+	loginWithCode: async (event) => {
+		const formData = await event.request.formData();
+		const email = formData.get("email");
+		const code = formData.get("code");
+
+		if (typeof email !== "string" || typeof code !== "string") {
+			return fail(400, { message: "Invalid request" });
 		}
 
 		const db = getDb(event.platform);
 
-		const results = await db.select().from(table.user).where(eq(table.user.username, username));
+		// Verify the code
+		const [validCode] = await db.select()
+			.from(table.magicCodes)
+			.where(and(
+				eq(table.magicCodes.email, email),
+				eq(table.magicCodes.code, code),
+				gt(table.magicCodes.expiresAt, new Date())
+			));
 
-		const existingUser = results.at(0);
+		if (!validCode) {
+			return fail(400, { message: "Invalid or expired code" });
+		}
+
+		// Check if user exists, if not create one
+		let [existingUser] = await db.select().from(table.user).where(eq(table.user.username, email));
+
 		if (!existingUser) {
-			return fail(400, { message: "Incorrect username or password" });
+			const userId = generateUserId();
+			// For magic link users, we don't have a password block. 
+			// We'll set a dummy password hash or handle it in the schema later if needed.
+			await db.insert(table.user).values({
+				id: userId,
+				username: email,
+				passwordHash: "MAGIC_LINK_ONLY",
+				role: "user"
+			});
+			[existingUser] = await db.select().from(table.user).where(eq(table.user.id, userId));
 		}
 
-		const validPassword = await bcrypt.compare(password, existingUser.passwordHash);
-		if (!validPassword) {
-			return fail(400, { message: "Incorrect username or password" });
-		}
+		// Delete the code after use
+		await db.delete(table.magicCodes).where(eq(table.magicCodes.email, email));
 
 		const sessionToken = auth.generateSessionToken();
 		const session = await auth.createSession(sessionToken, existingUser.id, db);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		return redirect(302, "/dashboard");
-	},
-	register: async (event) => {
-		console.log("register action called");
-
-		const formData = await event.request.formData();
-		const username = formData.get("username");
-		const password = formData.get("password");
-
-		if (!validateUsername(username)) {
-			return fail(400, { message: "Invalid username" });
-		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: "Invalid password" });
-		}
-
-		const userId = generateUserId();
-		const saltRounds = 12;
-		const passwordHash = await bcrypt.hash(password, saltRounds);
-		const db = getDb(event.platform);
-
-		try {
-			await db.insert(table.user).values({ id: userId, username, passwordHash });
-
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId, db);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} catch {
-			return fail(500, { message: "An error has occurred" });
-		}
 		return redirect(302, "/dashboard");
 	}
 };

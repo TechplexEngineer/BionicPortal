@@ -33,11 +33,15 @@ export type Session = typeof session.$inferSelect;
 export const students = sqliteTable(
 	"students",
 	{
-		userid: text("userid").notNull().unique(), //@billericak12.com email
+		userid: text("userid").notNull().unique(), // student email
 		firstName: text("first_name").notNull(),
 		lastName: text("last_name").notNull(),
-		data: text("data").notNull(), // future expansion
-		hidden: integer("hidden", { mode: "boolean" }).notNull().default(false) // 0=false 1=true
+		parentEmails: text("parent_emails"), // Comma separated
+		phone: text("phone"),
+		parentPhone: text("parent_phone"),
+		dietaryRestrictions: text("dietary_restrictions"),
+		customFields: text("custom_fields"), // JSON string for survey expansion
+		hidden: integer("hidden", { mode: "boolean" }).notNull().default(false)
 	},
 	(table) => [unique("uniqueUserName").on(table.firstName, table.lastName)]
 );
@@ -52,14 +56,15 @@ export const attendance = sqliteTable(
 	{
 		userid: text("userid")
 			.notNull()
-			.references(() => students.userid), // foreign key to students.userid
-		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`) // unix timestamp
+			.references(() => students.userid),
+		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`)
 	}
 );
 export type Attendance = typeof attendance.$inferSelect;
 
 export const studentsRelations = relations(students, ({ many }) => ({
-	attendance: many(attendance)
+	attendance: many(attendance),
+	registrations: many(eventRegistrations)
 }));
 
 // Attendance to Students relation
@@ -78,15 +83,20 @@ export interface EventData {
 	startDate: string; // ISO string
 	endDate: string;   // ISO string
 	location: string;
+	isOvernight: boolean;
+	departureTime: string; // ISO string or time string
+	returnTime: string;    // ISO string or time string
 	description?: string;
 	hotelAddress?: string;
+	permissionFormUrl?: string;
 }
 
 export const events = sqliteTable("events", {
 	id: text("id").primaryKey(),
-	data: text("data").$type<EventData>()
+	data: text("data", { mode: "json" }).$type<EventData>().notNull()
 });
 export type Events = typeof events.$inferSelect;
+
 export const eventInsertSchema = createInsertSchema(events, {
 	data: z.object({
 		name: z.string().min(1),
@@ -97,8 +107,101 @@ export const eventInsertSchema = createInsertSchema(events, {
 			message: "Invalid date format"
 		}),
 		location: z.string().min(1),
+		isOvernight: z.boolean().default(false),
+		departureTime: z.string().optional(),
+		returnTime: z.string().optional(),
 		description: z.string().optional(),
-		hotelAddress: z.string().optional()
+		hotelAddress: z.string().optional(),
+		permissionFormUrl: z.string().optional()
 	})
 });
 export type EventInsert = z.infer<typeof eventInsertSchema>;
+
+// ----------------------------------------------------------------------------
+// Event Registrations Table
+// ----------------------------------------------------------------------------
+export const eventRegistrations = sqliteTable("event_registrations", {
+	id: text("id").primaryKey(),
+	studentId: text("student_id").notNull().references(() => students.userid),
+	eventId: text("event_id").notNull().references(() => events.id),
+	paid: integer("paid", { mode: "boolean" }).notNull().default(false),
+	formCompleted: integer("form_completed", { mode: "boolean" }).notNull().default(false),
+	invoiceId: text("invoice_id") // QuickBooks invoice ID
+});
+
+export const eventRegistrationsRelations = relations(eventRegistrations, ({ one }) => ({
+	student: one(students, {
+		fields: [eventRegistrations.studentId],
+		references: [students.userid]
+	}),
+	event: one(events, {
+		fields: [eventRegistrations.eventId],
+		references: [events.id]
+	})
+}));
+
+// ----------------------------------------------------------------------------
+// Hotel Rooms Table
+// ----------------------------------------------------------------------------
+export const hotelRooms = sqliteTable("hotel_rooms", {
+	id: text("id").primaryKey(),
+	eventId: text("event_id").notNull().references(() => events.id),
+	roomName: text("room_name").notNull(),
+	gender: text("gender") // "Boys", "Girls", "Mentors", etc.
+});
+
+export const hotelRoomsRelations = relations(hotelRooms, ({ one, many }) => ({
+	event: one(events, {
+		fields: [hotelRooms.eventId],
+		references: [events.id]
+	}),
+	assignments: many(roomAssignments)
+}));
+
+export const roomAssignments = sqliteTable("room_assignments", {
+	id: text("id").primaryKey(),
+	roomId: text("room_id").notNull().references(() => hotelRooms.id),
+	studentId: text("student_id").notNull().references(() => students.userid)
+});
+
+export const roomAssignmentsRelations = relations(roomAssignments, ({ one }) => ({
+	room: one(hotelRooms, {
+		fields: [roomAssignments.roomId],
+		references: [hotelRooms.id]
+	}),
+	student: one(students, {
+		fields: [roomAssignments.studentId],
+		references: [students.userid]
+	})
+}));
+
+// ----------------------------------------------------------------------------
+// Carpool Spots Table
+// ----------------------------------------------------------------------------
+export const carpoolSpots = sqliteTable("carpool_spots", {
+	id: text("id").primaryKey(),
+	eventId: text("event_id").notNull().references(() => events.id),
+	mentorId: text("mentor_id").notNull().references(() => user.id),
+	capacity: integer("capacity").notNull(),
+	driverName: text("driver_name").notNull()
+});
+
+export const carpoolSpotsRelations = relations(carpoolSpots, ({ one }) => ({
+	event: one(events, {
+		fields: [carpoolSpots.eventId],
+		references: [events.id]
+	}),
+	mentor: one(user, {
+		fields: [carpoolSpots.mentorId],
+		references: [user.id]
+	})
+}));
+
+// ----------------------------------------------------------------------------
+// Magic Codes Table
+// ----------------------------------------------------------------------------
+export const magicCodes = sqliteTable("magic_codes", {
+	email: text("email").primaryKey(),
+	code: text("code").notNull(),
+	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
+});

@@ -1,40 +1,33 @@
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
+import { getDb } from "$lib/server/db";
+import * as table from "$lib/server/db/schema";
+import { eq } from "drizzle-orm";
+import { fail } from '@sveltejs/kit';
 
-import { eventInsertSchema, type EventData } from "$lib/server/db/schema";
+export const load = (async ({ locals, platform }) => {
+    const db = getDb(platform);
+    const events = await db.select().from(table.events);
 
-import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
-
-
-
-export const load = (async ({ locals }) => {
-
-    // // convert Zod schema to JSON Schema (dynamic import so we don't need a top-level import)
-    // try {
-    //     const { zodToJsonSchema } = await import("zod-to-json-schema");
-    //     const jsonSchema = zodToJsonSchema(eventInsertSchema, "EventInsert");
-    //     console.log(JSON.stringify(jsonSchema, null, 2));
-    // } catch (err) {
-    //     console.error("Failed to convert Zod schema to JSON Schema:", err);
-    // }
-
-    // const mySchema = z
-    //     .object({
-    //         myString: z.string().min(5),
-    //         myUnion: z.union([z.number(), z.boolean()]),
-    //     })
-    //     .describe("My neat object schema");
-
-    // const jsonSchema = zodToJsonSchema(mySchema, "mySchema");
-    // console.log(JSON.stringify(jsonSchema, null, 2));
-
-    console.log(JSON.stringify(eventInsertSchema, null, 2));
-
-    // const jsonSchema2 = zodToJsonSchema(eventInsertSchema.shape, "mySchema2");
-    // console.log(JSON.stringify(jsonSchema2, null, 2));
-
-    // locals.db.query.events
     return {
-        events: []
+        events: events.map(e => ({
+            id: e.id,
+            ...e.data
+        }))
     };
 }) satisfies PageServerLoad;
+
+export const actions: Actions = {
+    delete: async ({ request, platform }) => {
+        const formData = await request.formData();
+        const id = formData.get("id");
+
+        if (typeof id !== "string") {
+            return fail(400, { message: "Invalid ID" });
+        }
+
+        const db = getDb(platform);
+        await db.delete(table.events).where(eq(table.events.id, id));
+
+        return { success: true };
+    }
+};
