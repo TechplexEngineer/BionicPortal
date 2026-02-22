@@ -4,15 +4,15 @@
 
 	let { form, data }: PageProps<ActionData> = $props();
 
-	let name = $state("");
-	let startDate = $state(data.today);
-	let endDate = $state(data.today);
-	let location = $state("");
-	let isOvernight = $state(false);
-	let departureTime = $state("");
-	let returnTime = $state("");
-	let description = $state("");
-	let hotelAddress = $state("");
+	let name = $state(data.event.name);
+	let startDate = $state(data.event.startDate);
+	let endDate = $state(data.event.endDate);
+	let location = $state(data.event.location);
+	let isOvernight = $state(data.event.isOvernight);
+	let departureTime = $state(data.event.departureTime || "");
+	let returnTime = $state(data.event.returnTime || "");
+	let description = $state(data.event.description || "");
+	let hotelAddress = $state(data.event.hotelAddress || "");
 
 	let submitting = $state(false);
 
@@ -30,12 +30,12 @@
 </script>
 
 <svelte:head>
-	<title>Add Event | Admin | Bionic Portal</title>
+	<title>Edit Event | Admin | Bionic Portal</title>
 </svelte:head>
 
 <div class="admin-container">
 	<header class="admin-header">
-		<h1>Add New Event</h1>
+		<h1>Edit Event</h1>
 		<a href="/admin/events" class="btn btn-secondary">Back to Events</a>
 	</header>
 
@@ -152,9 +152,9 @@
 			<div class="form-actions">
 				<button type="submit" class="btn btn-primary" disabled={submitting}>
 					{#if submitting}
-						<i class="fa fa-spinner fa-pulse me-2"></i> Creating...
+						<i class="fa fa-spinner fa-pulse me-2"></i> Saving...
 					{:else}
-						Create Event
+						Save Changes
 					{/if}
 				</button>
 			</div>

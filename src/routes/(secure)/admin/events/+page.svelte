@@ -61,12 +61,21 @@
 							>
 								<i class="fa fa-users me-1"></i> Registrations
 							</a>
-							<a href="/admin/events/edit/{event.id}" class="btn btn-icon" title="Edit">
+							<a href="/admin/events/{event.id}/edit" class="btn btn-icon" title="Edit">
 								<i class="fa fa-edit"></i>
 							</a>
 							<form
 								method="post"
 								action="?/delete"
+								onsubmit={(e) => {
+									if (
+										!confirm(
+											"Are you sure you want to delete this event? This action cannot be undone."
+										)
+									) {
+										e.preventDefault();
+									}
+								}}
 								use:enhance={() => {
 									deletingId = event.id;
 									return async ({ update }) => {
@@ -109,12 +118,14 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 2rem;
+		padding-bottom: 1rem;
+		border-bottom: 2px solid #dee2e6;
 	}
 
 	.admin-header h1 {
 		margin: 0;
 		font-size: 2.25rem;
-		color: #e6edf3;
+		color: #212529;
 		font-weight: 800;
 	}
 
@@ -125,9 +136,8 @@
 	}
 
 	.event-card {
-		background: rgba(255, 255, 255, 0.05);
-		backdrop-filter: blur(10px);
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: #ffffff;
+		border: 1px solid #dee2e6;
 		border-radius: 1rem;
 		padding: 1.5rem;
 		display: flex;
@@ -135,12 +145,13 @@
 		transition:
 			transform 0.2s,
 			box-shadow 0.2s;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 	}
 
 	.event-card:hover {
 		transform: translateY(-4px);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-		border-color: rgba(88, 166, 255, 0.3);
+		box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+		border-color: #0d6efd;
 	}
 
 	.event-header {
@@ -153,7 +164,7 @@
 	.event-header h2 {
 		margin: 0;
 		font-size: 1.25rem;
-		color: #e6edf3;
+		color: #212529;
 		font-weight: 700;
 	}
 
@@ -166,15 +177,15 @@
 	}
 
 	.event-badge.overnight {
-		background: rgba(187, 128, 255, 0.15);
-		color: #d2a8ff;
-		border: 1px solid rgba(187, 128, 255, 0.3);
+		background: #f3e8ff;
+		color: #6b21a8;
+		border: 1px solid #d8b4fe;
 	}
 
 	.event-badge.day {
-		background: rgba(63, 185, 80, 0.15);
-		color: #3fb950;
-		border: 1px solid rgba(63, 185, 80, 0.3);
+		background: #dcfce7;
+		color: #166534;
+		border: 1px solid #86efac;
 	}
 
 	.event-details {
@@ -187,13 +198,13 @@
 		align-items: center;
 		gap: 0.75rem;
 		margin-bottom: 0.5rem;
-		color: #8b949e;
-		font-size: 0.9rem;
+		color: #495057;
+		font-size: 0.95rem;
 	}
 
 	.detail-item i {
 		width: 1rem;
-		color: #58a6ff;
+		color: #0d6efd;
 	}
 
 	.event-actions {
@@ -201,21 +212,21 @@
 		justify-content: flex-end;
 		gap: 0.5rem;
 		padding-top: 1rem;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		border-top: 1px solid #dee2e6;
 	}
 
 	.empty-state {
 		text-align: center;
 		padding: 5rem 2rem;
-		background: rgba(255, 255, 255, 0.03);
-		border: 2px dashed rgba(255, 255, 255, 0.1);
+		background: #ffffff;
+		border: 2px dashed #dee2e6;
 		border-radius: 1rem;
-		color: #8b949e;
+		color: #6c757d;
 	}
 
 	.empty-state i {
 		font-size: 3rem;
-		color: #30363d;
+		color: #dee2e6;
 	}
 
 	.btn {
@@ -241,25 +252,30 @@
 	}
 
 	.btn-secondary {
-		background-color: #30363d;
-		border-color: #8b949e;
-		color: #c9d1d9;
+		background-color: #6c757d;
+		border-color: #6c757d;
+		color: #fff;
 	}
 
 	.btn-icon {
 		padding: 0.5rem;
 		background: transparent;
-		color: #8b949e;
+		color: #6c757d;
 		border: none;
 	}
 
 	.btn-icon:hover {
-		color: #58a6ff;
-		background: rgba(88, 166, 255, 0.1);
+		color: #0d6efd;
+		background: rgba(13, 110, 253, 0.1);
 	}
 
 	.btn-icon.btn-danger:hover {
-		color: #f85149;
-		background: rgba(248, 81, 73, 0.1);
+		color: #dc3545;
+		background: rgba(220, 53, 69, 0.1);
+	}
+
+	.btn-sm {
+		padding: 0.4rem 0.8rem;
+		font-size: 0.8rem;
 	}
 </style>

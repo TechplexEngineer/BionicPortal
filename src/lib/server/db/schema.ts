@@ -158,6 +158,9 @@ export const hotelRoomsRelations = relations(hotelRooms, ({ one, many }) => ({
 	assignments: many(roomAssignments)
 }));
 
+// ----------------------------------------------------------------------------
+// Room Assignments Table
+// ----------------------------------------------------------------------------
 export const roomAssignments = sqliteTable("room_assignments", {
 	id: text("id").primaryKey(),
 	roomId: text("room_id").notNull().references(() => hotelRooms.id),
@@ -203,5 +206,5 @@ export const carpoolSpotsRelations = relations(carpoolSpots, ({ one }) => ({
 export const magicCodes = sqliteTable("magic_codes", {
 	email: text("email").primaryKey(),
 	code: text("code").notNull(),
-	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull()
 });

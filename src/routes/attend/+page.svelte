@@ -6,7 +6,7 @@
 	import { invalidateAll } from "$app/navigation";
 	import { enhance } from "$app/forms";
 	import TableForObjectArray from "$lib/components/TableForObjectArray.svelte";
-	import CountdownCard from "./CountdownCard.svelte";
+	import CountdownCard from "$lib/components/CountdownCard.svelte";
 
 	let { data, form }: PageProps = $props();
 
@@ -97,7 +97,7 @@
 			<h1>Upcomming Events</h1>
 			{#each data.events as evt}
 				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
-					<CountdownCard name={evt.name} dateStr={evt.dateStr} />
+					<CountdownCard name={evt.name} date={evt.dateStr} />
 				{/if}
 			{/each}
 		</div>

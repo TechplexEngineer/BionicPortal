@@ -9,7 +9,7 @@ export async function sendMagicCode(email: string, code: string, apiKey: string)
         body: JSON.stringify({
             sender: {
                 name: 'Bionic Portal',
-                email: 'blake@team4909.org'
+                email: 'no-reply@team4909.org'
             },
             to: [{ email }],
             subject: 'Your Login Code',

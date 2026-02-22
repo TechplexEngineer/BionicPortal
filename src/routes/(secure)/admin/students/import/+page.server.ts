@@ -39,7 +39,7 @@ export const actions: Actions = {
                     userid: row['email'],
                     firstName: row['first'],
                     lastName: row['last'],
-                    data: "{}"
+                    customFields: "{}"
                 });
             } catch (err) {
                 // Optionally handle duplicate or invalid rows

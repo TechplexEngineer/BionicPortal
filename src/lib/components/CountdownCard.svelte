@@ -1,13 +1,13 @@
 <script lang="ts">
-	const event: { name: string; dateStr: string } = $props();
+	let { name, date }: { name: string; date: string | Date } = $props();
 
 	let boundCounter = $state("?");
 
 	// Set the date we're counting down to
-	const date = new Date(event.dateStr);
-	const countDownDate = date.getTime();
+	const targetDate = new Date(date);
+	const countDownDate = targetDate.getTime();
 
-	const formattedDate = date.toLocaleDateString("en-US", {
+	const formattedDate = targetDate.toLocaleDateString("en-US", {
 		year: "numeric",
 		month: "short",
 		day: "numeric"
@@ -47,7 +47,7 @@
 
 <div class="card text-center mb-2 py-3">
 	<div class="card-body">
-		<h5 class="card-title event_name fs-5">{event.name}</h5>
+		<h5 class="card-title event_name fs-5">{name}</h5>
 		<p class="card-text event_counter fs-5 mb-0">{boundCounter}</p>
 		<p class="card-text small text-muted event_date">{formattedDate}</p>
 	</div>

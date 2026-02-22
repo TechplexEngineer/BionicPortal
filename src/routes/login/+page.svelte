@@ -4,10 +4,17 @@
 
 	let { form }: { form: ActionData } = $props();
 
-	let email = $state(form?.email ?? "");
+	let email = $state("");
 	let code = $state("");
 	let requestingCode = $state(false);
 	let verifyingCode = $state(false);
+
+	// Update email state if form returns it (e.g. after successful requestCode)
+	$effect(() => {
+		if (form?.email) {
+			email = form.email;
+		}
+	});
 
 	let step = $derived(form?.success ? "verify" : "request");
 </script>
@@ -16,131 +23,193 @@
 	<title>Login | Bionic Portal</title>
 </svelte:head>
 
-<main class="form-signin w-100 m-auto">
-	{#if step === "request"}
-		<form method="post" action="?/requestCode" use:enhance={() => {
-			requestingCode = true;
-			return async ({ update }) => {
-				await update();
-				requestingCode = false;
-			};
-		}}>
-			<h1 class="h3 mb-3 fw-normal">Sign in to Bionic Portal</h1>
-			<p class="text-muted">Enter your email and we'll send you a login code.</p>
-			
-			<div class="form-floating mb-3">
-				<input
-					name="email"
-					type="email"
-					class="form-control"
-					id="email"
-					bind:value={email}
-					placeholder="name@example.com"
-					required
-				/>
-				<label for="email">Email address</label>
-			</div>
+<div class="login-wrapper">
+	<main class="login-container">
+		<div class="login-card">
+			{#if step === "request"}
+				<form
+					method="post"
+					action="?/requestCode"
+					use:enhance={() => {
+						requestingCode = true;
+						return async ({ update }) => {
+							await update({ reset: false });
+							requestingCode = false;
+						};
+					}}
+					class="login-form"
+				>
+					<div class="text-center mb-4">
+						<h1 class="h3 fw-bold mb-2">Bionic Portal</h1>
+						<p class="text-muted">Sign in with your email</p>
+					</div>
 
-			<button class="btn btn-primary w-100 py-2" type="submit" disabled={requestingCode}>
-				{#if requestingCode}
-					<i class="fa fa-spinner fa-pulse me-2"></i> Sending...
-				{:else}
-					Send Code
-				{/if}
-			</button>
-		</form>
-	{:else}
-		<form method="post" action="?/loginWithCode" use:enhance={() => {
-			verifyingCode = true;
-			return async ({ update }) => {
-				await update();
-				verifyingCode = false;
-			};
-		}}>
-			<h1 class="h3 mb-3 fw-normal">Check your email</h1>
-			<p class="text-muted">We sent a code to <strong>{email}</strong></p>
-			
-			<input type="hidden" name="email" value={email} />
+					<div class="form-floating mb-4">
+						<input
+							name="email"
+							type="email"
+							class="form-control"
+							id="email"
+							bind:value={email}
+							placeholder="name@example.com"
+							required
+							autocomplete="email"
+						/>
+						<label for="email">Email address</label>
+					</div>
 
-			<div class="form-floating mb-3">
-				<input
-					name="code"
-					type="text"
-					class="form-control"
-					id="code"
-					bind:value={code}
-					placeholder="123456"
-					required
-					autocomplete="one-time-code"
-				/>
-				<label for="code">Verification Code</label>
-			</div>
+					<button
+						class="btn btn-primary w-100 py-3 rounded-3"
+						type="submit"
+						disabled={requestingCode}
+					>
+						{#if requestingCode}
+							<i class="fa fa-spinner fa-pulse me-2"></i> Sending Code...
+						{:else}
+							Send Login Code
+						{/if}
+					</button>
+				</form>
+			{:else}
+				<form
+					method="post"
+					action="?/loginWithCode"
+					use:enhance={() => {
+						verifyingCode = true;
+						return async ({ update }) => {
+							await update();
+							verifyingCode = false;
+						};
+					}}
+					class="login-form"
+				>
+					<div class="text-center mb-4">
+						<h1 class="h3 fw-bold mb-2">Verify Email</h1>
+						<p class="text-muted">
+							We sent a code to <br /><strong class="text-primary">{email}</strong>
+						</p>
+					</div>
 
-			<button class="btn btn-primary w-100 py-2" type="submit" disabled={verifyingCode}>
-				{#if verifyingCode}
-					<i class="fa fa-spinner fa-pulse me-2"></i> Verifying...
-				{:else}
-					Sign In
-				{/if}
-			</button>
+					<input type="hidden" name="email" value={email} />
 
-			<button class="btn btn-link w-100 mt-2" type="button" onclick={() => location.reload()}>
-				Send another code
-			</button>
-		</form>
-	{/if}
+					<div class="form-floating mb-4">
+						<input
+							name="code"
+							type="text"
+							class="form-control"
+							id="code"
+							bind:value={code}
+							placeholder="123456"
+							required
+							autocomplete="one-time-code"
+							autofocus
+						/>
+						<label for="code">6-Digit Code</label>
+					</div>
 
-	{#if form?.message}
-		<div class="alert alert-danger mt-3" role="alert">
-			{form.message}
+					<button
+						class="btn btn-primary w-100 py-3 rounded-3"
+						type="submit"
+						disabled={verifyingCode}
+					>
+						{#if verifyingCode}
+							<i class="fa fa-spinner fa-pulse me-2"></i> Verifying...
+						{:else}
+							Sign In
+						{/if}
+					</button>
+
+					<div class="text-center mt-4">
+						<button
+							class="btn btn-link text-decoration-none"
+							type="button"
+							onclick={() => location.reload()}
+						>
+							<i class="fa fa-arrow-left me-2"></i> Use a different email
+						</button>
+					</div>
+				</form>
+			{/if}
+
+			{#if form?.message}
+				<div class="alert alert-danger mt-4" role="alert">
+					<i class="fa fa-exclamation-circle me-2"></i>
+					{form.message}
+				</div>
+			{/if}
 		</div>
-	{/if}
-</main>
+	</main>
+</div>
 
 <style>
-	.form-signin {
-		max-width: 400px;
-		padding: 2rem 1rem;
-		margin-top: 5rem !important;
-		background: rgba(255, 255, 255, 0.05);
-		backdrop-filter: blur(10px);
-		border-radius: 1rem;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+	.login-wrapper {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 80vh;
+		width: 100%;
 	}
 
-	:global(body) {
-		background-color: #0d1117;
-		color: #e6edf3;
-		font-family: 'Inter', sans-serif;
+	.login-container {
+		width: 100%;
+		max-width: 400px;
+		padding: 1rem;
+	}
+
+	.login-card {
+		background: #ffffff;
+		border-radius: 1rem;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		padding: 2.5rem;
+		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+	}
+
+	.fw-bold {
+		color: #212529;
+	}
+
+	.text-muted {
+		color: #6c757d !important;
+	}
+
+	.text-primary {
+		color: #0d6efd !important;
 	}
 
 	.form-control {
-		background-color: #161b22;
-		border-color: #30363d;
-		color: #e6edf3;
+		border: 1px solid #dee2e6 !important;
+		color: #212529 !important;
+		height: 3.5rem;
 	}
 
 	.form-control:focus {
-		background-color: #161b22;
-		border-color: #58a6ff;
-		color: #e6edf3;
-		box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+		border-color: #0d6efd !important;
+		box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
 	}
 
 	.btn-primary {
 		background-color: #238636;
 		border-color: #2ea043;
-		font-weight: 600;
+		font-weight: 700;
 	}
 
-	.btn-primary:hover {
+	.btn-primary:hover:not(:disabled) {
 		background-color: #2ea043;
 		border-color: #3fb950;
 	}
 
-	.alert {
-		background-color: rgba(248, 81, 73, 0.1);
-		border-color: rgba(248, 81, 73, 0.2);
-		color: #f85149;
+	.btn-link {
+		color: #6c757d;
+		font-size: 0.9rem;
+	}
+
+	.btn-link:hover {
+		color: #0d6efd;
+	}
+
+	.alert-danger {
+		background-color: #f8d7da;
+		border-color: #f5c2c7;
+		color: #842029;
 	}
 </style>

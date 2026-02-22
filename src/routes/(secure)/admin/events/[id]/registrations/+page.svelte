@@ -17,7 +17,12 @@
 			<h1>Registrations</h1>
 			<p class="text-muted">{data.event.name} • {data.event.startDate}</p>
 		</div>
-		<a href="/admin/events" class="btn btn-secondary">Back to Events</a>
+		<div class="header-actions">
+			<a href="/admin/events/{data.event.id}/registrations/import" class="btn btn-primary me-2">
+				<i class="fa fa-upload me-1"></i> Import Registrations
+			</a>
+			<a href="/admin/events" class="btn btn-secondary">Back to Events</a>
+		</div>
 	</header>
 
 	<main class="admin-main">
@@ -147,21 +152,28 @@
 		justify-content: space-between;
 		align-items: flex-end;
 		margin-bottom: 2rem;
+		padding-bottom: 1rem;
+		border-bottom: 2px solid #dee2e6;
 	}
 
 	.admin-header h1 {
 		margin: 0;
 		font-size: 2rem;
-		color: #e6edf3;
+		color: #212529; /* Fixed: dark color for light background */
 		font-weight: 800;
 	}
 
+	.text-muted {
+		color: #6c757d !important;
+		margin: 0;
+	}
+
 	.table-container {
-		background: rgba(255, 255, 255, 0.05);
-		backdrop-filter: blur(10px);
+		background: #ffffff;
 		border-radius: 1rem;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid #dee2e6;
 		overflow: hidden;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 	}
 
 	.admin-table {
@@ -172,24 +184,24 @@
 
 	.admin-table th {
 		padding: 1.25rem 1rem;
-		background: rgba(255, 255, 255, 0.03);
-		color: #8b949e;
-		font-weight: 600;
+		background: #f8f9fa;
+		color: #495057;
+		font-weight: 700;
 		font-size: 0.85rem;
 		text-transform: uppercase;
 		letter-spacing: 0.05rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		border-bottom: 2px solid #dee2e6;
 	}
 
 	.admin-table td {
 		padding: 1.25rem 1rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-		color: #c9d1d9;
+		border-bottom: 1px solid #eee;
+		color: #212529;
 		vertical-align: middle;
 	}
 
 	.admin-table tr:hover td {
-		background: rgba(255, 255, 255, 0.02);
+		background: #fcfcfc;
 	}
 
 	.badge-btn {
@@ -203,34 +215,35 @@
 	}
 
 	.badge-btn.paid {
-		background: rgba(63, 185, 80, 0.15);
-		color: #3fb950;
-		border: 1px solid rgba(63, 185, 80, 0.3);
+		background: #dcfce7;
+		color: #166534;
+		border: 1px solid #86efac;
 	}
 	.badge-btn.unpaid {
-		background: rgba(248, 81, 73, 0.15);
-		color: #f85149;
-		border: 1px solid rgba(248, 81, 73, 0.3);
+		background: #fee2e2;
+		color: #991b1b;
+		border: 1px solid #fecaca;
 	}
 	.badge-btn.completed {
-		background: rgba(88, 166, 255, 0.15);
-		color: #58a6ff;
-		border: 1px solid rgba(88, 166, 255, 0.3);
+		background: #e0f2fe;
+		color: #0369a1;
+		border: 1px solid #bae6fd;
 	}
 	.badge-btn.pending {
-		background: rgba(210, 153, 34, 0.15);
-		color: #d29922;
-		border: 1px solid rgba(210, 153, 34, 0.3);
+		background: #fef3c7;
+		color: #92400e;
+		border: 1px solid #fde68a;
 	}
 
 	.invoice-badge {
 		font-size: 0.85rem;
-		color: #8b949e;
-		background: #161b22;
+		color: #495057;
+		background: #f8f9fa;
 		padding: 0.4rem 0.8rem;
 		border-radius: 6px;
 		display: inline-flex;
 		align-items: center;
+		border: 1px solid #dee2e6;
 	}
 
 	.req-indicator {
@@ -242,16 +255,19 @@
 	}
 
 	.req-indicator.met {
-		color: #3fb950;
+		color: #166534;
 	}
 	.req-indicator.unmet {
-		color: #f85149;
+		color: #991b1b;
 	}
 
 	.empty-state {
 		text-align: center;
 		padding: 5rem 2rem;
-		color: #8b949e;
+		color: #6c757d;
+		background: #ffffff;
+		border: 2px dashed #dee2e6;
+		border-radius: 1rem;
 	}
 
 	.btn-sm {
@@ -264,9 +280,17 @@
 		border-color: #2ea043;
 		color: #fff;
 	}
+	.btn-primary:hover {
+		background-color: #2ea043;
+		border-color: #3fb950;
+	}
 	.btn-secondary {
-		background-color: #30363d;
-		border-color: #8b949e;
-		color: #c9d1d9;
+		background-color: #6c757d;
+		border-color: #6c757d;
+		color: #fff;
+	}
+	.btn-secondary:hover {
+		background-color: #5c636a;
+		border-color: #5c636a;
 	}
 </style>
