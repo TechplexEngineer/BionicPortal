@@ -7,6 +7,10 @@ declare global {
 			env: {
 				bionic_portal_db: D1Database;
 				INTERNAL_API_KEY: string;
+				QUICKBOOKS_CLIENT_ID: string;
+				QUICKBOOKS_CLIENT_SECRET: string;
+				QUICKBOOKS_COMPANY_ID: string;
+				QUICKBOOKS_API_BASE: string;
 			};
 			cf: CfProperties;
 			ctx: ExecutionContext;

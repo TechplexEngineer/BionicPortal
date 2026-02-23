@@ -2,7 +2,7 @@
 	import { enhance } from "$app/forms";
 	import type { PageProps } from "./$types";
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	let updating = $state(false);
 </script>
@@ -24,6 +24,14 @@
 			<a href="/admin/events" class="btn btn-secondary">Back to Events</a>
 		</div>
 	</header>
+
+	{#if form?.message}
+		<div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+			<i class="fa fa-exclamation-triangle me-2"></i>
+			{form.message}
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+	{/if}
 
 	<main class="admin-main">
 		{#if data.registrations.length === 0}

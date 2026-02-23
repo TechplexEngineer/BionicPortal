@@ -208,3 +208,12 @@ export const magicCodes = sqliteTable("magic_codes", {
 	code: text("code").notNull(),
 	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull()
 });
+
+// ----------------------------------------------------------------------------
+// KV Store Table (for tokens, etc.)
+// ----------------------------------------------------------------------------
+export const kvStore = sqliteTable("kv_store", {
+	key: text("key").primaryKey(),
+	value: text("value").notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`)
+});
