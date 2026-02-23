@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { layoutState } from "../../../../+layout.svelte";
+	import { layoutState } from "/src/routes/(secure)/admin/+layout.svelte";
 	import type { PageProps } from "./$types";
 	import * as XLSX from "xlsx";
 	import ImportMapping from "$lib/components/ImportMapping.svelte";
@@ -56,13 +56,6 @@
 </script>
 
 <div class="container mt-4">
-	<nav aria-label="breadcrumb">
-		<ol class="breadcrumb">
-			<li class="breadcrumb-item"><a href="/admin/events">Events</a></li>
-			<li class="breadcrumb-item active" aria-current="page">Import</li>
-		</ol>
-	</nav>
-
 	<h1>{layoutState.pageTitle}</h1>
 
 	<div class="card mt-4">
@@ -107,9 +100,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	.container {
-		max-width: 900px;
-	}
-</style>

@@ -11,118 +11,141 @@
 	<title>Events | Admin | Bionic Portal</title>
 </svelte:head>
 
-<div class="admin-container">
-	<header class="admin-header">
-		<h1>Events Management</h1>
+<div class="container py-4">
+	<header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+		<h1 class="display-5 fw-bold mb-0 text-dark">Events Management</h1>
 		<div class="d-flex gap-2">
 			<a href="/admin/events/import" class="btn btn-outline-secondary">
 				<i class="fa fa-upload me-2"></i> Import Events
 			</a>
-			<a href="/admin/events/add" class="btn btn-primary">
+			<a href="/admin/events/add" class="btn btn-primary shadow-sm">
 				<i class="fa fa-plus me-2"></i> Add Event
 			</a>
 		</div>
 	</header>
 
-	<main class="admin-main">
+	<main>
 		{#if data.events.length === 0}
-			<div class="empty-state">
-				<i class="fa fa-calendar-alt mb-3"></i>
-				<p>No events found. Create your first event!</p>
-				<a href="/admin/events/add" class="btn btn-secondary mt-3">Add Event</a>
+			<div class="text-center py-5 bg-light rounded border border-2 border-dashed">
+				<i class="fa fa-calendar-alt fa-4x text-muted opacity-25 mb-3"></i>
+				<p class="lead text-muted">No events found. Create your first event!</p>
+				<a href="/admin/events/add" class="btn btn-primary mt-2">Add Event</a>
 			</div>
 		{:else}
-			<div class="events-grid">
+			<div class="row row-cols-1 row-cols-lg-2 g-4">
 				{#each data.events as event}
-					<div class="event-card">
-						<div class="event-header">
-							<h2>{event.name}</h2>
-							<div class="event-badge {event.isOvernight ? 'overnight' : 'day'}">
-								{event.isOvernight ? "Overnight" : "Day Event"}
-							</div>
-						</div>
-
-						<div class="event-details">
-							<div class="detail-item">
-								<i class="fa fa-calendar"></i>
-								<span>{event.startDate} - {event.endDate}</span>
-							</div>
-							<div class="detail-item">
-								<i class="fa fa-map-marker-alt"></i>
-								<span>{event.location}</span>
-							</div>
-							{#if event.departureTime}
-								<div class="detail-item">
-									<i class="fa fa-clock"></i>
-									<span>Departure: {new Date(event.departureTime).toLocaleString()}</span>
-								</div>
-							{/if}
-							{#if event.registrationDueDate}
-								<div class="detail-item">
-									<i class="fa fa-hourglass-half"></i>
-									<span
-										>Registration Due: {new Date(event.registrationDueDate).toLocaleString()}</span
-									>
-								</div>
-							{/if}
-						</div>
-
-						<div class="event-actions">
-							<a href="/admin/events/{event.id}/registrations" class="btn btn-secondary btn-sm">
-								<i class="fa fa-users me-1"></i> Registrations
-							</a>
-							<a href="/admin/events/{event.id}/carpools" class="btn btn-secondary btn-sm">
-								<i class="fa fa-car me-1"></i> Carpools
-							</a>
-							{#if event.isOvernight}
-								<a href="/admin/events/{event.id}/rooms" class="btn btn-secondary btn-sm">
-									<i class="fa fa-bed me-1"></i> Rooms
-								</a>
-							{/if}
-							<div class="ms-auto d-flex gap-1">
-								<a
-									href="/admin/events/{event.id}/edit"
-									class="btn btn-icon"
-									title="Edit"
-									aria-label="Edit Event"
+					<div class="col">
+						<div class="card h-100 shadow-sm border-0 transition-hover">
+							<div
+								class="card-header bg-white py-3 d-flex justify-content-between align-items-start border-bottom-0"
+							>
+								<h2 class="h5 fw-bold mb-0 text-dark">{event.name}</h2>
+								<span
+									class="badge rounded-pill {event.isOvernight
+										? 'bg-primary-subtle text-primary'
+										: 'bg-success-subtle text-success'} text-uppercase"
+									style="font-size: 0.65rem;"
 								>
-									<i class="fa fa-edit"></i>
-								</a>
-								<form
-									method="post"
-									action="?/delete"
-									onsubmit={(e) => {
-										if (
-											!confirm(
-												"Are you sure you want to delete this event? This action cannot be undone."
-											)
-										) {
-											e.preventDefault();
-										}
-									}}
-									use:enhance={() => {
-										deletingId = event.id;
-										return async ({ update }) => {
-											await update();
-											deletingId = "";
-										};
-									}}
+									{event.isOvernight ? "Overnight" : "Day Event"}
+								</span>
+							</div>
+
+							<div class="card-body py-2">
+								<div class="d-flex flex-column gap-2 text-secondary small">
+									<div class="d-flex align-items-center gap-2">
+										<i class="fa fa-calendar text-primary" style="width: 14px;"></i>
+										<span>{event.startDate} - {event.endDate}</span>
+									</div>
+									<div class="d-flex align-items-center gap-2">
+										<i class="fa fa-map-marker-alt text-primary" style="width: 14px;"></i>
+										<span>{event.location}</span>
+									</div>
+									{#if event.departureTime}
+										<div class="d-flex align-items-center gap-2">
+											<i class="fa fa-clock text-primary" style="width: 14px;"></i>
+											<span>Departure: {new Date(event.departureTime).toLocaleString()}</span>
+										</div>
+									{/if}
+									{#if event.registrationDueDate}
+										<div class="d-flex align-items-center gap-2">
+											<i class="fa fa-hourglass-half text-primary" style="width: 14px;"></i>
+											<span>Reg Due: {new Date(event.registrationDueDate).toLocaleString()}</span>
+										</div>
+									{/if}
+								</div>
+							</div>
+
+							<div class="card-footer bg-white border-top-0 pt-0 pb-3">
+								<div
+									class="d-flex flex-wrap gap-2 justify-content-end align-items-center pt-3 border-top mt-2"
 								>
-									<input type="hidden" name="id" value={event.id} />
-									<button
-										type="submit"
-										class="btn btn-icon btn-danger"
-										title="Delete"
-										aria-label="Delete Event"
-										disabled={deletingId === event.id}
+									<a
+										href="/admin/events/{event.id}/registrations"
+										class="btn btn-outline-secondary btn-sm"
 									>
-										{#if deletingId === event.id}
-											<i class="fa fa-spinner fa-pulse"></i>
-										{:else}
-											<i class="fa fa-trash"></i>
-										{/if}
-									</button>
-								</form>
+										<i class="fa fa-users me-1"></i> Regs
+									</a>
+									<a
+										href="/admin/events/{event.id}/carpools"
+										class="btn btn-outline-secondary btn-sm"
+									>
+										<i class="fa fa-car me-1"></i> Carpools
+									</a>
+									{#if event.isOvernight}
+										<a
+											href="/admin/events/{event.id}/rooms"
+											class="btn btn-outline-secondary btn-sm"
+										>
+											<i class="fa fa-bed me-1"></i> Rooms
+										</a>
+									{/if}
+									<div class="ms-auto d-flex gap-2">
+										<a
+											href="/admin/events/{event.id}/edit"
+											class="btn btn-sm btn-link link-primary p-0"
+											title="Edit"
+											aria-label="Edit Event"
+										>
+											<i class="fa fa-edit fa-lg"></i>
+										</a>
+										<form
+											method="post"
+											action="?/delete"
+											onsubmit={(e) => {
+												if (
+													!confirm(
+														"Are you sure you want to delete this event? This action cannot be undone."
+													)
+												) {
+													e.preventDefault();
+												}
+											}}
+											use:enhance={() => {
+												deletingId = event.id;
+												return async ({ update }) => {
+													await update();
+													deletingId = "";
+												};
+											}}
+											class="d-inline"
+										>
+											<input type="hidden" name="id" value={event.id} />
+											<button
+												type="submit"
+												class="btn btn-sm btn-link link-danger p-0"
+												title="Delete"
+												aria-label="Delete Event"
+												disabled={deletingId === event.id}
+											>
+												{#if deletingId === event.id}
+													<i class="fa fa-spinner fa-pulse"></i>
+												{:else}
+													<i class="fa fa-trash fa-lg"></i>
+												{/if}
+											</button>
+										</form>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -133,175 +156,13 @@
 </div>
 
 <style>
-	.admin-container {
-		max-width: 1200px;
-		margin: 2rem auto;
-		padding: 0 1rem;
-	}
-
-	.admin-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
-		padding-bottom: 1rem;
-		border-bottom: 2px solid #dee2e6;
-	}
-
-	.admin-header h1 {
-		margin: 0;
-		font-size: 2.25rem;
-		color: #212529;
-		font-weight: 800;
-	}
-
-	.events-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-		gap: 1.5rem;
-	}
-
-	.event-card {
-		background: #ffffff;
-		border: 1px solid #dee2e6;
-		border-radius: 1rem;
-		padding: 1.5rem;
-		display: flex;
-		flex-direction: column;
+	.transition-hover {
 		transition:
-			transform 0.2s,
-			box-shadow 0.2s;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+			transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+			box-shadow 0.2s ease;
 	}
-
-	.event-card:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-		border-color: #0d6efd;
-	}
-
-	.event-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: 1rem;
-	}
-
-	.event-header h2 {
-		margin: 0;
-		font-size: 1.25rem;
-		color: #212529;
-		font-weight: 700;
-	}
-
-	.event-badge {
-		font-size: 0.75rem;
-		font-weight: 600;
-		padding: 0.25rem 0.6rem;
-		border-radius: 1rem;
-		text-transform: uppercase;
-	}
-
-	.event-badge.overnight {
-		background: #f3e8ff;
-		color: #6b21a8;
-		border: 1px solid #d8b4fe;
-	}
-
-	.event-badge.day {
-		background: #dcfce7;
-		color: #166534;
-		border: 1px solid #86efac;
-	}
-
-	.event-details {
-		margin-bottom: 1.5rem;
-		flex-grow: 1;
-	}
-
-	.detail-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		margin-bottom: 0.5rem;
-		color: #495057;
-		font-size: 0.95rem;
-	}
-
-	.detail-item i {
-		width: 1rem;
-		color: #0d6efd;
-	}
-
-	.event-actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.5rem;
-		padding-top: 1rem;
-		border-top: 1px solid #dee2e6;
-	}
-
-	.empty-state {
-		text-align: center;
-		padding: 5rem 2rem;
-		background: #ffffff;
-		border: 2px dashed #dee2e6;
-		border-radius: 1rem;
-		color: #6c757d;
-	}
-
-	.empty-state i {
-		font-size: 3rem;
-		color: #dee2e6;
-	}
-
-	.btn {
-		padding: 0.6rem 1.2rem;
-		border-radius: 6px;
-		font-weight: 600;
-		cursor: pointer;
-		text-decoration: none;
-		transition: all 0.2s;
-		border: 1px solid transparent;
-		font-size: 0.9rem;
-	}
-
-	.btn-primary {
-		background-color: #238636;
-		border-color: #2ea043;
-		color: #fff;
-	}
-
-	.btn-primary:hover {
-		background-color: #2ea043;
-		border-color: #3fb950;
-	}
-
-	.btn-secondary {
-		background-color: #6c757d;
-		border-color: #6c757d;
-		color: #fff;
-	}
-
-	.btn-icon {
-		padding: 0.5rem;
-		background: transparent;
-		color: #6c757d;
-		border: none;
-	}
-
-	.btn-icon:hover {
-		color: #0d6efd;
-		background: rgba(13, 110, 253, 0.1);
-	}
-
-	.btn-icon.btn-danger:hover {
-		color: #dc3545;
-		background: rgba(220, 53, 69, 0.1);
-	}
-
-	.btn-sm {
-		padding: 0.4rem 0.8rem;
-		font-size: 0.8rem;
+	.transition-hover:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
 	}
 </style>

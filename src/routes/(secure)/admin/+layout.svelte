@@ -65,8 +65,12 @@
 					route: "/admin/events/add"
 				},
 				{
+					name: "Import Events",
+					route: "/admin/events/import"
+				},
+				{
 					name: "Carpools",
-					route: "/admin/carpools"
+					route: "/admin/events/carpools"
 				}
 			]
 		}

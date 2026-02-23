@@ -41,322 +41,252 @@
 	<title>Edit Event | Admin | Bionic Portal</title>
 </svelte:head>
 
-<div class="admin-container">
-	<header class="admin-header">
-		<h1>Edit Event</h1>
-		<a href="/admin/events" class="btn btn-secondary">Back to Events</a>
+<div class="container py-4" style="max-width: 900px;">
+	<header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+		<h1 class="display-5 fw-bold mb-0">Edit Event</h1>
+		<a href="/admin/events" class="btn btn-outline-secondary btn-sm">Back to Events</a>
 	</header>
 
-	<main class="admin-main">
-		<form
-			method="post"
-			use:enhance={() => {
-				submitting = true;
-				return async ({ update }) => {
-					await update();
-					submitting = false;
-				};
-			}}
-			class="event-form"
-		>
-			<div class="form-section">
-				<h2>Basic Information</h2>
-				<div class="form-group">
-					<label for="name">Event Name</label>
-					<input
-						type="text"
-						id="name"
-						name="name"
-						bind:value={name}
-						placeholder="e.g. Granite State Regional"
-						required
-					/>
-				</div>
-				<div class="form-row">
-					<div class="form-group">
-						<label for="startDate">Start Date</label>
-						<input type="date" id="startDate" name="startDate" bind:value={startDate} required />
-					</div>
-					<div class="form-group">
-						<label for="endDate">End Date</label>
-						<input type="date" id="endDate" name="endDate" bind:value={endDate} required />
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="location">Location</label>
-					<input
-						type="text"
-						id="location"
-						name="location"
-						bind:value={location}
-						placeholder="e.g. Bedford High School, Bedford NH"
-						required
-					/>
-				</div>
-				<div class="form-group">
-					<label for="cost">Cost ($)</label>
-					<input
-						type="number"
-						id="cost"
-						name="cost"
-						class="form-control"
-						bind:value={cost}
-						step="0.01"
-						min="0"
-						required
-					/>
-				</div>
-				<div class="form-group">
-					<label for="registrationDueDate">Registration Due Date</label>
-					<input
-						type="datetime-local"
-						id="registrationDueDate"
-						name="registrationDueDate"
-						bind:value={registrationDueDate}
-					/>
-				</div>
-			</div>
+	<main>
+		<div class="card shadow-sm">
+			<div class="card-body p-4 p-md-5">
+				<form
+					method="post"
+					use:enhance={() => {
+						submitting = true;
+						return async ({ update }) => {
+							await update();
+							submitting = false;
+						};
+					}}
+				>
+					<!-- Basic Information -->
+					<div class="mb-5">
+						<h2 class="h5 mb-4 text-primary border-bottom pb-2 fw-bold">Basic Information</h2>
 
-			<div class="form-section">
-				<h2>Logistics</h2>
-				<div class="form-group checkbox-group">
-					<input type="checkbox" id="isOvernight" name="isOvernight" bind:checked={isOvernight} />
-					<label for="isOvernight">This is an overnight event</label>
-				</div>
-
-				{#if isOvernight}
-					<div class="form-group">
-						<label for="hotelAddress">Hotel Address</label>
-						<input
-							type="text"
-							id="hotelAddress"
-							name="hotelAddress"
-							bind:value={hotelAddress}
-							placeholder="e.g. 123 Hotel Way, City, ST"
-						/>
-					</div>
-					<div class="form-row">
-						<div class="form-group">
-							<label for="studentsPerRoom">Students per room</label>
+						<div class="mb-3">
+							<label for="name" class="form-label fw-semibold">Event Name</label>
 							<input
-								type="number"
-								id="studentsPerRoom"
-								name="studentsPerRoom"
-								value={data.event.studentsPerRoom || 4}
-								min="1"
+								type="text"
+								id="name"
+								name="name"
+								bind:value={name}
+								class="form-control"
+								placeholder="e.g. Granite State Regional"
 								required
 							/>
 						</div>
-						<div class="form-group">
-							<label for="mentorsPerRoom">Mentors per room</label>
+
+						<div class="row g-3 mb-3">
+							<div class="col-md-6">
+								<label for="startDate" class="form-label fw-semibold">Start Date</label>
+								<input
+									type="date"
+									id="startDate"
+									name="startDate"
+									bind:value={startDate}
+									class="form-control"
+									required
+								/>
+							</div>
+							<div class="col-md-6">
+								<label for="endDate" class="form-label fw-semibold">End Date</label>
+								<input
+									type="date"
+									id="endDate"
+									name="endDate"
+									bind:value={endDate}
+									class="form-control"
+									required
+								/>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label for="location" class="form-label fw-semibold">Location</label>
 							<input
-								type="number"
-								id="mentorsPerRoom"
-								name="mentorsPerRoom"
-								value={data.event.mentorsPerRoom || 2}
-								min="1"
+								type="text"
+								id="location"
+								name="location"
+								bind:value={location}
+								class="form-control"
+								placeholder="e.g. Bedford High School, Bedford NH"
 								required
 							/>
 						</div>
+
+						<div class="row g-3 mb-3">
+							<div class="col-md-4">
+								<label for="cost" class="form-label fw-semibold">Cost ($)</label>
+								<input
+									type="number"
+									id="cost"
+									name="cost"
+									class="form-control"
+									bind:value={cost}
+									step="0.01"
+									min="0"
+									required
+								/>
+							</div>
+							<div class="col-md-8">
+								<label for="registrationDueDate" class="form-label fw-semibold"
+									>Registration Due Date</label
+								>
+								<input
+									type="datetime-local"
+									id="registrationDueDate"
+									name="registrationDueDate"
+									bind:value={registrationDueDate}
+									class="form-control"
+								/>
+							</div>
+						</div>
 					</div>
-				{/if}
 
-				<div class="form-row">
-					<div class="form-group">
-						<label for="departureTime">Departure Time</label>
-						<input
-							type="datetime-local"
-							id="departureTime"
-							name="departureTime"
-							bind:value={departureTime}
-						/>
+					<!-- Logistics -->
+					<div class="mb-5">
+						<h2 class="h5 mb-4 text-primary border-bottom pb-2 fw-bold">Logistics</h2>
+
+						<div class="form-check form-switch mb-4">
+							<input
+								class="form-check-input"
+								type="checkbox"
+								role="switch"
+								id="isOvernight"
+								name="isOvernight"
+								bind:checked={isOvernight}
+							/>
+							<label class="form-check-label fw-semibold" for="isOvernight"
+								>This is an overnight event</label
+							>
+						</div>
+
+						{#if isOvernight}
+							<div class="mb-3 animate-fade-in">
+								<label for="hotelAddress" class="form-label fw-semibold">Hotel Address</label>
+								<input
+									type="text"
+									id="hotelAddress"
+									name="hotelAddress"
+									bind:value={hotelAddress}
+									class="form-control"
+									placeholder="e.g. 123 Hotel Way, City, ST"
+								/>
+							</div>
+							<div class="row g-3 mb-4 animate-fade-in">
+								<div class="col-6">
+									<label for="studentsPerRoom" class="form-label fw-semibold"
+										>Students per room</label
+									>
+									<input
+										type="number"
+										id="studentsPerRoom"
+										name="studentsPerRoom"
+										class="form-control"
+										value={data.event.studentsPerRoom || 4}
+										min="1"
+										required
+									/>
+								</div>
+								<div class="col-6">
+									<label for="mentorsPerRoom" class="form-label fw-semibold">Mentors per room</label
+									>
+									<input
+										type="number"
+										id="mentorsPerRoom"
+										name="mentorsPerRoom"
+										class="form-control"
+										value={data.event.mentorsPerRoom || 2}
+										min="1"
+										required
+									/>
+								</div>
+							</div>
+						{/if}
+
+						<div class="row g-3">
+							<div class="col-md-6">
+								<label for="departureTime" class="form-label fw-semibold">Departure Time</label>
+								<input
+									type="datetime-local"
+									id="departureTime"
+									name="departureTime"
+									bind:value={departureTime}
+									class="form-control"
+								/>
+							</div>
+							<div class="col-md-6">
+								<label for="returnTime" class="form-label fw-semibold">Return Time</label>
+								<input
+									type="datetime-local"
+									id="returnTime"
+									name="returnTime"
+									bind:value={returnTime}
+									class="form-control"
+								/>
+							</div>
+						</div>
 					</div>
-					<div class="form-group">
-						<label for="returnTime">Return Time</label>
-						<input
-							type="datetime-local"
-							id="returnTime"
-							name="returnTime"
-							bind:value={returnTime}
-						/>
+
+					<!-- Description -->
+					<div class="mb-5">
+						<h2 class="h5 mb-4 text-primary border-bottom pb-2 fw-bold">Description</h2>
+						<div>
+							<label for="description" class="form-label fw-semibold"
+								>Event Details (optional)</label
+							>
+							<textarea
+								id="description"
+								name="description"
+								bind:value={description}
+								rows="4"
+								class="form-control"
+								placeholder="Any additional information..."
+							></textarea>
+						</div>
 					</div>
-				</div>
-			</div>
 
-			<div class="form-section">
-				<h2>Description</h2>
-				<div class="form-group">
-					<label for="description">Event Details (optional)</label>
-					<textarea
-						id="description"
-						name="description"
-						bind:value={description}
-						rows="4"
-						placeholder="Any additional information..."
-					></textarea>
-				</div>
-			</div>
-
-			{#if form?.message}
-				<div class="alert alert-danger mb-3">
-					{form.message}
-				</div>
-			{/if}
-
-			<div class="form-actions">
-				<button type="submit" class="btn btn-primary" disabled={submitting}>
-					{#if submitting}
-						<i class="fa fa-spinner fa-pulse me-2"></i> Saving...
-					{:else}
-						Save Changes
+					{#if form?.message}
+						<div
+							class="alert alert-danger px-4 py-3 mb-4 shadow-sm border-0 border-start border-4 border-danger rounded-0 rounded-end"
+						>
+							<i class="fa fa-exclamation-circle me-2"></i>
+							{form.message}
+						</div>
 					{/if}
-				</button>
+
+					<div class="d-flex justify-content-end pt-4 border-top">
+						<button
+							type="submit"
+							class="btn btn-primary btn-lg px-5 shadow-sm fw-bold"
+							disabled={submitting}
+						>
+							{#if submitting}
+								<i class="fa fa-spinner fa-pulse me-2"></i> Saving...
+							{:else}
+								Save Changes
+							{/if}
+						</button>
+					</div>
+				</form>
 			</div>
-		</form>
+		</div>
 	</main>
 </div>
 
 <style>
-	.admin-container {
-		max-width: 800px;
-		margin: 2rem auto;
-		padding: 0 1rem;
+	.animate-fade-in {
+		animation: fadeIn 0.3s ease-out;
 	}
-
-	.admin-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
-		padding-bottom: 1rem;
-		border-bottom: 2px solid #dee2e6;
-	}
-
-	.admin-header h1 {
-		margin: 0;
-		font-size: 2.25rem;
-		color: #212529;
-		font-weight: 800;
-	}
-
-	.event-form {
-		background: #ffffff;
-		border: 1px solid #dee2e6;
-		border-radius: 1rem;
-		padding: 2.5rem;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-	}
-
-	.form-section {
-		margin-bottom: 2.5rem;
-	}
-
-	.form-section h2 {
-		font-size: 1.25rem;
-		color: #0d6efd;
-		margin-bottom: 1.5rem;
-		border-bottom: 1px solid #e9ecef;
-		padding-bottom: 0.5rem;
-		font-weight: 700;
-	}
-
-	.form-group {
-		margin-bottom: 1.5rem;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.form-row {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 1.5rem;
-	}
-
-	label {
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-		color: #495057;
-	}
-
-	input[type="text"],
-	input[type="date"],
-	input[type="datetime-local"],
-	input[type="number"],
-	textarea {
-		background-color: #ffffff;
-		border: 1px solid #ced4da;
-		border-radius: 8px;
-		padding: 0.75rem;
-		color: #212529;
-		font-family: inherit;
-		transition:
-			border-color 0.15s ease-in-out,
-			box-shadow 0.15s ease-in-out;
-	}
-
-	input:focus,
-	textarea:focus {
-		outline: none;
-		border-color: #0d6efd;
-		box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-	}
-
-	.checkbox-group {
-		flex-direction: row;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.checkbox-group input {
-		width: 1.25rem;
-		height: 1.25rem;
-		cursor: pointer;
-	}
-
-	.form-actions {
-		display: flex;
-		justify-content: flex-end;
-		padding-top: 1.5rem;
-		border-top: 1px solid #dee2e6;
-	}
-
-	.btn {
-		padding: 0.75rem 1.5rem;
-		border-radius: 8px;
-		font-weight: 600;
-		cursor: pointer;
-		text-decoration: none;
-		transition: all 0.2s;
-		border: 1px solid transparent;
-	}
-
-	.btn-primary {
-		background-color: #238636;
-		border-color: #2ea043;
-		color: #fff;
-	}
-
-	.btn-primary:hover {
-		background-color: #2ea043;
-		border-color: #3fb950;
-	}
-
-	.btn-secondary {
-		background-color: #6c757d;
-		border-color: #6c757d;
-		color: #fff;
-	}
-
-	.btn-secondary:hover {
-		background-color: #5c636a;
-		border-color: #565e64;
-	}
-
-	.alert {
-		padding: 1rem;
-		border-radius: 8px;
-		background-color: #f8d7da;
-		border: 1px solid #f5c2c7;
-		color: #842029;
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 </style>
