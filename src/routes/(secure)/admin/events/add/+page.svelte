@@ -2,7 +2,7 @@
 	import { enhance } from "$app/forms";
 	import type { ActionData, PageProps } from "./$types";
 
-	let { form, data }: PageProps<ActionData> = $props();
+	let { form, data }: PageProps = $props();
 
 	let name = $state("");
 	let startDate = $state(data.today);
@@ -13,6 +13,8 @@
 	let returnTime = $state("");
 	let description = $state("");
 	let hotelAddress = $state("");
+	let cost = $state(150);
+	let registrationDueDate = $state("");
 
 	let submitting = $state(false);
 
@@ -25,6 +27,12 @@
 		if (endDate && !returnTime) {
 			// Default to end date at 5:00 PM if not set
 			returnTime = `${endDate}T17:00`;
+		}
+		if (startDate && !registrationDueDate) {
+			// Default to 1 week before the event
+			const d = new Date(startDate);
+			d.setDate(d.getDate() - 7);
+			registrationDueDate = `${d.toISOString().split("T")[0]}T23:59`;
 		}
 	});
 </script>
@@ -85,6 +93,28 @@
 						required
 					/>
 				</div>
+				<div class="form-group">
+					<label for="cost">Cost ($)</label>
+					<input
+						type="number"
+						id="cost"
+						name="cost"
+						class="form-control"
+						bind:value={cost}
+						step="0.01"
+						min="0"
+						required
+					/>
+				</div>
+				<div class="form-group">
+					<label for="registrationDueDate">Registration Due Date</label>
+					<input
+						type="datetime-local"
+						id="registrationDueDate"
+						name="registrationDueDate"
+						bind:value={registrationDueDate}
+					/>
+				</div>
 			</div>
 
 			<div class="form-section">
@@ -104,6 +134,30 @@
 							bind:value={hotelAddress}
 							placeholder="e.g. 123 Hotel Way, City, ST"
 						/>
+					</div>
+					<div class="form-row">
+						<div class="form-group">
+							<label for="studentsPerRoom">Students per room</label>
+							<input
+								type="number"
+								id="studentsPerRoom"
+								name="studentsPerRoom"
+								value="4"
+								min="1"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="mentorsPerRoom">Mentors per room</label>
+							<input
+								type="number"
+								id="mentorsPerRoom"
+								name="mentorsPerRoom"
+								value="2"
+								min="1"
+								required
+							/>
+						</div>
 					</div>
 				{/if}
 
@@ -227,6 +281,7 @@
 	input[type="text"],
 	input[type="date"],
 	input[type="datetime-local"],
+	input[type="number"],
 	textarea {
 		background-color: #ffffff;
 		border: 1px solid #ced4da;

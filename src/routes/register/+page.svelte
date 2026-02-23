@@ -165,7 +165,7 @@
 	.register-header h1 {
 		font-size: 2.5rem;
 		font-weight: 800;
-		color: #e6edf3;
+		/* color: #e6edf3; */
 		margin-bottom: 0.5rem;
 	}
 
@@ -207,7 +207,7 @@
 	label {
 		font-weight: 600;
 		margin-bottom: 0.5rem;
-		color: #e6edf3;
+		/* color: #e6edf3; */
 		font-size: 0.95rem;
 	}
 
@@ -219,7 +219,7 @@
 		border: 1px solid #30363d;
 		border-radius: 8px;
 		padding: 0.8rem 1rem;
-		color: #e6edf3;
+		/* color: #e6edf3; */
 		font-family: inherit;
 		transition: all 0.2s;
 	}

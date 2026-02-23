@@ -36,6 +36,8 @@
 											day: "numeric"
 										})}</span
 									>
+									<a href="/admin/events/{event.id}/carpools" class="btn-link">Manage Assignments</a
+									>
 								</div>
 							</th>
 						{/each}
@@ -46,12 +48,6 @@
 						<td class="sticky-col"><strong>Location</strong></td>
 						{#each data.events as event}
 							<td><small>{event.location}</small></td>
-						{/each}
-					</tr>
-					<tr class="info-row">
-						<td class="sticky-col"><strong>Trailer</strong></td>
-						{#each data.events as event}
-							<td><input type="text" class="grid-input" placeholder="Driver" /></td>
 						{/each}
 					</tr>
 
@@ -99,7 +95,7 @@
 	.admin-header h1 {
 		margin: 0;
 		font-size: 2.5rem;
-		color: #e6edf3;
+		/* color: #e6edf3; */
 		font-weight: 800;
 	}
 
@@ -160,20 +156,32 @@
 		color: #8b949e;
 	}
 
+	.btn-link {
+		font-size: 0.75rem;
+		color: #58a6ff;
+		text-decoration: none;
+		font-weight: 600;
+		margin-top: 0.5rem;
+	}
+
+	.btn-link:hover {
+		text-decoration: underline;
+	}
+
 	.info-row td {
 		background: rgba(255, 255, 255, 0.02);
 		font-size: 0.85rem;
 	}
 
-	.mentor-name {
-		color: #e6edf3;
+	.mentor-name_DISABLE {
+		/* color: #e6edf3; */
 	}
 
 	.grid-input {
 		width: 100%;
 		background: transparent;
 		border: 1px solid transparent;
-		color: #e6edf3;
+		/* color: #e6edf3; */
 		text-align: center;
 		padding: 0.5rem;
 		border-radius: 4px;

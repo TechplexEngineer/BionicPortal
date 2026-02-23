@@ -1,33 +1,41 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { layoutState } from "../../../+layout.svelte";
+	import { layoutState } from "../../../../+layout.svelte";
 	import type { PageProps } from "./$types";
 	import * as XLSX from "xlsx";
 	import ImportMapping from "$lib/components/ImportMapping.svelte";
 	import type { ImportField } from "$lib/utils/import";
 
-	let { data, form }: PageProps = $props();
+	let { form }: PageProps = $props();
 
-	layoutState.pageTitle = "Import Students";
+	layoutState.pageTitle = "Import Events";
 
 	let headers: string[] = $state([]);
 	let mapping: Record<string, string> = $state({});
 	let showMapping = $state(false);
 
-	const studentFields: ImportField[] = [
-		{ name: "email", label: "Email", searchTerms: ["email", "userid", "user"], required: true },
+	const eventFields: ImportField[] = [
+		{ name: "name", label: "Event Name", searchTerms: ["name", "title", "event"], required: true },
+		{ name: "startDate", label: "Start Date", searchTerms: ["start", "begin"], required: true },
+		{ name: "endDate", label: "End Date", searchTerms: ["end", "stop"], required: true },
 		{
-			name: "firstName",
-			label: "First Name",
-			searchTerms: ["first", "firstname", "fname", "givenname"],
+			name: "location",
+			label: "Location",
+			searchTerms: ["location", "venue", "place"],
 			required: true
 		},
 		{
-			name: "lastName",
-			label: "Last Name",
-			searchTerms: ["last", "lastname", "lname", "surname"],
+			name: "registrationDueDate",
+			label: "Registration Due Date",
+			searchTerms: ["due", "deadline", "registration"],
 			required: true
-		}
+		},
+		{ name: "cost", label: "Cost", searchTerms: ["cost", "price", "amount"], required: true },
+		{ name: "isOvernight", label: "Is Overnight", searchTerms: ["overnight", "multi-day"] },
+		{ name: "departureTime", label: "Departure Time", searchTerms: ["departure", "leave"] },
+		{ name: "returnTime", label: "Return Time", searchTerms: ["return", "arrive"] },
+		{ name: "description", label: "Description", searchTerms: ["description", "details", "info"] },
+		{ name: "hotelAddress", label: "Hotel Address", searchTerms: ["hotel", "address"] }
 	];
 
 	async function handleFileChange(e: Event) {
@@ -50,7 +58,7 @@
 <div class="container mt-4">
 	<nav aria-label="breadcrumb">
 		<ol class="breadcrumb">
-			<li class="breadcrumb-item"><a href="/admin/students">Students</a></li>
+			<li class="breadcrumb-item"><a href="/admin/events">Events</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Import</li>
 		</ol>
 	</nav>
@@ -58,7 +66,7 @@
 	<h1>{layoutState.pageTitle}</h1>
 
 	<div class="card mt-4">
-		<div class="card-header">Upload Students File</div>
+		<div class="card-header">Upload Events File</div>
 		<div class="card-body">
 			{#if form?.error}
 				<div class="alert alert-danger" role="alert">
@@ -67,20 +75,20 @@
 			{/if}
 			{#if form?.success}
 				<div class="alert alert-success" role="alert">
-					Successfully imported {form.imported} students!
-					<a href="/admin/students" class="alert-link">Back to students</a>
+					Successfully imported {form.imported} events!
+					<a href="/admin/events" class="alert-link">Back to events</a>
 				</div>
 			{/if}
 
 			{#if !form?.success}
-				<form method="post" action="?/importstudents" enctype="multipart/form-data" use:enhance>
+				<form method="post" action="?/import" enctype="multipart/form-data" use:enhance>
 					<div class="mb-4">
-						<label for="studentsList" class="form-label">Select CSV or Excel file</label>
+						<label for="file" class="form-label">Select CSV or Excel file</label>
 						<input
 							type="file"
 							class="form-control"
-							id="studentsList"
-							name="studentsList"
+							id="file"
+							name="file"
 							accept=".csv,.xlsx,.xls"
 							onchange={handleFileChange}
 							required
@@ -88,7 +96,7 @@
 					</div>
 
 					{#if showMapping}
-						<ImportMapping {headers} fields={studentFields} bind:mapping />
+						<ImportMapping {headers} fields={eventFields} bind:mapping />
 
 						<button type="submit" class="btn btn-primary">
 							<i class="fa fa-save me-1"></i> Start Import
@@ -102,6 +110,6 @@
 
 <style>
 	.container {
-		max-width: 800px;
+		max-width: 900px;
 	}
 </style>

@@ -37,9 +37,11 @@ export const actions: Actions = {
         const returnTime = formData.get("returnTime") as string;
         const description = formData.get("description") as string;
         const hotelAddress = formData.get("hotelAddress") as string;
+        const registrationDueDate = formData.get("registrationDueDate") as string || undefined;
+        const cost = parseFloat(formData.get("cost") as string);
 
-        if (!name || !startDate || !endDate || !location) {
-            return fail(400, { message: "Missing required fields" });
+        if (!name || !startDate || !endDate || !location || isNaN(cost)) {
+            return fail(400, { message: "Missing required fields or invalid cost" });
         }
 
         const db = getDb(event.platform);
@@ -56,7 +58,11 @@ export const actions: Actions = {
                         departureTime,
                         returnTime,
                         description,
-                        hotelAddress
+                        hotelAddress,
+                        cost,
+                        registrationDueDate,
+                        studentsPerRoom: parseInt(formData.get("studentsPerRoom") as string) || 4,
+                        mentorsPerRoom: parseInt(formData.get("mentorsPerRoom") as string) || 2
                     }
                 })
                 .where(eq(table.events.id, id));

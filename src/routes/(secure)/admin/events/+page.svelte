@@ -14,9 +14,14 @@
 <div class="admin-container">
 	<header class="admin-header">
 		<h1>Events Management</h1>
-		<a href="/admin/events/add" class="btn btn-primary">
-			<i class="fa fa-plus me-2"></i> Add Event
-		</a>
+		<div class="d-flex gap-2">
+			<a href="/admin/events/import" class="btn btn-outline-secondary">
+				<i class="fa fa-upload me-2"></i> Import Events
+			</a>
+			<a href="/admin/events/add" class="btn btn-primary">
+				<i class="fa fa-plus me-2"></i> Add Event
+			</a>
+		</div>
 	</header>
 
 	<main class="admin-main">
@@ -52,52 +57,73 @@
 									<span>Departure: {new Date(event.departureTime).toLocaleString()}</span>
 								</div>
 							{/if}
+							{#if event.registrationDueDate}
+								<div class="detail-item">
+									<i class="fa fa-hourglass-half"></i>
+									<span
+										>Registration Due: {new Date(event.registrationDueDate).toLocaleString()}</span
+									>
+								</div>
+							{/if}
 						</div>
 
 						<div class="event-actions">
-							<a
-								href="/admin/events/{event.id}/registrations"
-								class="btn btn-secondary btn-sm me-auto"
-							>
+							<a href="/admin/events/{event.id}/registrations" class="btn btn-secondary btn-sm">
 								<i class="fa fa-users me-1"></i> Registrations
 							</a>
-							<a href="/admin/events/{event.id}/edit" class="btn btn-icon" title="Edit">
-								<i class="fa fa-edit"></i>
+							<a href="/admin/events/{event.id}/carpools" class="btn btn-secondary btn-sm">
+								<i class="fa fa-car me-1"></i> Carpools
 							</a>
-							<form
-								method="post"
-								action="?/delete"
-								onsubmit={(e) => {
-									if (
-										!confirm(
-											"Are you sure you want to delete this event? This action cannot be undone."
-										)
-									) {
-										e.preventDefault();
-									}
-								}}
-								use:enhance={() => {
-									deletingId = event.id;
-									return async ({ update }) => {
-										await update();
-										deletingId = "";
-									};
-								}}
-							>
-								<input type="hidden" name="id" value={event.id} />
-								<button
-									type="submit"
-									class="btn btn-icon btn-danger"
-									title="Delete"
-									disabled={deletingId === event.id}
+							{#if event.isOvernight}
+								<a href="/admin/events/{event.id}/rooms" class="btn btn-secondary btn-sm">
+									<i class="fa fa-bed me-1"></i> Rooms
+								</a>
+							{/if}
+							<div class="ms-auto d-flex gap-1">
+								<a
+									href="/admin/events/{event.id}/edit"
+									class="btn btn-icon"
+									title="Edit"
+									aria-label="Edit Event"
 								>
-									{#if deletingId === event.id}
-										<i class="fa fa-spinner fa-pulse"></i>
-									{:else}
-										<i class="fa fa-trash"></i>
-									{/if}
-								</button>
-							</form>
+									<i class="fa fa-edit"></i>
+								</a>
+								<form
+									method="post"
+									action="?/delete"
+									onsubmit={(e) => {
+										if (
+											!confirm(
+												"Are you sure you want to delete this event? This action cannot be undone."
+											)
+										) {
+											e.preventDefault();
+										}
+									}}
+									use:enhance={() => {
+										deletingId = event.id;
+										return async ({ update }) => {
+											await update();
+											deletingId = "";
+										};
+									}}
+								>
+									<input type="hidden" name="id" value={event.id} />
+									<button
+										type="submit"
+										class="btn btn-icon btn-danger"
+										title="Delete"
+										aria-label="Delete Event"
+										disabled={deletingId === event.id}
+									>
+										{#if deletingId === event.id}
+											<i class="fa fa-spinner fa-pulse"></i>
+										{:else}
+											<i class="fa fa-trash"></i>
+										{/if}
+									</button>
+								</form>
+							</div>
 						</div>
 					</div>
 				{/each}

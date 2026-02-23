@@ -63,6 +63,10 @@
 				{
 					name: "Add Event",
 					route: "/admin/events/add"
+				},
+				{
+					name: "Carpools",
+					route: "/admin/carpools"
 				}
 			]
 		}

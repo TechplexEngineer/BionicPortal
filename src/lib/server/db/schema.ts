@@ -89,6 +89,10 @@ export interface EventData {
 	description?: string;
 	hotelAddress?: string;
 	permissionFormUrl?: string;
+	cost: number;
+	registrationDueDate?: string; // ISO string
+	studentsPerRoom: number;
+	mentorsPerRoom: number;
 }
 
 export const events = sqliteTable("events", {
@@ -98,7 +102,7 @@ export const events = sqliteTable("events", {
 export type Events = typeof events.$inferSelect;
 
 export const eventInsertSchema = createInsertSchema(events, {
-	data: z.object({
+	data: () => z.object({
 		name: z.string().min(1),
 		startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
 			message: "Invalid date format"
@@ -112,8 +116,14 @@ export const eventInsertSchema = createInsertSchema(events, {
 		returnTime: z.string().optional(),
 		description: z.string().optional(),
 		hotelAddress: z.string().optional(),
-		permissionFormUrl: z.string().optional()
-	})
+		permissionFormUrl: z.string().optional(),
+		cost: z.number().min(0),
+		registrationDueDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+			message: "Invalid date format"
+		}).optional(),
+		studentsPerRoom: z.number().min(1).default(4),
+		mentorsPerRoom: z.number().min(1).default(2)
+	}) as any
 });
 export type EventInsert = z.infer<typeof eventInsertSchema>;
 
@@ -164,7 +174,8 @@ export const hotelRoomsRelations = relations(hotelRooms, ({ one, many }) => ({
 export const roomAssignments = sqliteTable("room_assignments", {
 	id: text("id").primaryKey(),
 	roomId: text("room_id").notNull().references(() => hotelRooms.id),
-	studentId: text("student_id").notNull().references(() => students.userid)
+	studentId: text("student_id").references(() => students.userid),
+	userId: text("user_id").references(() => user.id)
 });
 
 export const roomAssignmentsRelations = relations(roomAssignments, ({ one }) => ({
@@ -175,6 +186,10 @@ export const roomAssignmentsRelations = relations(roomAssignments, ({ one }) => 
 	student: one(students, {
 		fields: [roomAssignments.studentId],
 		references: [students.userid]
+	}),
+	user: one(user, {
+		fields: [roomAssignments.userId],
+		references: [user.id]
 	})
 }));
 
@@ -187,9 +202,11 @@ export const carpoolSpots = sqliteTable("carpool_spots", {
 	mentorId: text("mentor_id").notNull().references(() => user.id),
 	capacity: integer("capacity").notNull(),
 	driverName: text("driver_name").notNull()
-});
+}, (table) => [
+	unique("carpool_spot_unique").on(table.eventId, table.mentorId)
+]);
 
-export const carpoolSpotsRelations = relations(carpoolSpots, ({ one }) => ({
+export const carpoolSpotsRelations = relations(carpoolSpots, ({ one, many }) => ({
 	event: one(events, {
 		fields: [carpoolSpots.eventId],
 		references: [events.id]
@@ -197,6 +214,27 @@ export const carpoolSpotsRelations = relations(carpoolSpots, ({ one }) => ({
 	mentor: one(user, {
 		fields: [carpoolSpots.mentorId],
 		references: [user.id]
+	}),
+	assignments: many(carpoolAssignments)
+}));
+
+// ----------------------------------------------------------------------------
+// Carpool Assignments Table
+// ----------------------------------------------------------------------------
+export const carpoolAssignments = sqliteTable("carpool_assignments", {
+	id: text("id").primaryKey(),
+	carpoolSpotId: text("carpool_spot_id").notNull().references(() => carpoolSpots.id),
+	studentId: text("student_id").notNull().references(() => students.userid)
+});
+
+export const carpoolAssignmentsRelations = relations(carpoolAssignments, ({ one }) => ({
+	carpoolSpot: one(carpoolSpots, {
+		fields: [carpoolAssignments.carpoolSpotId],
+		references: [carpoolSpots.id]
+	}),
+	student: one(students, {
+		fields: [carpoolAssignments.studentId],
+		references: [students.userid]
 	})
 }));
 

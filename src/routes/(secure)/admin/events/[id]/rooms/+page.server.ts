@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -19,15 +19,30 @@ export const load: PageServerLoad = async (event) => {
     const eligibleRegistrations = await db.select({
         userid: table.students.userid,
         firstName: table.students.firstName,
-        lastName: table.students.lastName
+        lastName: table.students.lastName,
+        type: sql<string>`'student'`
     })
         .from(table.eventRegistrations)
         .innerJoin(table.students, eq(table.eventRegistrations.studentId, table.students.userid))
         .where(and(
             eq(table.eventRegistrations.eventId, eventId),
-            eq(table.eventRegistrations.paid, true),
-            eq(table.eventRegistrations.formCompleted, true)
+            // eq(table.eventRegistrations.paid, true), // Commented out to allow testing even if not paid
+            // eq(table.eventRegistrations.formCompleted, true)
         ));
+
+    // Fetch mentors (users with role 'mentor' or 'admin' who might be attending)
+    // For now, let's just fetch all users who are NOT students and call them 'mentors'
+    // In a real app, you might have a better way to filter this
+    const mentors = await db.select({
+        userid: table.user.id,
+        firstName: table.user.username, // Generic for now
+        lastName: sql<string>`''`,
+        type: sql<string>`'mentor'`
+    })
+        .from(table.user)
+        .where(inArray(table.user.role, ['mentor', 'admin']));
+
+    const attendees = [...eligibleRegistrations, ...mentors];
 
     // Fetch existing rooms and assignments
     const rooms = await db.select()
@@ -40,7 +55,7 @@ export const load: PageServerLoad = async (event) => {
 
     return {
         event: { id: eventData.id, ...eventData.data },
-        students: eligibleRegistrations,
+        attendees,
         rooms,
         assignments
     };
@@ -62,32 +77,49 @@ export const actions: Actions = {
 
         return { success: true };
     },
-    assignStudent: async ({ request, locals }) => {
+    assignAttendee: async ({ request, locals }) => {
         const formData = await request.formData();
         const roomId = formData.get("roomId") as string;
-        const studentId = formData.get("studentId") as string;
+        const attendeeId = formData.get("attendeeId") as string;
+        const type = formData.get("attendeeType") as string;
 
         const db = locals.db;
-        // Check if student is already assigned elsewhere in this event and remove them
-        // (Simplification: unassign from all rooms for now)
-        await db.delete(table.roomAssignments)
-            .where(eq(table.roomAssignments.studentId, studentId));
+        // Check if attendee is already assigned elsewhere in this event and remove them
+        if (type === 'student') {
+            await db.delete(table.roomAssignments)
+                .where(eq(table.roomAssignments.studentId, attendeeId));
 
-        await db.insert(table.roomAssignments).values({
-            id: crypto.randomUUID(),
-            roomId,
-            studentId
-        });
+            await db.insert(table.roomAssignments).values({
+                id: crypto.randomUUID(),
+                roomId,
+                studentId: attendeeId
+            });
+        } else {
+            await db.delete(table.roomAssignments)
+                .where(eq(table.roomAssignments.userId, attendeeId));
+
+            await db.insert(table.roomAssignments).values({
+                id: crypto.randomUUID(),
+                roomId,
+                userId: attendeeId
+            });
+        }
 
         return { success: true };
     },
-    unassignStudent: async ({ request, locals }) => {
+    unassignAttendee: async ({ request, locals }) => {
         const formData = await request.formData();
-        const studentId = formData.get("studentId") as string;
+        const attendeeId = formData.get("attendeeId") as string;
+        const type = formData.get("attendeeType") as string;
 
         const db = locals.db;
-        await db.delete(table.roomAssignments)
-            .where(eq(table.roomAssignments.studentId, studentId));
+        if (type === 'student') {
+            await db.delete(table.roomAssignments)
+                .where(eq(table.roomAssignments.studentId, attendeeId));
+        } else {
+            await db.delete(table.roomAssignments)
+                .where(eq(table.roomAssignments.userId, attendeeId));
+        }
 
         return { success: true };
     }

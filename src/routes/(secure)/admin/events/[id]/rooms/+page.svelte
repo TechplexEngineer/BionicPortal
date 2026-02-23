@@ -8,64 +8,109 @@
 	let newRoomGender = $state("Boys");
 	let submitting = $state(false);
 
-	let assignedStudentIds = $derived(new Set(data.assignments.map((a) => a.studentId)));
-	let unassignedStudents = $derived(data.students.filter((s) => !assignedStudentIds.has(s.userid)));
+	let assignedAttendeeIds = $derived(new Set(data.assignments.map((a) => a.studentId || a.userId)));
+	let unassignedAttendees = $derived(
+		data.attendees.filter((a) => !assignedAttendeeIds.has(a.userid))
+	);
 
 	function getAssignmentsForRoom(roomId: string) {
 		return data.assignments
 			.filter((a) => a.roomId === roomId)
-			.map((a) => data.students.find((s) => s.userid === a.studentId))
+			.map((a) => {
+				const attendeeId = a.studentId || a.userId;
+				return data.attendees.find((att) => att.userid === attendeeId);
+			})
 			.filter(Boolean);
 	}
+
+	function getRoomCapacity(gender: string) {
+		if (gender === "Mentors") return data.event.mentorsPerRoom || 2;
+		return data.event.studentsPerRoom || 4;
+	}
+
+	let attendeeFilter = $state("");
+	let filteredUnassigned = $derived(
+		unassignedAttendees.filter((a) =>
+			`${a.firstName} ${a.lastName}`.toLowerCase().includes(attendeeFilter.toLowerCase())
+		)
+	);
 </script>
 
 <svelte:head>
 	<title>Room Assignments | {data.event.name} | Bionic Portal</title>
 </svelte:head>
 
-<div class="admin-container">
+<div class="admin-container-fluid">
 	<header class="admin-header">
 		<div>
 			<h1>Room Assignments</h1>
-			<p class="text-muted">{data.event.name} • Overnight Event</p>
+			<p class="text-muted">{data.event.name} • overnight</p>
 		</div>
-		<a href="/admin/events" class="btn btn-secondary">Back to Events</a>
+		<div class="header-actions">
+			<a href="/admin/events" class="btn btn-secondary btn-sm">Back to Events</a>
+		</div>
 	</header>
 
-	<main class="room-assignment-grid">
-		<aside class="unassigned-panel">
-			<h2>Unassigned Students ({unassignedStudents.length})</h2>
-			<div class="student-list">
-				{#each unassignedStudents as student}
-					<div class="student-item">
-						<span>{student.firstName} {student.lastName}</span>
-						<div class="dropdown">
-							<button class="btn btn-icon btn-sm"
-								>Assign <i class="fa fa-chevron-right ms-1"></i></button
-							>
-							<div class="dropdown-content">
-								{#each data.rooms as room}
-									<form method="post" action="?/assignStudent" use:enhance>
-										<input type="hidden" name="roomId" value={room.id} />
-										<input type="hidden" name="studentId" value={student.userid} />
-										<button type="submit">{room.roomName} ({room.gender})</button>
-									</form>
-								{/each}
+	<main class="room-assignment-layout">
+		<aside class="attendee-sidebar">
+			<div class="sidebar-header">
+				<h2>Attendees ({unassignedAttendees.length} unassigned)</h2>
+				<input
+					type="text"
+					bind:value={attendeeFilter}
+					placeholder="Filter attendees..."
+					class="filter-input"
+				/>
+			</div>
+
+			<div class="attendee-list">
+				{#each filteredUnassigned as attendee}
+					<div class="attendee-card {attendee.type}">
+						<div class="attendee-info">
+							<span class="attendee-name">{attendee.firstName} {attendee.lastName}</span>
+							<span class="attendee-badge">{attendee.type}</span>
+						</div>
+						<div class="assign-actions">
+							<div class="dropdown">
+								<button class="btn btn-sm btn-outline">
+									Assign <i class="fa fa-chevron-right"></i>
+								</button>
+								<div class="dropdown-content">
+									{#each data.rooms as room}
+										<form method="POST" action="?/assignAttendee" use:enhance>
+											<input type="hidden" name="roomId" value={room.id} />
+											<input type="hidden" name="attendeeId" value={attendee.userid} />
+											<input type="hidden" name="attendeeType" value={attendee.type} />
+											<button
+												type="submit"
+												disabled={getAssignmentsForRoom(room.id).length >=
+													getRoomCapacity(room.gender)}
+											>
+												{room.roomName} ({getAssignmentsForRoom(room.id).length}/{getRoomCapacity(
+													room.gender
+												)})
+											</button>
+										</form>
+									{/each}
+									{#if data.rooms.length === 0}
+										<div class="empty-dropdown">No rooms created</div>
+									{/if}
+								</div>
 							</div>
 						</div>
 					</div>
 				{/each}
-				{#if unassignedStudents.length === 0}
-					<p class="empty-text">All students assigned!</p>
+				{#if filteredUnassigned.length === 0}
+					<p class="empty-text">No unassigned attendees found</p>
 				{/if}
 			</div>
 		</aside>
 
-		<section class="rooms-view">
-			<div class="rooms-header">
-				<h2>Hotel Rooms</h2>
+		<section class="rooms-container">
+			<div class="rooms-header-controls">
+				<h2>Rooms</h2>
 				<form
-					method="post"
+					method="POST"
 					action="?/createRoom"
 					use:enhance={() => {
 						submitting = true;
@@ -75,13 +120,13 @@
 							newRoomName = "";
 						};
 					}}
-					class="add-room-form"
+					class="quick-add-room form-control"
 				>
 					<input
 						type="text"
 						name="roomName"
 						bind:value={newRoomName}
-						placeholder="Room Name (e.g. Room 101)"
+						placeholder="Room Name"
 						required
 					/>
 					<select name="gender" bind:value={newRoomGender}>
@@ -97,39 +142,51 @@
 
 			<div class="rooms-grid">
 				{#each data.rooms as room}
-					<div class="room-card">
-						<div class="room-header">
+					{@const currentAssignments = getAssignmentsForRoom(room.id)}
+					{@const capacity = getRoomCapacity(room.gender)}
+					<div class="room-grid-card">
+						<div class="room-grid-header">
 							<h3>{room.roomName}</h3>
 							<span class="gender-tag {room.gender.toLowerCase()}">{room.gender}</span>
 						</div>
-						<div class="room-students">
-							{#each getAssignmentsForRoom(room.id) as student}
-								<div class="assigned-student">
-									<span>{student.firstName} {student.lastName}</span>
-									<form method="post" action="?/unassignStudent" use:enhance>
-										<input type="hidden" name="studentId" value={student.userid} />
-										<button type="submit" class="btn-remove" title="Unassign">
-											<i class="fa fa-times"></i>
-										</button>
-									</form>
+						<div class="room-slots">
+							{#each Array(capacity) as _, i}
+								{@const person = currentAssignments[i]}
+								<div class="room-slot {person ? 'filled' : 'empty'}">
+									{#if person}
+										<div class="person-in-slot {person.type}">
+											<span class="name">{person.firstName} {person.lastName}</span>
+											<form method="POST" action="?/unassignAttendee" use:enhance>
+												<input type="hidden" name="attendeeId" value={person.userid} />
+												<input type="hidden" name="attendeeType" value={person.type} />
+												<button type="submit" class="btn-unassign" title="Unassign">
+													<i class="fa fa-times"></i>
+												</button>
+											</form>
+										</div>
+									{:else}
+										<span class="slot-placeholder">Empty Slot</span>
+									{/if}
 								</div>
 							{/each}
-							{#if getAssignmentsForRoom(room.id).length === 0}
-								<p class="empty-room">Empty Room</p>
-							{/if}
 						</div>
 					</div>
 				{/each}
+				{#if data.rooms.length === 0}
+					<div class="no-rooms-placeholder">
+						<i class="fa fa-hotel"></i>
+						<p>No rooms have been added to this event yet.</p>
+					</div>
+				{/if}
 			</div>
 		</section>
 	</main>
 </div>
 
 <style>
-	.admin-container {
-		max-width: 1400px;
-		margin: 2rem auto;
-		padding: 0 1rem;
+	.admin-container-fluid {
+		padding: 2rem;
+		max-width: 100%;
 	}
 
 	.admin-header {
@@ -137,119 +194,167 @@
 		justify-content: space-between;
 		align-items: flex-end;
 		margin-bottom: 2rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
 	.admin-header h1 {
 		margin: 0;
-		font-size: 2rem;
-		color: #e6edf3;
+		font-size: 2.5rem;
 		font-weight: 800;
+		/* background: linear-gradient(135deg, #fff 0%, #8b949e 100%); */
+		/* -webkit-background-clip: text; */
+		/* -webkit-text-fill-color: transparent; */
 	}
 
-	.room-assignment-grid {
+	.room-assignment-layout {
 		display: grid;
-		grid-template-columns: 300px 1fr;
+		grid-template-columns: 350px 1fr;
 		gap: 2rem;
-		align-items: start;
+		height: calc(100vh - 200px);
 	}
 
-	.unassigned-panel {
-		background: rgba(255, 255, 255, 0.05);
-		backdrop-filter: blur(10px);
+	.attendee-sidebar {
+		background: rgba(22, 27, 34, 0.5);
+		backdrop-filter: blur(12px);
+		border: 1px solid rgba(48, 54, 61, 0.8);
 		border-radius: 1rem;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.sidebar-header {
 		padding: 1.5rem;
-		position: sticky;
-		top: 2rem;
+		border-bottom: 1px solid rgba(48, 54, 61, 0.8);
 	}
 
-	.unassigned-panel h2 {
-		font-size: 1.1rem;
+	.sidebar-header h2 {
+		font-size: 1.25rem;
+		margin-bottom: 1rem;
 		color: #58a6ff;
-		margin-bottom: 1.5rem;
-		font-weight: 700;
 	}
 
-	.student-list {
+	.attendee-list {
+		flex: 1;
+		overflow-y: auto;
+		padding: 1rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
 	}
 
-	.student-item {
+	.attendee-card {
 		background: rgba(255, 255, 255, 0.03);
-		padding: 0.75rem 1rem;
-		border-radius: 0.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		padding: 1rem;
+		border-radius: 0.75rem;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		font-size: 0.9rem;
+		transition:
+			transform 0.2s,
+			background 0.2s;
 	}
 
-	.rooms-view {
+	.attendee-card:hover {
+		transform: translateX(4px);
+		background: rgba(255, 255, 255, 0.06);
+	}
+
+	.attendee-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.attendee-name {
+		font-weight: 600;
+		/* color: #e6edf3; */
+	}
+
+	.attendee-badge {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		font-weight: 700;
+		padding: 0.1rem 0.4rem;
+		border-radius: 4px;
+		width: fit-content;
+	}
+
+	.attendee-card.student .attendee-badge {
+		background: rgba(86, 171, 255, 0.1);
+		color: #58a6ff;
+	}
+
+	.attendee-card.mentor .attendee-badge {
+		background: rgba(187, 128, 255, 0.1);
+		color: #d2a8ff;
+	}
+
+	.rooms-container {
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
+		overflow-y: auto;
+		padding-right: 1rem;
 	}
 
-	.rooms-header {
+	.rooms-header-controls {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		background: rgba(22, 27, 34, 0.3);
+		padding: 1rem 1.5rem;
+		border-radius: 1rem;
+		border: 1px solid rgba(48, 54, 61, 0.5);
 	}
 
-	.rooms-header h2 {
-		font-size: 1.5rem;
-		color: #e6edf3;
-		margin: 0;
-	}
-
-	.add-room-form {
+	.quick-add-room {
 		display: flex;
-		gap: 0.5rem;
-	}
-
-	.add-room-form input,
-	select {
-		background: #161b22;
-		border: 1px solid #30363d;
-		color: #e6edf3;
-		padding: 0.4rem 0.8rem;
-		border-radius: 4px;
+		gap: 0.75rem;
 	}
 
 	.rooms-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-		gap: 1.5rem;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		gap: 2rem;
 	}
 
-	.room-card {
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 1rem;
-		padding: 1.25rem;
+	.room-grid-card {
+		background: rgba(22, 27, 34, 0.8);
+		border: 1px solid rgba(48, 54, 61, 0.8);
+		border-radius: 1.25rem;
+		padding: 1.5rem;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+		transition: border-color 0.3s;
 	}
 
-	.room-header {
+	.room-grid-card:hover {
+		border-color: #58a6ff;
+	}
+
+	.room-grid-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 1rem;
+		margin-bottom: 1.5rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid rgba(48, 54, 61, 0.5);
 	}
 
-	.room-header h3 {
+	.room-grid-header h3 {
 		margin: 0;
-		font-size: 1.1rem;
-		color: #e6edf3;
+		font-size: 1.25rem;
+		font-weight: 700;
 	}
 
 	.gender-tag {
-		font-size: 0.7rem;
+		font-size: 0.75rem;
+		font-weight: 800;
 		text-transform: uppercase;
-		font-weight: 700;
-		padding: 0.2rem 0.5rem;
-		border-radius: 1rem;
+		padding: 0.25rem 0.75rem;
+		border-radius: 2rem;
 	}
 
 	.gender-tag.boys {
@@ -265,37 +370,55 @@
 		color: #d2a8ff;
 	}
 
-	.room-students {
+	.room-slots {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
 	}
 
-	.assigned-student {
-		background: rgba(255, 255, 255, 0.03);
-		padding: 0.5rem 0.75rem;
-		border-radius: 4px;
+	.room-slot {
+		height: 48px;
+		border-radius: 0.75rem;
+		display: flex;
+		align-items: center;
+		padding: 0 1rem;
+		font-size: 0.9rem;
+		transition: background 0.2s;
+	}
+
+	.room-slot.empty {
+		border: 2px dashed rgba(48, 54, 61, 0.8);
+		color: #484f58;
+		justify-content: center;
+	}
+
+	.room-slot.filled {
+		background: rgba(48, 54, 61, 0.4);
+		border: 1px solid rgba(48, 54, 61, 0.8);
+	}
+
+	.person-in-slot {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		font-size: 0.85rem;
+		width: 100%;
 	}
 
-	.btn-remove {
+	.person-in-slot .name {
+		font-weight: 600;
+	}
+
+	.btn-unassign {
 		background: transparent;
 		border: none;
 		color: #f85149;
 		cursor: pointer;
-		font-size: 0.8rem;
-		padding: 0.2rem;
+		opacity: 0.6;
+		transition: opacity 0.2s;
 	}
 
-	.empty-room {
-		color: #484f58;
-		font-style: italic;
-		font-size: 0.85rem;
-		text-align: center;
-		padding: 1rem 0;
+	.btn-unassign:hover {
+		opacity: 1;
 	}
 
 	.dropdown {
@@ -307,41 +430,66 @@
 		display: none;
 		position: absolute;
 		right: 0;
-		background-color: #161b22;
-		min-width: 160px;
-		box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
-		z-index: 1;
-		border-radius: 4px;
+		background: #161b22;
+		min-width: 220px;
+		z-index: 100;
+		border-radius: 10px;
 		border: 1px solid #30363d;
+		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+		overflow: hidden;
 	}
 
 	.dropdown:hover .dropdown-content {
 		display: block;
 	}
 
-	.dropdown-content form button {
+	.dropdown-content button {
 		width: 100%;
 		text-align: left;
 		padding: 0.75rem 1rem;
 		background: transparent;
 		border: none;
-		color: #e6edf3;
+		color: #c9d1d9;
 		cursor: pointer;
 		font-size: 0.85rem;
+		transition: background 0.2s;
 	}
 
-	.dropdown-content form button:hover {
-		background-color: #1f6feb;
+	.dropdown-content button:hover:not(:disabled) {
+		background: #1f6feb;
+		color: white;
 	}
 
-	.empty-text {
-		color: #8b949e;
-		font-style: italic;
-		text-align: center;
-		margin-top: 1rem;
+	.dropdown-content button:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
-	.btn-sm {
-		padding: 0.4rem 0.8rem;
-		font-size: 0.8rem;
+
+	.no-rooms-placeholder {
+		grid-column: 1 / -1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 5rem;
+		color: #484f58;
+		border: 2px dashed rgba(48, 54, 61, 0.5);
+		border-radius: 2rem;
+	}
+
+	.no-rooms-placeholder i {
+		font-size: 4rem;
+		margin-bottom: 2rem;
+		opacity: 0.2;
+	}
+
+	.btn-outline {
+		border: 1px solid #30363d;
+		background: transparent;
+		color: #c9d1d9;
+	}
+
+	.btn-outline:hover {
+		background: rgba(255, 255, 255, 0.05);
 	}
 </style>

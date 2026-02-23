@@ -86,7 +86,7 @@ export const actions: Actions = {
 
         const studentName = `${reg.student.firstName} ${reg.student.lastName}`;
         const eventName = reg.event.data.name;
-        const cost = "150"; // TODO: Make this configurable or pull from event data if available
+        const cost = reg.event.data.cost.toString();
 
         try {
             // 1. Find or create customer
