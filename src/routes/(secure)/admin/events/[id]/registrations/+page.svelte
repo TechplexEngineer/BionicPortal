@@ -18,6 +18,23 @@
 			<p class="text-muted mb-0">{data.event.name} • {data.event.startDate}</p>
 		</div>
 		<div class="d-flex gap-2">
+			{#if data.registrations.some((r) => !r.invoiceId)}
+				<form
+					method="post"
+					action="?/createAllInvoices"
+					use:enhance={() => {
+						updating = true;
+						return async ({ update }) => {
+							await update();
+							updating = false;
+						};
+					}}
+				>
+					<button type="submit" class="btn btn-outline-primary" disabled={updating}>
+						<i class="fa fa-file-invoice-dollar me-1"></i> Create All Missing Invoices
+					</button>
+				</form>
+			{/if}
 			<a href="/admin/events/{data.event.id}/registrations/import" class="btn btn-primary">
 				<i class="fa fa-upload me-1"></i> Import
 			</a>
