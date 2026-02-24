@@ -247,7 +247,15 @@ export async function createInvoice(db: DbInstance, customerId: string, items: a
     return (await client.request("/invoice?minorversion=75", {
         method: "POST",
         body: JSON.stringify(body)
-    })) as { Invoice: { DocNumber: string } };
+    })) as { Invoice: any };
+}
+
+export async function getInvoice(db: DbInstance, invoiceId: string) {
+    const client = await getAuthenticatedClient(db);
+    // include=invoiceLink is required to get the payment link
+    const path = `/invoice/${invoiceId}?minorversion=75&include=invoiceLink`;
+    const data = await client.request(path) as { Invoice: any };
+    return data?.Invoice || null;
 }
 
 export async function findIncomeAccountByName(db: DbInstance, name: string) {

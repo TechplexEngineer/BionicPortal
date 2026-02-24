@@ -136,7 +136,8 @@ export const eventRegistrations = sqliteTable("event_registrations", {
 	eventId: text("event_id").notNull().references(() => events.id),
 	paid: integer("paid", { mode: "boolean" }).notNull().default(false),
 	formCompleted: integer("form_completed", { mode: "boolean" }).notNull().default(false),
-	invoiceId: text("invoice_id") // QuickBooks invoice ID
+	invoiceId: text("invoice_id"), // QuickBooks invoice ID
+	invoicePaymentLink: text("invoice_payment_link") // QuickBooks invoice payment link
 });
 
 export const eventRegistrationsRelations = relations(eventRegistrations, ({ one }) => ({

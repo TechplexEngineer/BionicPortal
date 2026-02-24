@@ -22,6 +22,7 @@ export const load: PageServerLoad = async (event) => {
         paid: table.eventRegistrations.paid,
         formCompleted: table.eventRegistrations.formCompleted,
         invoiceId: table.eventRegistrations.invoiceId,
+        invoicePaymentLink: table.eventRegistrations.invoicePaymentLink,
         student: {
             userid: table.students.userid,
             firstName: table.students.firstName,
@@ -75,14 +76,19 @@ async function createAndSaveInvoice(db: DbInstance, regId: string, studentEmail:
         }
     ];
 
-    const qbInvoice = await qb.createInvoice(db, qbCustomer.Id, invoiceItems);
-    const invoiceId = qbInvoice.Invoice.DocNumber;
+    const qbInvoiceRes = await qb.createInvoice(db, qbCustomer.Id, invoiceItems);
+    const invoiceId = qbInvoiceRes.Invoice.DocNumber;
+    const qbId = qbInvoiceRes.Invoice.Id;
+
+    // 4. Fetch the payment link
+    const fullInvoice = await qb.getInvoice(db, qbId);
+    const invoicePaymentLink = fullInvoice?.InvoiceLink;
 
     await db.update(table.eventRegistrations)
-        .set({ invoiceId })
+        .set({ invoiceId, invoicePaymentLink })
         .where(eq(table.eventRegistrations.id, regId));
 
-    return invoiceId;
+    return { invoiceId, invoicePaymentLink };
 }
 
 export const actions: Actions = {
@@ -135,8 +141,8 @@ export const actions: Actions = {
         const cost = reg.event.data.cost;
 
         try {
-            const invoiceId = await createAndSaveInvoice(db, id, studentEmail, studentName, eventName, cost);
-            return { success: true, invoiceId };
+            const { invoiceId, invoicePaymentLink } = await createAndSaveInvoice(db, id, studentEmail, studentName, eventName, cost);
+            return { success: true, invoiceId, invoicePaymentLink };
         } catch (error: any) {
             if (error.message === "AUTH_REQUIRED") {
                 cookies.set("qb_return_url", event.url.pathname + event.url.search, { path: "/" });

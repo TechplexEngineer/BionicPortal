@@ -131,10 +131,23 @@
 									</td>
 									<td>
 										{#if reg.invoiceId}
-											<span class="badge bg-light text-dark border fw-normal py-2 px-3">
-												<i class="fa fa-file-invoice me-1 text-primary"></i>
-												{reg.invoiceId}
-											</span>
+											{#if reg.invoicePaymentLink}
+												<a
+													href={reg.invoicePaymentLink}
+													target="_blank"
+													class="badge bg-light text-dark border fw-normal py-2 px-3 text-decoration-none"
+													title="Open QuickBooks Invoice"
+												>
+													<i class="fa fa-file-invoice me-1 text-primary"></i>
+													{reg.invoiceId}
+													<i class="fa fa-external-link-alt ms-1 small text-muted"></i>
+												</a>
+											{:else}
+												<span class="badge bg-light text-dark border fw-normal py-2 px-3">
+													<i class="fa fa-file-invoice me-1 text-primary"></i>
+													{reg.invoiceId}
+												</span>
+											{/if}
 										{:else}
 											<form
 												method="post"
