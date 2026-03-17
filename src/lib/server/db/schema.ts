@@ -256,3 +256,24 @@ export const kvStore = sqliteTable("kv_store", {
 	value: text("value").notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`)
 });
+
+// ----------------------------------------------------------------------------
+// Parent Student Links Table
+// ----------------------------------------------------------------------------
+export const parentStudentLinks = sqliteTable("parent_student_links", {
+	parentId: text("parent_id").notNull().references(() => user.id),
+	studentId: text("student_id").notNull().references(() => students.userid), // student email
+}, (table) => [
+	unique("parent_student_unique").on(table.parentId, table.studentId)
+]);
+
+export const parentStudentLinksRelations = relations(parentStudentLinks, ({ one }) => ({
+	parent: one(user, {
+		fields: [parentStudentLinks.parentId],
+		references: [user.id]
+	}),
+	student: one(students, {
+		fields: [parentStudentLinks.studentId],
+		references: [students.userid]
+	})
+}));

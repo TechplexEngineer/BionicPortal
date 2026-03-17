@@ -284,3 +284,9 @@ export async function createItem(db: DbInstance, name: string, description: stri
         body: JSON.stringify(body)
     })) as { Item: any };
 }
+
+
+export async function getInvoicePaymentLink(db: DbInstance, invoiceId: string) {
+    const invoice = await getInvoice(db, invoiceId);
+    return invoice?.InvoiceLink || null;
+}

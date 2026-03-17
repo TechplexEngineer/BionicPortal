@@ -39,6 +39,10 @@
 				{
 					name: "Attendance",
 					route: "/admin/students/attendance"
+				},
+				{
+					name: "Parents",
+					route: "/admin/parents"
 				}
 			]
 		},

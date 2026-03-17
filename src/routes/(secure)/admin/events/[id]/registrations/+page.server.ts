@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { eq, and, or, isNull } from "drizzle-orm";
+import { eq, and, or, isNull, notInArray } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import * as qb from "$lib/server/quickbooks";
 import type { DbInstance } from "$lib/server/db";
@@ -34,9 +34,44 @@ export const load: PageServerLoad = async (event) => {
         .innerJoin(table.students, eq(table.eventRegistrations.studentId, table.students.userid))
         .where(eq(table.eventRegistrations.eventId, eventId));
 
+    const totals = {
+        registered: registrations.length,
+        paid: registrations.filter(r => r.paid).length,
+        formsCompleted: registrations.filter(r => r.formCompleted).length,
+        eventReady: registrations.filter(r => r.paid && r.formCompleted).length
+    };
+
+    const registeredStudentIds = registrations.map(r => r.student.userid);
+
+    let unregisteredStudents = [];
+    if (registeredStudentIds.length > 0) {
+        unregisteredStudents = await db.select({
+            userid: table.students.userid,
+            firstName: table.students.firstName,
+            lastName: table.students.lastName
+        })
+            .from(table.students)
+            .where(and(
+                notInArray(table.students.userid, registeredStudentIds),
+                eq(table.students.hidden, false)
+            ))
+            .orderBy(table.students.lastName, table.students.firstName);
+    } else {
+        unregisteredStudents = await db.select({
+            userid: table.students.userid,
+            firstName: table.students.firstName,
+            lastName: table.students.lastName
+        })
+            .from(table.students)
+            .where(eq(table.students.hidden, false))
+            .orderBy(table.students.lastName, table.students.firstName);
+    }
+
     return {
         event: { id: eventData.id, ...eventData.data },
-        registrations
+        registrations,
+        totals,
+        unregisteredStudents
     };
 };
 
@@ -193,6 +228,30 @@ export const actions: Actions = {
             }
             console.error("QuickBooks Error during bulk creation:", error);
             return fail(500, { message: `Created ${createdCount} invoices before error: ${error.message}` });
+        }
+    },
+    manualRegister: async ({ request, locals, params }) => {
+        const formData = await request.formData();
+        const studentId = formData.get("studentId") as string;
+        const eventId = params.id;
+        const db = locals.db;
+
+        if (!studentId) {
+            return fail(400, { message: "Student selection is required" });
+        }
+
+        try {
+            await db.insert(table.eventRegistrations).values({
+                id: crypto.randomUUID(),
+                studentId,
+                eventId,
+                paid: false,
+                formCompleted: false
+            });
+            return { success: true };
+        } catch (error: any) {
+            console.error("Manual Registration Error:", error);
+            return fail(500, { message: "Failed to register student manually." });
         }
     }
 };
