@@ -40,6 +40,10 @@
 				{
 					name: "Overview",
 					route: "/admin/users"
+				},
+				{
+					name: "Create User",
+					route: "/admin/users/new"
 				}
 			]
 		}

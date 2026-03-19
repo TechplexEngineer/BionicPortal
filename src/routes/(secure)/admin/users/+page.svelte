@@ -15,10 +15,23 @@
 </script>
 
 {#snippet action(id: string)}
-	<a href={`/admin/users/${id}`} class="btn btn-primary btn-small">Edit</a>
+	<a href={`/admin/users/${id}`} class="btn btn-primary btn-sm me-1">Edit</a>
+	<form method="POST" action="?/delete" style="display:inline;">
+		<input type="hidden" name="id" value={id} />
+		<button
+			type="submit"
+			class="btn btn-danger btn-sm"
+			onclick={(e) => {
+				if (!confirm("Are you sure you want to delete this user?")) e.preventDefault();
+			}}>Delete</button
+		>
+	</form>
 {/snippet}
 
 <div class="container">
-	<h1>Users</h1>
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h1>Users</h1>
+		<a href="/admin/users/new" class="btn btn-success">Create User</a>
+	</div>
 	<TableForObjectArray data={data.users} {columns} />
 </div>
