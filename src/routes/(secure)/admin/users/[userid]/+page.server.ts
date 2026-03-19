@@ -2,9 +2,8 @@ import bcrypt from "bcryptjs";
 import { fail, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
+import { ROLES } from "$lib/roles";
 import type { Actions, PageServerLoad } from "./$types";
-
-export const ROLES = ["user", "mentor", "admin"] as const;
 
 export const load = (async ({ locals, params }) => {
 	const currentUser = await locals.db.query.user.findFirst({

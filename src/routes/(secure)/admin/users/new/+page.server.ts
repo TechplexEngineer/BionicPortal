@@ -2,9 +2,8 @@ import bcrypt from "bcryptjs";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { fail, redirect } from "@sveltejs/kit";
 import * as table from "$lib/server/db/schema";
+import { ROLES } from "$lib/roles";
 import type { Actions, PageServerLoad } from "./$types";
-
-export const ROLES = ["user", "mentor", "admin"] as const;
 
 export const load = (() => {
 	return { roles: ROLES };
