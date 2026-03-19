@@ -7,6 +7,11 @@ declare global {
 			env: {
 				bionic_portal_db: D1Database;
 				INTERNAL_API_KEY: string;
+				SMUGMUG_API_KEY: string;
+				SMUGMUG_API_SECRET: string;
+				SMUGMUG_ACCESS_TOKEN: string;
+				SMUGMUG_ACCESS_TOKEN_SECRET: string;
+				SMUGMUG_NICKNAME: string;
 			};
 			cf: CfProperties;
 			ctx: ExecutionContext;
@@ -23,4 +28,4 @@ declare global {
 // interface PageState {}
 
 // interface Platform {}
-export { };
+export {};
