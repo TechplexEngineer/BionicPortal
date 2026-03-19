@@ -40,6 +40,12 @@ export const actions: Actions = {
 			return fail(400, { message: "At least one valid email is required" });
 		}
 
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		const invalidEmails = emailList.filter((e) => !emailRegex.test(e));
+		if (invalidEmails.length > 0) {
+			return fail(400, { message: `Invalid email address(es): ${invalidEmails.join(", ")}` });
+		}
+
 		try {
 			await locals.db
 				.update(table.sponsors)

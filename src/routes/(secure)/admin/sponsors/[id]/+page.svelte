@@ -4,7 +4,16 @@
 
 	let { data, form }: PageProps = $props();
 
-	const emailsDisplay = $derived(JSON.parse(data.sponsor.emails ?? "[]").join("\n"));
+	function parseEmails(raw: string | null): string {
+		try {
+			const parsed = JSON.parse(raw ?? "[]");
+			return Array.isArray(parsed) ? parsed.join("\n") : "";
+		} catch {
+			return "";
+		}
+	}
+
+	const emailsDisplay = $derived(parseEmails(data.sponsor.emails));
 </script>
 
 <div class="container">
