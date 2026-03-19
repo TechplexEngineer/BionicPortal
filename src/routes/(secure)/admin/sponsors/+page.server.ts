@@ -1,8 +1,6 @@
 import type { PageServerLoad } from "./$types";
 
 export const load = (async ({ locals }) => {
-	const students = await locals.db.query.students.findMany();
-	return {
-		students
-	};
+	const sponsors = await locals.db.query.sponsors.findMany();
+	return { sponsors };
 }) satisfies PageServerLoad;

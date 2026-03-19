@@ -1,6 +1,5 @@
 import { sqliteTable, integer, text, unique } from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
-import { timestamp } from "drizzle-orm/gel-core";
 
 // Users table
 export const user = sqliteTable("user", {
@@ -34,15 +33,14 @@ export const students = sqliteTable(
 );
 export type Student = typeof students.$inferSelect;
 
-export const attendance = sqliteTable(
-	"attendance",
-	{
-		userid: text("userid")
-			.notNull()
-			.references(() => students.userid), // foreign key to students.userid
-		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`) // unix timestamp
-	}
-);
+export const attendance = sqliteTable("attendance", {
+	userid: text("userid")
+		.notNull()
+		.references(() => students.userid), // foreign key to students.userid
+	timestamp: integer("timestamp", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`) // unix timestamp
+});
 export type Attendance = typeof attendance.$inferSelect;
 
 export const studentsRelations = relations(students, ({ many }) => ({
@@ -57,3 +55,12 @@ export const attendanceRelations = relations(attendance, ({ one }) => ({
 		references: [students.userid]
 	})
 }));
+
+export const sponsors = sqliteTable("sponsors", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	emails: text("emails").notNull(), // JSON array of email strings
+	logo: text("logo"), // URL to sponsor logo (nullable)
+	level: text("level").notNull() // sponsorship level e.g. Gold, Silver, Bronze
+});
+export type Sponsor = typeof sponsors.$inferSelect;

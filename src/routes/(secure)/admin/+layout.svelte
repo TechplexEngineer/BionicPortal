@@ -42,6 +42,20 @@
 					route: "/admin/users"
 				}
 			]
+		},
+		{
+			name: "Sponsors",
+			route: "/admin/sponsors",
+			nested: [
+				{
+					name: "Overview",
+					route: "/admin/sponsors"
+				},
+				{
+					name: "Add Sponsor",
+					route: "/admin/sponsors/new"
+				}
+			]
 		}
 	];
 </script>
