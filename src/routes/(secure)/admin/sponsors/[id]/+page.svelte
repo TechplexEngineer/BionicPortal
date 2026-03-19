@@ -25,7 +25,7 @@
 
 	<div class="card mt-3">
 		<div class="card-body">
-			<form method="post" action="?/update" use:enhance>
+			<form method="post" action="?/update" enctype="multipart/form-data" use:enhance>
 				<div class="mb-3">
 					<label for="name" class="form-label"
 						>Sponsor Name <span class="text-danger">*</span></label
@@ -63,16 +63,9 @@
 				</div>
 
 				<div class="mb-3">
-					<label for="logo" class="form-label">Logo URL</label>
-					<input
-						class="form-control"
-						type="url"
-						id="logo"
-						name="logo"
-						value={data.sponsor.logo ?? ""}
-						placeholder="https://example.com/logo.png"
-					/>
-					<div class="form-text">Optional. Provide a URL to the sponsor's logo image.</div>
+					<label for="logo" class="form-label">Logo</label>
+					<input class="form-control" type="file" id="logo" name="logo" accept="image/*" />
+					<div class="form-text">Optional. Upload a new logo to replace the current one.</div>
 				</div>
 
 				{#if data.sponsor.logo}

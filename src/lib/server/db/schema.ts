@@ -60,7 +60,7 @@ export const sponsors = sqliteTable("sponsors", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	emails: text("emails").notNull(), // JSON array of email strings
-	logo: text("logo"), // URL to sponsor logo (nullable)
+	logo: text("logo"), // data URL of sponsor logo (nullable)
 	level: text("level").notNull() // sponsorship level e.g. Gold, Silver, Bronze
 });
 export type Sponsor = typeof sponsors.$inferSelect;

@@ -1,6 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 import * as table from "$lib/server/db/schema";
+import { fileToDataUrl } from "$lib/server/fileUtils";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load = (() => {
@@ -12,7 +13,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const name = formData.get("name");
 		const level = formData.get("level");
-		const logo = formData.get("logo");
+		const logoFile = formData.get("logo");
 		const emailsRaw = formData.get("emails");
 
 		if (typeof name !== "string" || name.trim() === "") {
@@ -40,6 +41,11 @@ export const actions: Actions = {
 			return fail(400, { message: `Invalid email address(es): ${invalidEmails.join(", ")}` });
 		}
 
+		let logoDataUrl: string | null = null;
+		if (logoFile instanceof File && logoFile.size > 0) {
+			logoDataUrl = await fileToDataUrl(logoFile);
+		}
+
 		const id = generateId();
 
 		try {
@@ -47,7 +53,7 @@ export const actions: Actions = {
 				id,
 				name: name.trim(),
 				emails: JSON.stringify(emailList),
-				logo: typeof logo === "string" && logo.trim() !== "" ? logo.trim() : null,
+				logo: logoDataUrl,
 				level: level.trim()
 			});
 		} catch {

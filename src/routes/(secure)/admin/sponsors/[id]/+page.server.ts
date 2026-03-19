@@ -1,6 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
+import { fileToDataUrl } from "$lib/server/fileUtils";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load = (async ({ locals, params }) => {
@@ -18,7 +19,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const name = formData.get("name");
 		const level = formData.get("level");
-		const logo = formData.get("logo");
+		const logoFile = formData.get("logo");
 		const emailsRaw = formData.get("emails");
 
 		if (typeof name !== "string" || name.trim() === "") {
@@ -46,13 +47,19 @@ export const actions: Actions = {
 			return fail(400, { message: `Invalid email address(es): ${invalidEmails.join(", ")}` });
 		}
 
+		// Only update logo if a new file was uploaded; otherwise keep existing
+		let logoDataUrl: string | null | undefined = undefined;
+		if (logoFile instanceof File && logoFile.size > 0) {
+			logoDataUrl = await fileToDataUrl(logoFile);
+		}
+
 		try {
 			await locals.db
 				.update(table.sponsors)
 				.set({
 					name: name.trim(),
 					emails: JSON.stringify(emailList),
-					logo: typeof logo === "string" && logo.trim() !== "" ? logo.trim() : null,
+					...(logoDataUrl !== undefined ? { logo: logoDataUrl } : {}),
 					level: level.trim()
 				})
 				.where(eq(table.sponsors.id, params.id));
