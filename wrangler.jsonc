@@ -22,6 +22,11 @@
       "database_id": "529bb626-bce2-47a4-847f-8324d0406c6f",
       "migrations_dir": "./drizzle"
     }
+  ],
+  "send_email": [
+    {
+      "name": "SEND_EMAIL"
+    }
   ]
   /**
    * Smart Placement

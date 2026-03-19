@@ -42,6 +42,26 @@
 					route: "/admin/users"
 				}
 			]
+		},
+		{
+			name: "Contacts",
+			route: "/admin/contacts",
+			nested: [
+				{
+					name: "Overview",
+					route: "/admin/contacts"
+				}
+			]
+		},
+		{
+			name: "Mail Merge",
+			route: "/admin/mail-merge",
+			nested: [
+				{
+					name: "Send Email",
+					route: "/admin/mail-merge"
+				}
+			]
 		}
 	];
 </script>

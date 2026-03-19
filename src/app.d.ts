@@ -7,6 +7,7 @@ declare global {
 			env: {
 				bionic_portal_db: D1Database;
 				INTERNAL_API_KEY: string;
+				SEND_EMAIL: SendEmail;
 			};
 			cf: CfProperties;
 			ctx: ExecutionContext;
@@ -23,4 +24,4 @@ declare global {
 // interface PageState {}
 
 // interface Platform {}
-export { };
+export {};

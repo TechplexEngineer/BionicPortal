@@ -34,15 +34,14 @@ export const students = sqliteTable(
 );
 export type Student = typeof students.$inferSelect;
 
-export const attendance = sqliteTable(
-	"attendance",
-	{
-		userid: text("userid")
-			.notNull()
-			.references(() => students.userid), // foreign key to students.userid
-		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`) // unix timestamp
-	}
-);
+export const attendance = sqliteTable("attendance", {
+	userid: text("userid")
+		.notNull()
+		.references(() => students.userid), // foreign key to students.userid
+	timestamp: integer("timestamp", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`) // unix timestamp
+});
 export type Attendance = typeof attendance.$inferSelect;
 
 export const studentsRelations = relations(students, ({ many }) => ({
@@ -57,3 +56,12 @@ export const attendanceRelations = relations(attendance, ({ one }) => ({
 		references: [students.userid]
 	})
 }));
+
+// Contacts table for parents, sponsors, and mentors
+export const contacts = sqliteTable("contacts", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	email: text("email").notNull().unique(),
+	name: text("name").notNull(),
+	type: text("type", { enum: ["parent", "sponsor", "mentor"] }).notNull()
+});
+export type Contact = typeof contacts.$inferSelect;
