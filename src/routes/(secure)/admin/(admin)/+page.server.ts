@@ -6,5 +6,3 @@ import * as schema from "$lib/server/db/schema";
 export const load = (async ({ locals }) => {
 	return {};
 }) satisfies PageServerLoad;
-
-

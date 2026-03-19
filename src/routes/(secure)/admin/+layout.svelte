@@ -42,6 +42,16 @@
 					route: "/admin/users"
 				}
 			]
+		},
+		{
+			name: "Events",
+			route: "/admin/events",
+			nested: [
+				{
+					name: "Overview",
+					route: "/admin/events"
+				}
+			]
 		}
 	];
 </script>

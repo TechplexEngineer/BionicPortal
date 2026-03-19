@@ -1,5 +1,5 @@
 <script lang="ts">
-	const event: { name: string; dateStr: string } = $props();
+	const event: { name: string; dateStr: string; smugmugAlbumUrl?: string | null } = $props();
 
 	let boundCounter = $state("?");
 
@@ -50,5 +50,15 @@
 		<h5 class="card-title event_name fs-5">{event.name}</h5>
 		<p class="card-text event_counter fs-5 mb-0">{boundCounter}</p>
 		<p class="card-text small text-muted event_date">{formattedDate}</p>
+		{#if event.smugmugAlbumUrl}
+			<a
+				href={event.smugmugAlbumUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="btn btn-sm btn-outline-secondary mt-1"
+			>
+				📷 View Photos
+			</a>
+		{/if}
 	</div>
 </div>

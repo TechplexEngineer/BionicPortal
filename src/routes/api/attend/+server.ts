@@ -4,22 +4,22 @@ import { sql } from "drizzle-orm";
 // Simple GET API that returns attendance JSON.
 // Replace attendanceData with a DB call (D1/Drizzle) when integrating.
 export const GET: RequestHandler = async ({ locals, request, platform }) => {
+	const providedKey = request.headers.get("x-api-key");
+	const { env } = await import("$env/dynamic/private");
+	const expectedKey = env.INTERNAL_API_KEY;
+	if (typeof expectedKey !== "string") {
+		console.log(`Missing expected API key (INTERNAL_API_KEY) in environment.`);
+	}
 
+	if (!providedKey || !expectedKey || providedKey !== expectedKey) {
+		console.log(
+			`Unauthorized access attempt with key: ${providedKey} expected key: ${expectedKey}`
+		);
 
-    const providedKey = request.headers.get("x-api-key");
-    const { env } = await import("$env/dynamic/private");
-    const expectedKey = env.INTERNAL_API_KEY;
-    if (typeof expectedKey !== 'string') {
-        console.log(`Missing expected API key (INTERNAL_API_KEY) in environment.`);
-    }
+		return json({ error: "Unauthorized" }, { status: 401 });
+	}
 
-    if (!providedKey || !expectedKey || providedKey !== expectedKey) {
-        console.log(`Unauthorized access attempt with key: ${providedKey} expected key: ${expectedKey}`);
-
-        return json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const meetingsResult = await locals.db.run(sql`
+	const meetingsResult = await locals.db.run(sql`
             WITH total_meetings AS (
                 SELECT COUNT(*) AS totalMeetings
                 FROM (
@@ -38,5 +38,5 @@ export const GET: RequestHandler = async ({ locals, request, platform }) => {
             GROUP BY a.userid;
         `);
 
-    return json(meetingsResult.results);
+	return json(meetingsResult.results);
 };
