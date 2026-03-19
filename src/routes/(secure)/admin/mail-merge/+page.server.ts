@@ -1,6 +1,5 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { EmailMessage } from "cloudflare:email";
 
 export const load = (async ({ locals }) => {
 	const students = await locals.db.query.students.findMany({
@@ -77,6 +76,9 @@ export const actions: Actions = {
 		if (!sendEmail) {
 			return fail(500, { error: "Email service is not configured" });
 		}
+
+		// Dynamic import so Node.js build does not attempt to load the cloudflare: scheme
+		const { EmailMessage } = await import(/* @vite-ignore */ "cloudflare:email");
 
 		const fromAddress = FROM_ADDRESS;
 		let sent = 0;
