@@ -5,6 +5,11 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig({
 	plugins: [sveltekit(), devtoolsJson()],
+	build: {
+		rollupOptions: {
+			external: ["cloudflare:email"]
+		}
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
@@ -38,7 +43,7 @@ export default defineConfig({
 		preprocessorOptions: {
 			scss: {
 				// api: 'modern-compiler', // or "modern"
-				silenceDeprecations: ['color-functions', 'global-builtin', 'import']
+				silenceDeprecations: ["color-functions", "global-builtin", "import"]
 			}
 		}
 	}
