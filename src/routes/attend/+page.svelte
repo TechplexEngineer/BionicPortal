@@ -346,7 +346,7 @@
 		return result[0]?.map((idx) => {
 			return locations[idx];
 		});
-		
+
 		console.log("Shop search for:", shopSearch);
 		console.log("Matched indexes:", idxs);
 		// idxs can be null when the needle is non-searchable (has no alpha-numeric chars)
@@ -373,7 +373,6 @@
 				console.log(haystack[idxs[i]]);
 			}
 			// }
-			
 		}
 	});
 </script>
@@ -449,7 +448,8 @@
 				/>
 				{#each filteredLocations as loc}
 					<div class="border p-2 my-1">
-						<strong>{loc.location}:</strong> {loc.item}
+						<strong>{loc.location}:</strong>
+						{loc.item}
 					</div>
 				{/each}
 			</div>

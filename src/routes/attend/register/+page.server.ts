@@ -43,7 +43,6 @@ export const actions: Actions = {
 
 		console.log(a, b);
 
-
 		return redirect(303, "/attend");
 	}
 };
