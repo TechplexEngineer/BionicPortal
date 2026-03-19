@@ -15,6 +15,41 @@
       "when": 1760404935433,
       "tag": "0001_attendance",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770774280375,
+      "tag": "0002_late_rattler",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1771786347549,
+      "tag": "0003_dusty_jetstream",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1771850505592,
+      "tag": "0004_special_gressill",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1771974160162,
+      "tag": "0005_kind_martin_li",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1771974287857,
+      "tag": "0006_square_spirit",
+      "breakpoints": true
     }
   ]
 }

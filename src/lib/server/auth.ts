@@ -2,9 +2,8 @@ import type { RequestEvent } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
-import { getDb } from "$lib/server/db";
+import { getDb, type DbInstance } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
-import type { DrizzleD1Database } from "drizzle-orm/d1";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
@@ -16,7 +15,7 @@ export function generateSessionToken() {
 	return token;
 }
 
-export async function createSession(token: string, userId: string, db: DrizzleD1Database) {
+export async function createSession(token: string, userId: string, db: DbInstance) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const session: table.Session = {
 		id: sessionId,
@@ -27,7 +26,7 @@ export async function createSession(token: string, userId: string, db: DrizzleD1
 	return session;
 }
 
-export async function validateSessionToken(token: string, db: DrizzleD1Database) {
+export async function validateSessionToken(token: string, db: DbInstance) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const [result] = await db
 		.select({

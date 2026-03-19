@@ -6,7 +6,7 @@
 	import { invalidateAll } from "$app/navigation";
 	import { enhance } from "$app/forms";
 	import TableForObjectArray from "$lib/components/TableForObjectArray.svelte";
-	import CountdownCard from "./CountdownCard.svelte";
+	import CountdownCard from "$lib/components/CountdownCard.svelte";
 	import uFuzzy from "@leeoniya/ufuzzy";
 
 	let { data, form }: PageProps = $props();
@@ -346,7 +346,7 @@
 		return result[0]?.map((idx) => {
 			return locations[idx];
 		});
-		
+
 		console.log("Shop search for:", shopSearch);
 		console.log("Matched indexes:", idxs);
 		// idxs can be null when the needle is non-searchable (has no alpha-numeric chars)
@@ -373,7 +373,6 @@
 				console.log(haystack[idxs[i]]);
 			}
 			// }
-			
 		}
 	});
 </script>
@@ -435,7 +434,7 @@
 				<h2>Upcomming Events</h2>
 				{#each data.events as evt}
 					{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
-						<CountdownCard name={evt.name} dateStr={evt.dateStr} />
+						<CountdownCard name={evt.name} date={evt.dateStr} />
 					{/if}
 				{/each}
 			</div>
@@ -449,7 +448,8 @@
 				/>
 				{#each filteredLocations as loc}
 					<div class="border p-2 my-1">
-						<strong>{loc.location}:</strong> {loc.item}
+						<strong>{loc.location}:</strong>
+						{loc.item}
 					</div>
 				{/each}
 			</div>

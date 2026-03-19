@@ -20,49 +20,14 @@ export const load = (async ({ locals }) => {
         here: m.attendance.length > 0
     }))
 
+    const eventResult = await locals.db.query.events.findMany();
+    const dbEvents = eventResult.map((e) => ({
+        name: e.data.name,
+        dateStr: e.data.startDate
+    }));
+
     return {
-        events: [
-            {
-                name: "NERD @ BMHS",
-                dateStr: "Oct 4, 2025 7:00:00 EST"
-            },
-            // {
-            //     name: 'Battle of the Bay @ PMHS',
-            //     dateStr: 'Nov 1, 2025 7:00:00 EST'
-            // },
-            {
-                name: "Kickoff @ BMHS",
-                dateStr: "Jan 10, 2026 12:00:00 EST"
-            },
-            {
-                name: "Week 0 (Preseason) @ TBD",
-                dateStr: "Feb 21, 2026 7:00:00 EST"
-            },
-            {
-                name: "Week 1 - Minuteman District Event @ BMHS",
-                dateStr: "Mar 6, 2026 17:00:00 EST"
-            },
-            {
-                name: "Week 2 - Granite State @ Bedford NH",
-                dateStr: "Mar 13, 2026 17:00:00 EST"
-            },
-            {
-                name: "Week 3 - Waterbury District Event @ Wilby HS, CT",
-                dateStr: "Mar 20, 2026 17:00:00 EST"
-            },
-            {
-                name: "Week 4 - Greater Boston District Event @ Revere HS MA",
-                dateStr: "Mar 27, 2026 17:00:00 EST"
-            },
-            {
-                name: "Week 5 - UVM District Event @ Burlington VT",
-                dateStr: "Apr 2, 2026 17:00:00 EST"
-            },
-            {
-                name: "Week 7 - District Championship @ Big-E",
-                dateStr: "April 15, 2026 17:00:00 EST"
-            }
-        ],
+        events: dbEvents,
         membersNotHere: members.filter((m) => !m.here).sort((a, b) => a.name.localeCompare(b.name)),
         membersHere: members.filter((m) => m.here).sort((a, b) => a.name.localeCompare(b.name))
     };
@@ -106,7 +71,6 @@ export const actions = {
         // insert a new attendance record
         await locals.db.insert(attendance).values({
             userid: studentID,
-            date: "JUNK",
             timestamp: new Date()
         });
 

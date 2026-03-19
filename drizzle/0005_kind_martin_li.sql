@@ -1,0 +1,1 @@
+ALTER TABLE `event_registrations` ADD `invoice_payment_link` text;

@@ -2,6 +2,7 @@
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
+	import { layoutState } from "../+layout.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
@@ -11,11 +12,21 @@
 		{ data: "userid", title: "User ID" },
 		{ data: "firstName", title: "First Name" },
 		{ data: "lastName", title: "Last Name" },
-		{ data: "data", title: "Data" },
+		{ data: "parentCount", title: "Parents", renderSnippet: parentStatus },
 		{ data: "hidden", title: "Hidden" },
 		{ data: "userid", title: "Actions", renderSnippet: action }
 	];
+
+	layoutState.pageTitle = "Student Overview";
 </script>
+
+{#snippet parentStatus(count: number)}
+	{#if count > 0}
+		<span class="badge bg-success">{count} Registered</span>
+	{:else}
+		<span class="badge bg-secondary">None</span>
+	{/if}
+{/snippet}
 
 {#snippet action(id: string)}
 	<a href={`/admin/students/${id}`} class="btn btn-primary btn-small">Edit</a>

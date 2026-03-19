@@ -2,9 +2,9 @@
 	import Header from "$lib/components/Header.svelte";
 	import { browser } from "$app/environment";
 	import { onMount } from "svelte";
-	import "../styles/app.css";
 	import "../styles/bootstrap.scss";
 	import "@fortawesome/fontawesome-free/css/all.css";
+	import "../styles/app.css";
 	import type { LayoutProps } from "./$types";
 
 	let { data, children }: LayoutProps = $props();
@@ -24,4 +24,3 @@
 
 <Header user={data.user} />
 {@render children()}
-

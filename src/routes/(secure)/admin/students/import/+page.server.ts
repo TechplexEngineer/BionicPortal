@@ -15,40 +15,53 @@ export const actions: Actions = {
             return fail(400, { error: "No file uploaded" });
         }
 
-        const buffer = await file.arrayBuffer();
-        let rows: Record<string, any>[] = [];
+        const mapping = {
+            email: formData.get("map_email") as string,
+            firstName: formData.get("map_firstName") as string,
+            lastName: formData.get("map_lastName") as string,
+        };
 
-        if (!file.name.endsWith(".csv") && !file.name.endsWith(".xlsx")) {
+        if (!mapping.email || !mapping.firstName || !mapping.lastName) {
+            return fail(400, { error: "All mappings are required" });
+        }
+
+        const buffer = await file.arrayBuffer();
+        if (!file.name.endsWith(".csv") && !file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
             return fail(400, { error: "Unsupported file type, only csv or xls supported" });
         }
 
         const workbook = XLSX.read(buffer, { type: "array" });
         const sheetName = workbook.SheetNames[0];
-        rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]) as Record<string, any>[];
 
-        const expectedHeaders = ["email", "first", "last"];
-        const actualHeaders = rows.length > 0 ? Object.keys(rows[0]) : [];
-        const missingHeaders = expectedHeaders.filter(h => !actualHeaders.includes(h));
-        if (missingHeaders.length > 0) {
-            return fail(400, { error: `Missing required headers: ${missingHeaders.join(", ")}` });
-        }
-
+        let importedCount = 0;
         for (const row of rows) {
+            const email = row[mapping.email]?.toString().trim();
+            const first = row[mapping.firstName]?.toString().trim();
+            const last = row[mapping.lastName]?.toString().trim();
+
+            if (!email || !first || !last) continue;
+
             try {
                 await locals.db.insert(students).values({
-                    userid: row['email'],
-                    firstName: row['first'],
-                    lastName: row['last'],
-                    data: "{}"
+                    userid: email,
+                    firstName: first,
+                    lastName: last,
+                    customFields: "{}"
+                }).onConflictDoUpdate({
+                    target: students.userid,
+                    set: {
+                        firstName: first,
+                        lastName: last
+                    }
                 });
+                importedCount++;
             } catch (err) {
-                // Optionally handle duplicate or invalid rows
                 console.log("Error inserting row:", row, err);
                 continue;
             }
         }
 
-        //throw redirect(303, "/dashboard");
-        return { success: true, imported: rows.length };
+        return { success: true, imported: importedCount };
     }
 };

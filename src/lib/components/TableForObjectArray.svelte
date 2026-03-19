@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module lang="ts">
 	import type { Snippet, SvelteComponent } from "svelte";
 
 	type value = any;

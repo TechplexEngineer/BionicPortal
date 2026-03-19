@@ -15,7 +15,7 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright test",
-		"db:push": "drizzle-kit push",
+		"db:push": "false && drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate:local": "wrangler d1 migrations apply bionic_portal_db --local",
 		"db:migrate:prod": "wrangler d1 migrations apply bionic_portal_db --remote",
@@ -40,7 +40,7 @@
 		"@types/md5": "^2.3.5",
 		"@types/node": "^20",
 		"@vitest/browser": "^3.2.3",
-		"better-sqlite3": "^12.4.1",
+		"better-sqlite3": "^12.6.2",
 		"drizzle-kit": "^0.30.2",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
@@ -70,9 +70,11 @@
 		"bcryptjs": "^3.0.2",
 		"bootstrap": "^5.3.8",
 		"drizzle-orm": "^0.40.0",
+		"drizzle-zod": "^0.8.3",
 		"glob": "^11.0.3",
 		"md5": "^2.3.0",
 		"miniflare": "^4.20250906.1",
-		"xlsx": "^0.18.5"
+		"xlsx": "^0.18.5",
+		"zod-to-json-schema": "^3.24.6"
 	}
 }
