@@ -19,6 +19,9 @@
 {/snippet}
 
 <div class="container">
-	<h1>Users</h1>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+		<h1 style="margin: 0;">Users</h1>
+		<a href="/admin/users/add" class="btn btn-primary">Add User</a>
+	</div>
 	<TableForObjectArray data={data.users} {columns} />
 </div>
