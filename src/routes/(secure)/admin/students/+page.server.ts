@@ -11,6 +11,7 @@ export const load = (async ({ locals }) => {
         firstName: table.students.firstName,
         lastName: table.students.lastName,
         dietaryRestrictions: table.students.dietaryRestrictions,
+        parentNames: table.students.parentNames,
         parentEmails: table.students.parentEmails,
         phone: table.students.phone,
         parentPhone: table.students.parentPhone,

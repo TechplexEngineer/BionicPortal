@@ -8,11 +8,39 @@
 	let lastName = $state(data.student?.lastName ?? "");
 	let dietaryRestrictions = $state(data.student?.dietaryRestrictions ?? "");
 	let intoleranceLevel = $state(data.student?.intoleranceLevel ?? "");
-	let parentEmails = $state(data.student?.parentEmails ?? "");
+	
+	function parseParents() {
+		const names = data.student?.parentNames ? data.student.parentNames.split(',') : [];
+		const emails = data.student?.parentEmails ? data.student.parentEmails.split(',') : [];
+		const phones = data.student?.parentPhone ? data.student.parentPhone.split(',') : [];
+		const len = Math.max(names.length, emails.length, phones.length, 1);
+		const result = [];
+		for (let i = 0; i < len; i++) {
+			result.push({
+				name: names[i]?.trim() || "",
+				email: emails[i]?.trim() || "",
+				phone: phones[i]?.trim() || ""
+			});
+		}
+		return result;
+	}
+	let parents = $state(parseParents());
+
+	function addParent() {
+		parents.push({ name: "", email: "", phone: "" });
+	}
+
+	function removeParent(index: number) {
+		if (parents.length > 1) {
+			parents.splice(index, 1);
+		}
+	}
+
 	let phone = $state(data.student?.phone ?? "");
-	let parentPhone = $state(data.student?.parentPhone ?? "");
 	let graduationYear = $state(data.student?.graduationYear ?? "");
 	let tshirtSize = $state(data.student?.tshirtSize ?? "");
+	let currentGrade = $state(data.student?.currentGrade ?? "");
+	let gender = $state(data.student?.gender ?? "");
 
 	let submitting = $state(false);
 
@@ -20,6 +48,8 @@
 	const graduationYears = Array.from({ length: 8 }, (_, i) => currentYear + i);
 
 	const tshirtSizes = ["YS", "YM", "YL", "YXL", "S", "M", "L", "XL", "2XL", "3XL"];
+	const grades = ["8", "9", "10", "11", "12"];
+	const genders = ["Male", "Female", "Non-binary", "Prefer not to say", "Other"];
 </script>
 
 <svelte:head>
@@ -90,6 +120,26 @@
 						</select>
 					</div>
 				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="currentGrade">Current Grade <span class="required">*</span></label>
+						<select id="currentGrade" name="currentGrade" bind:value={currentGrade} required>
+							<option value="">-- Select Grade --</option>
+							{#each grades as grade}
+								<option value={grade}>{grade}</option>
+							{/each}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="gender">Gender <span class="required">*</span></label>
+						<select id="gender" name="gender" bind:value={gender} required>
+							<option value="">-- Select Gender --</option>
+							{#each genders as g}
+								<option value={g}>{g}</option>
+							{/each}
+						</select>
+					</div>
+				</div>
 			</div>
 
 			<div class="form-section">
@@ -104,29 +154,37 @@
 						placeholder="(555) 555-5555"
 					/>
 				</div>
-				<div class="form-group">
-					<label for="parentEmails">Parent Email(s) <span class="required">*</span></label>
-					<input
-						type="text"
-						id="parentEmails"
-						name="parentEmails"
-						bind:value={parentEmails}
-						placeholder="parent1@example.com, parent2@example.com"
-						required
-					/>
-					<small class="text-muted">Separate multiple emails with commas</small>
-				</div>
-				<div class="form-group">
-					<label for="parentPhone">Parent Phone Number(s) <span class="required">*</span></label>
-					<input
-						type="text"
-						id="parentPhone"
-						name="parentPhone"
-						bind:value={parentPhone}
-						placeholder="(555) 555-5555, (555) 555-1234"
-						required
-					/>
-					<small class="text-muted">Separate multiple phone numbers with commas</small>
+				<div class="mt-4">
+					{#each parents as parent, idx}
+						<div class="mb-4">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<label class="mb-0">Parent/Guardian {idx + 1} <span class="required">*</span></label>
+								<div>
+									{#if parents.length > 1}
+										<button type="button" class="btn btn-outline-danger btn-sm me-2 py-1 px-2" style="font-size: 0.8rem" onclick={() => removeParent(idx)}>
+											<i class="fa fa-times"></i> Remove
+										</button>
+									{/if}
+									{#if idx === parents.length - 1}
+										<button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 0.8rem" onclick={addParent}>
+											<i class="fa fa-plus"></i> Add Another
+										</button>
+									{/if}
+								</div>
+							</div>
+							<div class="d-flex flex-column flex-md-row gap-3">
+								<div class="flex-grow-1">
+									<input type="text" name="parentNames" bind:value={parent.name} placeholder="Name" required={idx === 0} style="width: 100%" />
+								</div>
+								<div class="flex-grow-1">
+									<input type="email" name="parentEmails" bind:value={parent.email} placeholder="Email" required={idx === 0} style="width: 100%" />
+								</div>
+								<div class="flex-grow-1">
+									<input type="tel" name="parentPhones" bind:value={parent.phone} placeholder="Phone Number" required={idx === 0} style="width: 100%" />
+								</div>
+							</div>
+						</div>
+					{/each}
 				</div>
 			</div>
 
@@ -295,10 +353,11 @@
 	}
 
 	input[type="text"],
+	input[type="email"],
 	input[type="tel"],
 	select,
 	textarea {
-		background-color: #161b22;
+		background-color: transparent;
 		border: 1px solid #30363d;
 		border-radius: 8px;
 		padding: 0.8rem 1rem;

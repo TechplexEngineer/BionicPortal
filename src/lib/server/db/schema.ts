@@ -36,6 +36,7 @@ export const students = sqliteTable(
 		userid: text("userid").notNull().unique(), // student email
 		firstName: text("first_name").notNull(),
 		lastName: text("last_name").notNull(),
+		parentNames: text("parent_names"), // Comma separated
 		parentEmails: text("parent_emails"), // Comma separated
 		phone: text("phone"),
 		parentPhone: text("parent_phone"), // Comma separated parent phone numbers
@@ -44,6 +45,8 @@ export const students = sqliteTable(
 		graduationYear: text("graduation_year"),
 		tshirtSize: text("tshirt_size"),
 		customFields: text("custom_fields"), // JSON string for survey expansion
+		currentGrade: text("current_grade"),
+		gender: text("gender"),
 		hidden: integer("hidden", { mode: "boolean" }).notNull().default(false)
 	},
 	(table) => [unique("uniqueUserName").on(table.firstName, table.lastName)]

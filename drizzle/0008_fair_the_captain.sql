@@ -1,0 +1,1 @@
+ALTER TABLE `students` ADD `parent_names` text;
