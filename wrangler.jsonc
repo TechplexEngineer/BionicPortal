@@ -26,6 +26,9 @@
       "migrations_dir": "./drizzle"
     }
   ],
+  "build": {
+    "command": "npm run build && npx wrangler d1 migrations apply bionic_portal_db --remote"
+  },
   "r2_buckets": [
     {
       "binding": "FORMS_BUCKET",
