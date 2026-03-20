@@ -6,18 +6,15 @@
 
 <div class="container">
 	<div class="d-flex justify-content-between align-items-center mb-3">
-		<h1>Edit User <small class="text-muted">{data.currentUser.username}</small></h1>
+		<h1>Create User</h1>
 		<a href="/admin/users" class="btn btn-secondary">Back to Users</a>
 	</div>
 
 	{#if form?.message}
 		<div class="alert alert-danger">{form.message}</div>
 	{/if}
-	{#if form?.success}
-		<div class="alert alert-success">User updated successfully.</div>
-	{/if}
 
-	<form method="POST" action="?/edit">
+	<form method="POST" action="?/create">
 		<div class="mb-3">
 			<label for="username" class="form-label">Username</label>
 			<input
@@ -25,7 +22,7 @@
 				id="username"
 				name="username"
 				class="form-control"
-				value={data.currentUser.username}
+				value={form?.username ?? ""}
 				minlength="3"
 				maxlength="63"
 				required
@@ -36,7 +33,7 @@
 			<label for="role" class="form-label">Role</label>
 			<select id="role" name="role" class="form-select">
 				{#each data.roles as role}
-					<option value={role} selected={data.currentUser.role === role}>
+					<option value={role} selected={role === "user"}>
 						{role.charAt(0).toUpperCase() + role.slice(1)}
 					</option>
 				{/each}
@@ -44,9 +41,7 @@
 		</div>
 
 		<div class="mb-3">
-			<label for="password" class="form-label"
-				>New Password <span class="text-muted">(leave blank to keep current)</span></label
-			>
+			<label for="password" class="form-label">Password</label>
 			<input
 				type="password"
 				id="password"
@@ -54,23 +49,10 @@
 				class="form-control"
 				minlength="6"
 				maxlength="255"
-				placeholder="Leave blank to keep current password"
+				required
 			/>
 		</div>
 
-		<button type="submit" class="btn btn-primary me-2">Save Changes</button>
-	</form>
-
-	<hr class="my-4" />
-
-	<form
-		method="POST"
-		action="?/delete"
-		onsubmit={(e) => {
-			if (!confirm("Are you sure you want to delete this user? This action cannot be undone."))
-				e.preventDefault();
-		}}
-	>
-		<button type="submit" class="btn btn-danger">Delete User</button>
+		<button type="submit" class="btn btn-success">Create User</button>
 	</form>
 </div>
