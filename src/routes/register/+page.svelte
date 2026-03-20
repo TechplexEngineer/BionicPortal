@@ -7,11 +7,19 @@
 	let firstName = $state(data.student?.firstName ?? "");
 	let lastName = $state(data.student?.lastName ?? "");
 	let dietaryRestrictions = $state(data.student?.dietaryRestrictions ?? "");
+	let intoleranceLevel = $state(data.student?.intoleranceLevel ?? "");
 	let parentEmails = $state(data.student?.parentEmails ?? "");
 	let phone = $state(data.student?.phone ?? "");
 	let parentPhone = $state(data.student?.parentPhone ?? "");
+	let graduationYear = $state(data.student?.graduationYear ?? "");
+	let tshirtSize = $state(data.student?.tshirtSize ?? "");
 
 	let submitting = $state(false);
+
+	const currentYear = new Date().getFullYear();
+	const graduationYears = Array.from({ length: 8 }, (_, i) => currentYear + i);
+
+	const tshirtSizes = ["YS", "YM", "YL", "YXL", "S", "M", "L", "XL", "2XL", "3XL"];
 </script>
 
 <svelte:head>
@@ -62,6 +70,26 @@
 						/>
 					</div>
 				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="graduationYear">Year of Graduation <span class="required">*</span></label>
+						<select id="graduationYear" name="graduationYear" bind:value={graduationYear} required>
+							<option value="">-- Select Year --</option>
+							{#each graduationYears as year}
+								<option value={year}>{year}</option>
+							{/each}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="tshirtSize">T-Shirt Size <span class="required">*</span></label>
+						<select id="tshirtSize" name="tshirtSize" bind:value={tshirtSize} required>
+							<option value="">-- Select Size --</option>
+							{#each tshirtSizes as size}
+								<option value={size}>{size}</option>
+							{/each}
+						</select>
+					</div>
+				</div>
 			</div>
 
 			<div class="form-section">
@@ -77,30 +105,33 @@
 					/>
 				</div>
 				<div class="form-group">
-					<label for="parentEmails">Parent Email(s)</label>
+					<label for="parentEmails">Parent Email(s) <span class="required">*</span></label>
 					<input
 						type="text"
 						id="parentEmails"
 						name="parentEmails"
 						bind:value={parentEmails}
 						placeholder="parent1@example.com, parent2@example.com"
+						required
 					/>
 					<small class="text-muted">Separate multiple emails with commas</small>
 				</div>
 				<div class="form-group">
-					<label for="parentPhone">Parent Phone Number</label>
+					<label for="parentPhone">Parent Phone Number(s) <span class="required">*</span></label>
 					<input
-						type="tel"
+						type="text"
 						id="parentPhone"
 						name="parentPhone"
 						bind:value={parentPhone}
-						placeholder="(555) 555-5555"
+						placeholder="(555) 555-5555, (555) 555-1234"
+						required
 					/>
+					<small class="text-muted">Separate multiple phone numbers with commas</small>
 				</div>
 			</div>
 
 			<div class="form-section">
-				<h2>Health & Dietary</h2>
+				<h2>Health &amp; Dietary</h2>
 				<div class="form-group">
 					<label for="dietaryRestrictions">Dietary Restrictions</label>
 					<textarea
@@ -108,8 +139,58 @@
 						name="dietaryRestrictions"
 						bind:value={dietaryRestrictions}
 						rows="3"
-						placeholder="e.g. Peanut allergy, Vegetarian, etc."
+						placeholder="e.g. Peanut allergy, Vegetarian, Gluten-free, etc."
 					></textarea>
+				</div>
+				<div class="form-group">
+					<label>Level of Dietary Intolerance <span class="required">*</span></label>
+					<div class="radio-group">
+						<label class="radio-option">
+							<input
+								type="radio"
+								name="intoleranceLevel"
+								value="cannot_have"
+								checked={intoleranceLevel === "cannot_have"}
+								onchange={() => (intoleranceLevel = "cannot_have")}
+								required
+							/>
+							<span
+								><strong>Severe:</strong> Cannot have any — life-threatening allergy, always carry epi-pen</span
+							>
+						</label>
+						<label class="radio-option">
+							<input
+								type="radio"
+								name="intoleranceLevel"
+								value="epi_pen"
+								checked={intoleranceLevel === "epi_pen"}
+								onchange={() => (intoleranceLevel = "epi_pen")}
+							/>
+							<span
+								><strong>Moderate:</strong> Carry epi-pen as precaution, can manage in most situations</span
+							>
+						</label>
+						<label class="radio-option">
+							<input
+								type="radio"
+								name="intoleranceLevel"
+								value="prefer_not"
+								checked={intoleranceLevel === "prefer_not"}
+								onchange={() => (intoleranceLevel = "prefer_not")}
+							/>
+							<span><strong>Mild:</strong> Prefer not to eat — no severe reaction</span>
+						</label>
+						<label class="radio-option">
+							<input
+								type="radio"
+								name="intoleranceLevel"
+								value="none"
+								checked={intoleranceLevel === "none"}
+								onchange={() => (intoleranceLevel = "none")}
+							/>
+							<span>No dietary restrictions</span>
+						</label>
+					</div>
 				</div>
 			</div>
 
@@ -165,7 +246,6 @@
 	.register-header h1 {
 		font-size: 2.5rem;
 		font-weight: 800;
-		/* color: #e6edf3; */
 		margin-bottom: 0.5rem;
 	}
 
@@ -207,28 +287,63 @@
 	label {
 		font-weight: 600;
 		margin-bottom: 0.5rem;
-		/* color: #e6edf3; */
 		font-size: 0.95rem;
+	}
+
+	.required {
+		color: #f85149;
 	}
 
 	input[type="text"],
 	input[type="tel"],
-	input[type="email"],
+	select,
 	textarea {
 		background-color: #161b22;
 		border: 1px solid #30363d;
 		border-radius: 8px;
 		padding: 0.8rem 1rem;
-		/* color: #e6edf3; */
 		font-family: inherit;
 		transition: all 0.2s;
+		color: inherit;
 	}
 
 	input:focus,
+	select:focus,
 	textarea:focus {
 		outline: none;
 		border-color: #58a6ff;
 		box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.1);
+	}
+
+	.radio-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.radio-option {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		cursor: pointer;
+		font-weight: 400;
+		padding: 0.6rem 1rem;
+		border-radius: 8px;
+		border: 1px solid #30363d;
+		transition: border-color 0.2s;
+	}
+
+	.radio-option:hover {
+		border-color: #58a6ff;
+	}
+
+	.radio-option input[type="radio"] {
+		padding: 0;
+		width: auto;
+		border: none;
+		background: none;
+		box-shadow: none;
+		accent-color: #58a6ff;
 	}
 
 	.text-muted {

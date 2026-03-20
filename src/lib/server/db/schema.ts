@@ -1,7 +1,7 @@
 import { sqliteTable, integer, text, unique } from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
-import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-zod';
-import { z } from 'zod';
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from "drizzle-zod";
+import { z } from "zod";
 
 // ----------------------------------------------------------------------------
 // Users table
@@ -38,8 +38,11 @@ export const students = sqliteTable(
 		lastName: text("last_name").notNull(),
 		parentEmails: text("parent_emails"), // Comma separated
 		phone: text("phone"),
-		parentPhone: text("parent_phone"),
+		parentPhone: text("parent_phone"), // Comma separated parent phone numbers
 		dietaryRestrictions: text("dietary_restrictions"),
+		intoleranceLevel: text("intolerance_level"), // "cannot_have" | "epi_pen" | "prefer_not"
+		graduationYear: text("graduation_year"),
+		tshirtSize: text("tshirt_size"),
 		customFields: text("custom_fields"), // JSON string for survey expansion
 		hidden: integer("hidden", { mode: "boolean" }).notNull().default(false)
 	},
@@ -51,15 +54,14 @@ export type Student = typeof students.$inferSelect;
 // Attendance Table
 // ----------------------------------------------------------------------------
 
-export const attendance = sqliteTable(
-	"attendance",
-	{
-		userid: text("userid")
-			.notNull()
-			.references(() => students.userid),
-		timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`)
-	}
-);
+export const attendance = sqliteTable("attendance", {
+	userid: text("userid")
+		.notNull()
+		.references(() => students.userid),
+	timestamp: integer("timestamp", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`)
+});
 export type Attendance = typeof attendance.$inferSelect;
 
 export const studentsRelations = relations(students, ({ many }) => ({
@@ -81,11 +83,11 @@ export const attendanceRelations = relations(attendance, ({ one }) => ({
 export interface EventData {
 	name: string;
 	startDate: string; // ISO string
-	endDate: string;   // ISO string
+	endDate: string; // ISO string
 	location: string;
 	isOvernight: boolean;
 	departureTime: string; // ISO string or time string
-	returnTime: string;    // ISO string or time string
+	returnTime: string; // ISO string or time string
 	description?: string;
 	hotelAddress?: string;
 	permissionFormUrl?: string;
@@ -102,28 +104,32 @@ export const events = sqliteTable("events", {
 export type Events = typeof events.$inferSelect;
 
 export const eventInsertSchema = createInsertSchema(events, {
-	data: () => z.object({
-		name: z.string().min(1),
-		startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
-			message: "Invalid date format"
-		}),
-		endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
-			message: "Invalid date format"
-		}),
-		location: z.string().min(1),
-		isOvernight: z.boolean().default(false),
-		departureTime: z.string().optional(),
-		returnTime: z.string().optional(),
-		description: z.string().optional(),
-		hotelAddress: z.string().optional(),
-		permissionFormUrl: z.string().optional(),
-		cost: z.number().min(0),
-		registrationDueDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
-			message: "Invalid date format"
-		}).optional(),
-		studentsPerRoom: z.number().min(1).default(4),
-		mentorsPerRoom: z.number().min(1).default(2)
-	}) as any
+	data: () =>
+		z.object({
+			name: z.string().min(1),
+			startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+				message: "Invalid date format"
+			}),
+			endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+				message: "Invalid date format"
+			}),
+			location: z.string().min(1),
+			isOvernight: z.boolean().default(false),
+			departureTime: z.string().optional(),
+			returnTime: z.string().optional(),
+			description: z.string().optional(),
+			hotelAddress: z.string().optional(),
+			permissionFormUrl: z.string().optional(),
+			cost: z.number().min(0),
+			registrationDueDate: z
+				.string()
+				.refine((date) => !isNaN(Date.parse(date)), {
+					message: "Invalid date format"
+				})
+				.optional(),
+			studentsPerRoom: z.number().min(1).default(4),
+			mentorsPerRoom: z.number().min(1).default(2)
+		}) as any
 });
 export type EventInsert = z.infer<typeof eventInsertSchema>;
 
@@ -132,8 +138,12 @@ export type EventInsert = z.infer<typeof eventInsertSchema>;
 // ----------------------------------------------------------------------------
 export const eventRegistrations = sqliteTable("event_registrations", {
 	id: text("id").primaryKey(),
-	studentId: text("student_id").notNull().references(() => students.userid),
-	eventId: text("event_id").notNull().references(() => events.id),
+	studentId: text("student_id")
+		.notNull()
+		.references(() => students.userid),
+	eventId: text("event_id")
+		.notNull()
+		.references(() => events.id),
 	paid: integer("paid", { mode: "boolean" }).notNull().default(false),
 	formCompleted: integer("form_completed", { mode: "boolean" }).notNull().default(false),
 	invoiceId: text("invoice_id"), // QuickBooks invoice ID
@@ -156,7 +166,9 @@ export const eventRegistrationsRelations = relations(eventRegistrations, ({ one 
 // ----------------------------------------------------------------------------
 export const hotelRooms = sqliteTable("hotel_rooms", {
 	id: text("id").primaryKey(),
-	eventId: text("event_id").notNull().references(() => events.id),
+	eventId: text("event_id")
+		.notNull()
+		.references(() => events.id),
 	roomName: text("room_name").notNull(),
 	gender: text("gender") // "Boys", "Girls", "Mentors", etc.
 });
@@ -174,7 +186,9 @@ export const hotelRoomsRelations = relations(hotelRooms, ({ one, many }) => ({
 // ----------------------------------------------------------------------------
 export const roomAssignments = sqliteTable("room_assignments", {
 	id: text("id").primaryKey(),
-	roomId: text("room_id").notNull().references(() => hotelRooms.id),
+	roomId: text("room_id")
+		.notNull()
+		.references(() => hotelRooms.id),
 	studentId: text("student_id").references(() => students.userid),
 	userId: text("user_id").references(() => user.id)
 });
@@ -197,15 +211,21 @@ export const roomAssignmentsRelations = relations(roomAssignments, ({ one }) => 
 // ----------------------------------------------------------------------------
 // Carpool Spots Table
 // ----------------------------------------------------------------------------
-export const carpoolSpots = sqliteTable("carpool_spots", {
-	id: text("id").primaryKey(),
-	eventId: text("event_id").notNull().references(() => events.id),
-	mentorId: text("mentor_id").notNull().references(() => user.id),
-	capacity: integer("capacity").notNull(),
-	driverName: text("driver_name").notNull()
-}, (table) => [
-	unique("carpool_spot_unique").on(table.eventId, table.mentorId)
-]);
+export const carpoolSpots = sqliteTable(
+	"carpool_spots",
+	{
+		id: text("id").primaryKey(),
+		eventId: text("event_id")
+			.notNull()
+			.references(() => events.id),
+		mentorId: text("mentor_id")
+			.notNull()
+			.references(() => user.id),
+		capacity: integer("capacity").notNull(),
+		driverName: text("driver_name").notNull()
+	},
+	(table) => [unique("carpool_spot_unique").on(table.eventId, table.mentorId)]
+);
 
 export const carpoolSpotsRelations = relations(carpoolSpots, ({ one, many }) => ({
 	event: one(events, {
@@ -224,8 +244,12 @@ export const carpoolSpotsRelations = relations(carpoolSpots, ({ one, many }) => 
 // ----------------------------------------------------------------------------
 export const carpoolAssignments = sqliteTable("carpool_assignments", {
 	id: text("id").primaryKey(),
-	carpoolSpotId: text("carpool_spot_id").notNull().references(() => carpoolSpots.id),
-	studentId: text("student_id").notNull().references(() => students.userid)
+	carpoolSpotId: text("carpool_spot_id")
+		.notNull()
+		.references(() => carpoolSpots.id),
+	studentId: text("student_id")
+		.notNull()
+		.references(() => students.userid)
 });
 
 export const carpoolAssignmentsRelations = relations(carpoolAssignments, ({ one }) => ({
@@ -254,18 +278,26 @@ export const magicCodes = sqliteTable("magic_codes", {
 export const kvStore = sqliteTable("kv_store", {
 	key: text("key").primaryKey(),
 	value: text("value").notNull(),
-	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`)
+	updatedAt: integer("updated_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`)
 });
 
 // ----------------------------------------------------------------------------
 // Parent Student Links Table
 // ----------------------------------------------------------------------------
-export const parentStudentLinks = sqliteTable("parent_student_links", {
-	parentId: text("parent_id").notNull().references(() => user.id),
-	studentId: text("student_id").notNull().references(() => students.userid), // student email
-}, (table) => [
-	unique("parent_student_unique").on(table.parentId, table.studentId)
-]);
+export const parentStudentLinks = sqliteTable(
+	"parent_student_links",
+	{
+		parentId: text("parent_id")
+			.notNull()
+			.references(() => user.id),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.userid) // student email
+	},
+	(table) => [unique("parent_student_unique").on(table.parentId, table.studentId)]
+);
 
 export const parentStudentLinksRelations = relations(parentStudentLinks, ({ one }) => ({
 	parent: one(user, {
@@ -277,3 +309,14 @@ export const parentStudentLinksRelations = relations(parentStudentLinks, ({ one 
 		references: [students.userid]
 	})
 }));
+
+// ----------------------------------------------------------------------------
+// Parent Profiles Table
+// ----------------------------------------------------------------------------
+export const parentProfiles = sqliteTable("parent_profiles", {
+	userId: text("user_id")
+		.primaryKey()
+		.references(() => user.id),
+	phone: text("phone")
+});
+export type ParentProfile = typeof parentProfiles.$inferSelect;

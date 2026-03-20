@@ -15,7 +15,8 @@
 					<h2 class="card-title fw-bold mb-4">Connect to Your Student</h2>
 					<p class="text-secondary mb-4">
 						To manage your student's registrations and view their attendance, please enter their
-						school email address below.
+						school email address below. You can connect multiple students by submitting this form
+						more than once.
 					</p>
 
 					{#if form?.message}
@@ -34,8 +35,50 @@
 							};
 						}}
 					>
+						{#if !data.hasProfile}
+							<div class="mb-4">
+								<label for="phone" class="form-label fw-semibold">
+									Your Phone Number <span class="text-danger">*</span>
+								</label>
+								<div class="input-group">
+									<span class="input-group-text bg-white border-end-0">
+										<i class="fa fa-phone text-muted"></i>
+									</span>
+									<input
+										type="tel"
+										class="form-control border-start-0 ps-0"
+										id="phone"
+										name="phone"
+										placeholder="(555) 555-5555"
+										value={data.profile?.phone ?? ""}
+										required
+									/>
+								</div>
+							</div>
+						{:else}
+							<!-- Show existing phone with option to update -->
+							<div class="mb-4">
+								<label for="phone" class="form-label fw-semibold">Your Phone Number</label>
+								<div class="input-group">
+									<span class="input-group-text bg-white border-end-0">
+										<i class="fa fa-phone text-muted"></i>
+									</span>
+									<input
+										type="tel"
+										class="form-control border-start-0 ps-0"
+										id="phone"
+										name="phone"
+										placeholder="(555) 555-5555"
+										value={data.profile?.phone ?? ""}
+									/>
+								</div>
+							</div>
+						{/if}
+
 						<div class="mb-4">
-							<label for="studentEmail" class="form-label fw-semibold">Student School Email</label>
+							<label for="studentEmail" class="form-label fw-semibold">
+								Student School Email <span class="text-danger">*</span>
+							</label>
 							<div class="input-group">
 								<span class="input-group-text bg-white border-end-0">
 									<i class="fa fa-envelope text-muted"></i>
@@ -45,12 +88,13 @@
 									class="form-control border-start-0 ps-0"
 									id="studentEmail"
 									name="studentEmail"
-									placeholder="student@school.edu"
+									placeholder="student@billericak12.com"
 									required
 								/>
 							</div>
 							<div class="form-text mt-2">
-								Your student must have already registered an account with this email.
+								Your student must have already registered an account with this email. Homeschool
+								students without a @billericak12.com address can use their personal email.
 							</div>
 						</div>
 
@@ -72,19 +116,24 @@
 				</div>
 			</div>
 
-			{#if data.links && data.links.length > 0}
+			{#if data.linkedStudents && data.linkedStudents.length > 0}
 				<div class="mt-5">
 					<h4 class="fw-bold mb-3">Linked Students</h4>
 					<div class="list-group shadow-sm">
-						{#each data.links as link}
+						{#each data.linkedStudents as s}
 							<div class="list-group-item d-flex justify-content-between align-items-center py-3">
 								<div>
-									<div class="fw-semibold">{link.studentId}</div>
-									<div class="small text-muted">Connected</div>
+									<div class="fw-semibold">{s.firstName} {s.lastName}</div>
+									<div class="small text-muted">{s.userid}</div>
 								</div>
 								<span class="badge bg-success rounded-pill">Active</span>
 							</div>
 						{/each}
+					</div>
+					<div class="mt-3">
+						<a href="/dashboard" class="btn btn-outline-primary w-100">
+							<i class="fa fa-tachometer me-1"></i> Go to Dashboard
+						</a>
 					</div>
 				</div>
 			{/if}

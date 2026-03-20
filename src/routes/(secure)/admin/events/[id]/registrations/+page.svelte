@@ -292,6 +292,60 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Dietary Restrictions Summary -->
+		{#if data.registrations.filter((r) => r.student.dietaryRestrictions || r.student.intoleranceLevel).length > 0}
+			<div class="card shadow-sm border-0 mt-4">
+				<div class="card-header bg-danger bg-opacity-10">
+					<h5 class="fw-bold mb-0 text-danger">
+						<i class="fa fa-heartbeat me-2"></i>Dietary Restrictions &amp; Allergies
+					</h5>
+				</div>
+				<div class="card-body p-0">
+					<table class="table table-hover mb-0">
+						<thead class="table-light">
+							<tr>
+								<th class="ps-4">Student</th>
+								<th>Restrictions</th>
+								<th>Severity</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each data.registrations.filter((r) => r.student.dietaryRestrictions || r.student.intoleranceLevel) as reg}
+								<tr>
+									<td class="ps-4 fw-semibold">
+										{reg.student.firstName}
+										{reg.student.lastName}
+									</td>
+									<td>{reg.student.dietaryRestrictions ?? "—"}</td>
+									<td>
+										{#if reg.student.intoleranceLevel === "cannot_have"}
+											<span class="badge bg-danger">
+												<i class="fa fa-exclamation-circle me-1"></i>Cannot have — carries epi-pen
+											</span>
+										{:else if reg.student.intoleranceLevel === "epi_pen"}
+											<span class="badge bg-warning text-dark">
+												<i class="fa fa-medkit me-1"></i>Carries epi-pen
+											</span>
+										{:else if reg.student.intoleranceLevel === "prefer_not"}
+											<span class="badge bg-secondary">
+												<i class="fa fa-minus-circle me-1"></i>Prefers not to eat
+											</span>
+										{:else if reg.student.intoleranceLevel}
+											<span class="badge bg-light text-dark border"
+												>{reg.student.intoleranceLevel}</span
+											>
+										{:else}
+											<span class="text-muted">—</span>
+										{/if}
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{/if}
 	</main>
 </div>
 

@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { enhance } from "$app/forms";
 	import DashHeader, { type Page } from "$lib/components/DashHeader.svelte";
 	import type { PageProps } from "./$types";
 
-	let { data, form }: PageProps = $props();
+	let { data }: PageProps = $props();
 
 	let navPages: Page[] = [
 		{
@@ -17,6 +16,14 @@
 			]
 		}
 	];
+
+	function formatDate(dateStr: string) {
+		return new Date(dateStr).toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric"
+		});
+	}
 </script>
 
 <svelte:head>
@@ -25,4 +32,233 @@
 
 <div class="container">
 	<DashHeader pages={navPages} />
+
+	{#if data.role === "parent"}
+		<!-- ===== PARENT DASHBOARD ===== -->
+		<div class="dashboard-header">
+			<h2>Parent Dashboard</h2>
+			<a href="/register/parent" class="btn btn-outline-primary btn-sm">
+				<i class="fa fa-link me-1"></i> Link a Student
+			</a>
+		</div>
+
+		{#if data.studentsWithRegs.length === 0}
+			<div class="alert alert-info">
+				You have no linked students yet.
+				<a href="/register/parent" class="alert-link">Link a student</a> to get started.
+			</div>
+		{:else}
+			{#each data.studentsWithRegs as { student, registrations }}
+				<div class="card mb-4 shadow-sm">
+					<div class="card-header d-flex justify-content-between align-items-center">
+						<h5 class="mb-0 fw-bold">
+							{student.firstName}
+							{student.lastName}
+						</h5>
+						<small class="text-muted">{student.userid}</small>
+					</div>
+					<div class="card-body">
+						{#if registrations.length === 0}
+							<p class="text-muted mb-0">No event registrations yet.</p>
+						{:else}
+							<!-- Action items -->
+							{@const pending = registrations.filter((r) => !r.paid || !r.formCompleted)}
+							{#if pending.length > 0}
+								<h6 class="text-warning fw-bold mb-2">
+									<i class="fa fa-exclamation-triangle me-1"></i> Action Items
+								</h6>
+								<ul class="list-group mb-3">
+									{#each pending as reg}
+										<li
+											class="list-group-item d-flex justify-content-between align-items-center py-2"
+										>
+											<span>{reg.eventName} — {formatDate(reg.startDate)}</span>
+											<span class="d-flex gap-2">
+												{#if !reg.formCompleted}
+													<span class="badge bg-danger">Form Incomplete</span>
+												{/if}
+												{#if !reg.paid}
+													<span class="badge bg-warning text-dark">Payment Pending</span>
+												{/if}
+											</span>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+
+							<!-- Registered events -->
+							<h6 class="fw-bold mb-2">
+								<i class="fa fa-calendar me-1"></i> Registered Events
+							</h6>
+							<ul class="list-group">
+								{#each registrations as reg}
+									<li class="list-group-item py-2">
+										<div class="d-flex justify-content-between align-items-center">
+											<span class="fw-semibold">{reg.eventName}</span>
+											<span class="d-flex gap-1">
+												<span
+													class="badge {reg.formCompleted ? 'bg-success' : 'bg-secondary'}"
+													title="Form"
+												>
+													<i class="fa fa-file-text me-1"></i>
+													{reg.formCompleted ? "Form ✓" : "Form Pending"}
+												</span>
+												<span
+													class="badge {reg.paid ? 'bg-success' : 'bg-warning text-dark'}"
+													title="Payment"
+												>
+													<i class="fa fa-dollar me-1"></i>
+													{reg.paid ? "Paid ✓" : "Unpaid"}
+												</span>
+											</span>
+										</div>
+										<small class="text-muted"
+											>{formatDate(reg.startDate)} – {formatDate(reg.endDate)}</small
+										>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				</div>
+			{/each}
+		{/if}
+	{:else}
+		<!-- ===== STUDENT DASHBOARD ===== -->
+		{#if !data.student}
+			<div class="alert alert-warning mt-3">
+				<strong>Profile Incomplete</strong> — Please
+				<a href="/register" class="alert-link">complete your student profile</a>
+				before registering for events.
+			</div>
+		{/if}
+
+		<div class="row g-4 mt-1">
+			<!-- Widget 1: Action Items -->
+			<div class="col-md-6">
+				<div class="card h-100 shadow-sm">
+					<div class="card-header bg-warning bg-opacity-10 d-flex align-items-center gap-2">
+						<i class="fa fa-exclamation-circle text-warning"></i>
+						<h5 class="mb-0 fw-bold">Action Items</h5>
+					</div>
+					<div class="card-body">
+						{#if data.actionItems.length === 0}
+							<div class="text-muted text-center py-3">
+								<i class="fa fa-check-circle fa-2x mb-2 text-success d-block"></i>
+								You're all caught up! No pending tasks.
+							</div>
+						{:else}
+							<ul class="list-group list-group-flush">
+								{#each data.actionItems as item}
+									<li class="list-group-item px-0">
+										<div class="fw-semibold">{item.eventName}</div>
+										<small class="text-muted">{formatDate(item.startDate)}</small>
+										<div class="d-flex gap-2 mt-1 flex-wrap">
+											{#if !item.formCompleted}
+												{#if item.permissionFormUrl}
+													<a
+														href={item.permissionFormUrl}
+														target="_blank"
+														class="badge bg-danger text-decoration-none"
+													>
+														<i class="fa fa-file-text me-1"></i> Complete Permission Form
+													</a>
+												{:else}
+													<span class="badge bg-secondary">
+														<i class="fa fa-file-text me-1"></i> Form Pending
+													</span>
+												{/if}
+											{/if}
+											{#if !item.paid}
+												{#if item.invoicePaymentLink}
+													<a
+														href={item.invoicePaymentLink}
+														target="_blank"
+														class="badge bg-warning text-dark text-decoration-none"
+													>
+														<i class="fa fa-credit-card me-1"></i> Pay Now
+													</a>
+												{:else}
+													<span class="badge bg-warning text-dark">
+														<i class="fa fa-dollar me-1"></i> Payment Pending
+													</span>
+												{/if}
+											{/if}
+										</div>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				</div>
+			</div>
+
+			<!-- Widget 2: Registered Events -->
+			<div class="col-md-6">
+				<div class="card h-100 shadow-sm">
+					<div
+						class="card-header d-flex justify-content-between align-items-center bg-primary bg-opacity-10"
+					>
+						<div class="d-flex align-items-center gap-2">
+							<i class="fa fa-calendar text-primary"></i>
+							<h5 class="mb-0 fw-bold">My Events</h5>
+						</div>
+						<a href="/compete" class="btn btn-primary btn-sm">
+							<i class="fa fa-plus me-1"></i> Register for an Event
+						</a>
+					</div>
+					<div class="card-body">
+						{#if data.upcomingRegistrations.length === 0}
+							<div class="text-muted text-center py-3">
+								<i class="fa fa-calendar-o fa-2x mb-2 d-block"></i>
+								No upcoming events. <a href="/compete">Browse open events</a>.
+							</div>
+						{:else}
+							<ul class="list-group list-group-flush">
+								{#each data.upcomingRegistrations as reg}
+									<li class="list-group-item px-0">
+										<div class="d-flex justify-content-between align-items-start">
+											<div>
+												<div class="fw-semibold">{reg.eventName}</div>
+												<small class="text-muted"
+													>{formatDate(reg.startDate)} – {formatDate(reg.endDate)}</small
+												>
+											</div>
+											<div class="d-flex gap-1 flex-wrap justify-content-end">
+												<span class="badge {reg.formCompleted ? 'bg-success' : 'bg-secondary'}">
+													{reg.formCompleted ? "Form ✓" : "Form Pending"}
+												</span>
+												<span class="badge {reg.paid ? 'bg-success' : 'bg-warning text-dark'}">
+													{reg.paid ? "Paid ✓" : "Unpaid"}
+												</span>
+											</div>
+										</div>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
+
+<style>
+	.dashboard-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1.5rem;
+		padding-top: 0.5rem;
+	}
+
+	.dashboard-header h2 {
+		font-weight: 800;
+		margin: 0;
+	}
+
+	.card-header {
+		font-size: 0.95rem;
+	}
+</style>
