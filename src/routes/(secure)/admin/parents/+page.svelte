@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
@@ -6,22 +7,31 @@
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
+	type ParentRow = Record<string, any>;
 
 	const columns: TableColumns = [
-		{ data: "username", title: "Parent Email" },
+		{ data: "username", title: "Parent Email", renderSnippet: parentLink },
 		{ data: "students", title: "Linked Students", renderSnippet: studentsList }
 	];
 
 	layoutState.pageTitle = "Parent Overview";
 </script>
 
+{#snippet parentLink(username: string, parent: ParentRow)}
+	<a href={resolve(`/admin/users/${parent.id}`)}>{username}</a>
+{/snippet}
+
 {#snippet studentsList(students: any[])}
 	<div class="d-flex flex-wrap gap-1">
 		{#each students as student}
-			<span class="badge bg-info text-dark">
+			<a
+				href={resolve(`/admin/students/${student.studentId}`)}
+				class="badge bg-info text-dark text-decoration-none"
+				title={`Edit ${student.studentFirstName} ${student.studentLastName}`}
+			>
 				{student.studentFirstName}
 				{student.studentLastName} ({student.studentId})
-			</span>
+			</a>
 		{:else}
 			<span class="text-muted small">No students linked</span>
 		{/each}
