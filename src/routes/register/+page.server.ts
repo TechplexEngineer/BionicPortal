@@ -5,26 +5,23 @@ import { getLoginUrl } from "$lib/server/authRedirect";
 import type { Actions, PageServerLoad } from "./$types";
 import { getSafeReturnTo } from "$lib/server/returnTo";
 
+type RegistrationStudent = Omit<table.Student, "customFields"> & {
+	customFields: Record<string, string>;
+};
+
 export const load: PageServerLoad = async (event) => {
+	if (event.locals.user) {
+		return redirect(302, getSafeReturnTo(event.url));
+	}
+
 	if (!event.locals.user) {
 		return redirect(302, getLoginUrl(event.url));
 	}
 
-	const db = event.locals.db;
-	const [student] = await db
-		.select()
-		.from(table.students)
-		.where(eq(table.students.userid, event.locals.user.username));
+	return redirect(302, getSafeReturnTo(event.url));
 
-	return {
-		student: student
-			? {
-					...student,
-					customFields: student.customFields ? JSON.parse(student.customFields) : {}
-				}
-			: null,
-		email: event.locals.user.username
-	};
+	// This route always redirects above; retain the page data shape for the page component type.
+	return { student: null as RegistrationStudent | null, email: "" };
 };
 
 export const actions: Actions = {
