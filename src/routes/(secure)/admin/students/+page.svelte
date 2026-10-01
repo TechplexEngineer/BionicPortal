@@ -17,6 +17,7 @@
 		{ data: "firstName", title: "First Name" },
 		{ data: "lastName", title: "Last Name" },
 		{ data: "graduationYear", title: "YOG" },
+		{ data: "profileComplete", title: "Profile", renderSnippet: profileStatus },
 		{ data: "parents", title: "Parents", renderSnippet: parentStatus },
 		{ data: "userid", title: "Actions", renderSnippet: action }
 	];
@@ -37,6 +38,14 @@
 		</div>
 	{:else}
 		<span class="badge bg-secondary">None</span>
+	{/if}
+{/snippet}
+
+{#snippet profileStatus(complete: boolean)}
+	{#if complete}
+		<span class="badge bg-success">Complete</span>
+	{:else}
+		<span class="badge bg-warning text-dark">Incomplete</span>
 	{/if}
 {/snippet}
 

@@ -1,6 +1,68 @@
 import { describe, expect, it, vi } from "vitest";
 import * as table from "$lib/server/db/schema";
-import { actions } from "./+page.server";
+import { actions, load } from "./+page.server";
+
+function completeStudent(userid: string) {
+	return {
+		userid,
+		firstName: "Alex",
+		lastName: "Student",
+		parentNames: "Parent Student",
+		parentEmails: "parent@example.com",
+		phone: "555-0100",
+		parentPhone: "555-0101",
+		dietaryRestrictions: "None",
+		intoleranceLevel: "prefer_not",
+		graduationYear: "2030",
+		tshirtSize: "M",
+		customFields: JSON.stringify({
+			aspirationsAfterHighSchool: "College",
+			winterSpringSports: "Soccer",
+			teamGoals: "Learn"
+		}),
+		currentGrade: "9",
+		gender: "X",
+		dateOfBirth: "2015-01-01",
+		hidden: false
+	};
+}
+
+function loadEvent(students: Record<string, unknown>[]) {
+	const studentQuery = {
+		from: vi.fn(() => ({
+			leftJoin: vi.fn(() => ({
+				groupBy: vi.fn(() => ({ where: vi.fn().mockResolvedValue(students) }))
+			}))
+		}))
+	};
+	const parentQuery = {
+		from: vi.fn(() => ({ innerJoin: vi.fn().mockResolvedValue([]) }))
+	};
+	const db = {
+		select: vi.fn().mockReturnValueOnce(studentQuery).mockReturnValueOnce(parentQuery)
+	};
+
+	return {
+		input: {
+			url: new URL("http://localhost/admin/students"),
+			locals: { db }
+		} as unknown as Parameters<typeof load>[0],
+		db
+	};
+}
+
+describe("admin student profile status", () => {
+	it("returns completion status using the student profile requirements", async () => {
+		const { input } = loadEvent([
+			completeStudent("complete@example.com"),
+			{ ...completeStudent("incomplete@example.com"), currentGrade: "" }
+		]);
+
+		const result = await load(input);
+
+		expect(result.students.map((student) => student.profileComplete)).toEqual([true, false]);
+	});
+});
 
 function deleteEvent(id: string) {
 	const db = {
