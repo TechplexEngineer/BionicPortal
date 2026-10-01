@@ -115,6 +115,7 @@ export interface EventData {
 	registrationDueDate?: string; // ISO string
 	studentsPerRoom: number;
 	mentorsPerRoom: number;
+	needsCarpool?: boolean;
 }
 
 export const events = sqliteTable("events", {
@@ -148,7 +149,8 @@ export const eventInsertSchema = createInsertSchema(events, {
 				})
 				.optional(),
 			studentsPerRoom: z.number().min(1).default(4),
-			mentorsPerRoom: z.number().min(1).default(2)
+			mentorsPerRoom: z.number().min(1).default(2),
+			needsCarpool: z.boolean().default(false)
 		}) as any
 });
 export type EventInsert = z.infer<typeof eventInsertSchema>;

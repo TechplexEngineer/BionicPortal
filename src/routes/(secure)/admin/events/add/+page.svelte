@@ -9,6 +9,7 @@
 	let endDate = $state(data.today);
 	let location = $state("");
 	let isOvernight = $state(false);
+	let needsCarpool = $state(false);
 	let departureTime = $state("");
 	let returnTime = $state("");
 	let description = $state("");
@@ -159,6 +160,20 @@
 							/>
 							<label class="form-check-label fw-semibold" for="isOvernight"
 								>This is an overnight event</label
+							>
+						</div>
+
+						<div class="form-check form-switch mb-4">
+							<input
+								class="form-check-input"
+								type="checkbox"
+								role="switch"
+								id="needsCarpool"
+								name="needsCarpool"
+								bind:checked={needsCarpool}
+							/>
+							<label class="form-check-label fw-semibold" for="needsCarpool"
+								>This event needs carpooling</label
 							>
 						</div>
 

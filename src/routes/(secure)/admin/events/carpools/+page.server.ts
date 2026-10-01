@@ -22,7 +22,9 @@ export const load: PageServerLoad = async (event) => {
 	const carpoolSpots = await db.select().from(table.carpoolSpots);
 
 	return {
-		events: sortedEvents.map((e) => ({ id: e.id, ...e.data })),
+		events: sortedEvents
+			.filter((e) => e.data.needsCarpool === true)
+			.map((e) => ({ id: e.id, ...e.data })),
 		mentors,
 		carpoolSpots
 	};
@@ -36,6 +38,10 @@ export const actions: Actions = {
 		const capacityStr = formData.get("capacity") as string;
 
 		const db = locals.db;
+		const [event] = await db.select().from(table.events).where(eq(table.events.id, eventId));
+		if (event?.data.needsCarpool !== true) {
+			return fail(400, { message: "Carpooling is not enabled for this event" });
+		}
 
 		if (!capacityStr || capacityStr.trim() === "") {
 			await db

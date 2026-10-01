@@ -5,7 +5,8 @@ import {
 	eventForms,
 	parentFormInvites,
 	shopLocations,
-	students
+	students,
+	eventInsertSchema
 } from "./schema";
 import { getTableColumns } from "drizzle-orm";
 
@@ -71,5 +72,20 @@ describe("Database Schema tests", () => {
 				consumedAt: expect.anything()
 			})
 		);
+	});
+
+	it("defaults event carpooling to disabled", () => {
+		const result = eventInsertSchema.parse({
+			id: "event-1",
+			data: {
+				name: "Regional",
+				startDate: "2030-01-01",
+				endDate: "2030-01-02",
+				location: "Billerica",
+				cost: 100
+			}
+		});
+
+		expect(result.data.needsCarpool).toBe(false);
 	});
 });
