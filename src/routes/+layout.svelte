@@ -23,6 +23,6 @@
 	});
 </script>
 
-<Header user={data.user} />
+<Header user={data.user} isImpersonating={data.isImpersonating} />
 {@render children()}
 <Footer />

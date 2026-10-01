@@ -8,6 +8,8 @@ import * as table from "$lib/server/db/schema";
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
 export const sessionCookieName = "auth-session";
+export const impersonationOriginCookieName = "impersonation-origin-session";
+type SessionCookies = Pick<RequestEvent, "cookies">["cookies"];
 
 export function generateSessionToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(18));
@@ -72,15 +74,21 @@ export async function invalidateSession(sessionId: string, platform: App.Platfor
 	await getDb(platform).delete(table.session).where(eq(table.session.id, sessionId));
 }
 
-export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
-	event.cookies.set(sessionCookieName, token, {
+export function setSessionTokenCookie(
+	event: { cookies: SessionCookies } | SessionCookies,
+	token: string,
+	expiresAt: Date
+) {
+	const cookies = "cookies" in event ? event.cookies : event;
+	cookies.set(sessionCookieName, token, {
 		expires: expiresAt,
 		path: "/"
 	});
 }
 
-export function deleteSessionTokenCookie(event: RequestEvent) {
-	event.cookies.delete(sessionCookieName, {
+export function deleteSessionTokenCookie(event: { cookies: SessionCookies } | SessionCookies) {
+	const cookies = "cookies" in event ? event.cookies : event;
+	cookies.delete(sessionCookieName, {
 		path: "/"
 	});
 }
