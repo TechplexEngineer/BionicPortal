@@ -8,6 +8,7 @@
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
+	type StudentRow = Record<string, any>;
 	const showArchivedUrl = "/admin/students?showArchived=true";
 
 	const columns: TableColumns = [
@@ -16,22 +17,30 @@
 		{ data: "firstName", title: "First Name" },
 		{ data: "lastName", title: "Last Name" },
 		{ data: "graduationYear", title: "YOG" },
-		{ data: "parentCount", title: "Parents", renderSnippet: parentStatus },
+		{ data: "parents", title: "Parents", renderSnippet: parentStatus },
 		{ data: "userid", title: "Actions", renderSnippet: action }
 	];
 
 	layoutState.pageTitle = "Student Overview";
 </script>
 
-{#snippet parentStatus(count: number)}
-	{#if count > 0}
-		<span class="badge bg-success">{count} Registered</span>
+{#snippet parentStatus(parents: { parentId: string; parentUsername: string }[])}
+	{#if parents.length > 0}
+		<div class="d-flex flex-wrap gap-1">
+			{#each parents as parent}
+				<a
+					href={resolve(`/admin/users/${parent.parentId}`)}
+					class="badge bg-success text-decoration-none"
+					title="Edit parent user">{parent.parentUsername}</a
+				>
+			{/each}
+		</div>
 	{:else}
 		<span class="badge bg-secondary">None</span>
 	{/if}
 {/snippet}
 
-{#snippet action(id: string, student: Record<string, number | string | boolean | null>)}
+{#snippet action(id: string, student: StudentRow)}
 	<a href={resolve(`/admin/students/${id}`)} class="btn btn-primary btn-sm me-1">Edit</a>
 	<form method="POST" action="?/toggleHidden" use:enhance style="display:inline;">
 		<input type="hidden" name="id" value={id} />

@@ -59,8 +59,22 @@ export const load = (async ({ locals, url }) => {
 					)
 		);
 
+	const parentLinks = await db
+		.select({
+			studentId: table.parentStudentLinks.studentId,
+			parentId: table.user.id,
+			parentUsername: table.user.username
+		})
+		.from(table.parentStudentLinks)
+		.innerJoin(table.user, eq(table.parentStudentLinks.parentId, table.user.id));
+
+	const studentsWithParentLinks = studentsWithParents.map((student) => ({
+		...student,
+		parents: parentLinks.filter((parent) => parent.studentId === student.userid)
+	}));
+
 	return {
-		students: studentsWithParents,
+		students: studentsWithParentLinks,
 		showArchived
 	};
 }) satisfies PageServerLoad;
