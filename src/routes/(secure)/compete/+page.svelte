@@ -5,6 +5,11 @@
 	let { data, form }: PageProps = $props();
 
 	let registering = $state<string | null>(null);
+	let profileUrl = $derived(
+		form && "profileUrl" in form && typeof form.profileUrl === "string"
+			? form.profileUrl
+			: undefined
+	);
 </script>
 
 <svelte:head>
@@ -18,7 +23,13 @@
 	</header>
 
 	{#if form?.message}
-		<div class="alert alert-danger" role="alert">{form.message}</div>
+		<div class="alert alert-danger" role="alert">
+			{#if profileUrl}
+				<a href={profileUrl} class="alert-link">{form.message}</a>
+			{:else}
+				{form.message}
+			{/if}
+		</div>
 	{/if}
 
 	{#if data.events.length === 0}

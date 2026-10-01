@@ -23,11 +23,13 @@ const event = (overrides: Partial<table.EventData> = {}): table.Events => ({
 function registrationAction({
 	eventRecord = event(),
 	studentRecord = { userid: "student@example.com", dateOfBirth: "2010-06-15" },
-	existingRegistration = undefined
+	existingRegistration = undefined,
+	role = "user"
 }: {
 	eventRecord?: table.Events;
 	studentRecord?: { userid: string; dateOfBirth?: string | null } | null;
 	existingRegistration?: object;
+	role?: "user" | "mentor";
 } = {}) {
 	const select = vi
 		.fn()
@@ -55,7 +57,7 @@ function registrationAction({
 			}),
 			locals: {
 				db,
-				user: { username: "student@example.com", role: "user" }
+				user: { username: "student@example.com", role }
 			}
 		} as unknown as Parameters<NonNullable<typeof actions.register>>[0],
 		db,
@@ -94,7 +96,10 @@ describe("event registration", () => {
 
 		expect(await actions.register(input)).toMatchObject({
 			status: 400,
-			data: { message: "Please complete your student profile before registering for an event" }
+			data: {
+				message: "Please complete your student profile before registering for an event",
+				profileUrl: "/register?returnTo=/compete"
+			}
 		});
 		expect(db.insert).not.toHaveBeenCalled();
 	});
@@ -109,5 +114,14 @@ describe("event registration", () => {
 			data: { message: "Please complete your student profile before registering for an event" }
 		});
 		expect(db.insert).not.toHaveBeenCalled();
+	});
+
+	it("allows mentors to register without a student profile", async () => {
+		const { input, values } = registrationAction({ studentRecord: null, role: "mentor" });
+
+		expect(await actions.register(input)).toEqual({ success: true });
+		expect(values).toHaveBeenCalledWith(
+			expect.objectContaining({ studentId: "student@example.com" })
+		);
 	});
 });

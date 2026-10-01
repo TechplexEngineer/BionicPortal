@@ -64,16 +64,19 @@ export const actions: Actions = {
 			return fail(400, { message: "Registration for this event has closed" });
 		}
 
-		// Registrations reference a student profile. Give students a useful response instead of
-		// allowing the foreign-key error to leave the enhanced form looking stuck.
-		const [student] = await db
-			.select()
-			.from(table.students)
-			.where(eq(table.students.userid, user.username));
-		if (!student || !student.dateOfBirth) {
-			return fail(400, {
-				message: "Please complete your student profile before registering for an event"
-			});
+		if (user.role === "user") {
+			// Registrations reference a student profile. Give students a useful response instead of
+			// allowing the foreign-key error to leave the enhanced form looking stuck.
+			const [student] = await db
+				.select()
+				.from(table.students)
+				.where(eq(table.students.userid, user.username));
+			if (!student || !student.dateOfBirth) {
+				return fail(400, {
+					message: "Please complete your student profile before registering for an event",
+					profileUrl: "/register?returnTo=/compete"
+				});
+			}
 		}
 
 		// 2. Check if already registered
