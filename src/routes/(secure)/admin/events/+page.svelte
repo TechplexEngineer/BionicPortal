@@ -85,12 +85,14 @@
 									>
 										<i class="fa fa-users me-1"></i> Regs
 									</a>
-									<a
-										href="/admin/events/{event.id}/carpools"
-										class="btn btn-outline-secondary btn-sm"
-									>
-										<i class="fa fa-car me-1"></i> Carpools
-									</a>
+									{#if event.needsCarpool === true}
+										<a
+											href="/admin/events/{event.id}/carpools"
+											class="btn btn-outline-secondary btn-sm"
+										>
+											<i class="fa fa-car me-1"></i> Carpools
+										</a>
+									{/if}
 									{#if event.isOvernight}
 										<a
 											href="/admin/events/{event.id}/rooms"

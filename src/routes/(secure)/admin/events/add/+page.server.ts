@@ -17,6 +17,7 @@ export const actions: Actions = {
 		const endDate = formData.get("endDate") as string;
 		const location = formData.get("location") as string;
 		const isOvernight = formData.get("isOvernight") === "on";
+		const needsCarpool = formData.get("needsCarpool") === "on";
 		const departureTime = formData.get("departureTime") as string;
 		const returnTime = formData.get("returnTime") as string;
 		const description = formData.get("description") as string;
@@ -55,7 +56,8 @@ export const actions: Actions = {
 					cost,
 					registrationDueDate,
 					studentsPerRoom: parseInt(formData.get("studentsPerRoom") as string) || 4,
-					mentorsPerRoom: parseInt(formData.get("mentorsPerRoom") as string) || 2
+					mentorsPerRoom: parseInt(formData.get("mentorsPerRoom") as string) || 2,
+					needsCarpool
 				}
 			});
 		} catch (e) {

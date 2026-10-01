@@ -21,7 +21,9 @@ export const load: PageServerLoad = async (event) => {
 	const carpoolSpots = await db.select().from(table.carpoolSpots);
 
 	return {
-		events: sortedEvents.map((e) => ({ id: e.id, ...e.data })),
+		events: sortedEvents
+			.filter((e) => e.data.needsCarpool === true)
+			.map((e) => ({ id: e.id, ...e.data })),
 		mentors,
 		carpoolSpots
 	};
@@ -35,11 +37,17 @@ export const actions: Actions = {
 		const capacityStr = formData.get("capacity") as string;
 
 		const db = locals.db;
+		const [event] = await db.select().from(table.events).where(eq(table.events.id, eventId));
+		if (event?.data.needsCarpool !== true) {
+			return fail(400, { message: "Carpooling is not enabled for this event" });
+		}
 
 		if (!capacityStr || capacityStr.trim() === "") {
 			await db
 				.delete(table.carpoolSpots)
-				.where(and(eq(table.carpoolSpots.eventId, eventId), eq(table.carpoolSpots.mentorId, mentorId)));
+				.where(
+					and(eq(table.carpoolSpots.eventId, eventId), eq(table.carpoolSpots.mentorId, mentorId))
+				);
 			return { success: true };
 		}
 
@@ -49,11 +57,7 @@ export const actions: Actions = {
 		}
 
 		// Get mentor name for default driver name
-		const [mentor] = await db
-			.select()
-			.from(table.user)
-			.where(eq(table.user.id, mentorId))
-			.limit(1);
+		const [mentor] = await db.select().from(table.user).where(eq(table.user.id, mentorId)).limit(1);
 
 		const driverName = mentor?.username || "Unknown";
 
