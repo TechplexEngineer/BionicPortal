@@ -6,6 +6,9 @@ describe("getProfileCompleteness", () => {
 	it("requires the requested parent profile fields", () => {
 		const result = getProfileCompleteness("parent", {
 			userId: "parent-1",
+			firstName: "Pat",
+			lastName: "Parent",
+			email: "parent@example.com",
 			phone: "555-0100",
 			educationLevel: "College",
 			degree: null,

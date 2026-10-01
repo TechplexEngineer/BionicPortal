@@ -28,6 +28,9 @@ function event(
 		update: vi.fn().mockReturnValue({ set })
 	};
 	const body = new URLSearchParams({
+		firstName: "Pat",
+		lastName: "Parent",
+		email: "parent@example.com",
 		phone: "555-0100",
 		educationLevel: "College",
 		degree: "Engineering",
@@ -104,6 +107,29 @@ describe("parent registration", () => {
 		expect(await actions.default(input)).toMatchObject({
 			status: 400,
 			data: { message: "Enter a valid student email address." }
+		});
+		expect(insert).not.toHaveBeenCalled();
+	});
+
+	it("rejects an invalid parent email before saving the parent profile", async () => {
+		const { input, insert } = event([]);
+		input.request = new Request("http://localhost/register/parent", {
+			method: "POST",
+			body: new URLSearchParams({
+				firstName: "Pat",
+				lastName: "Parent",
+				email: "not-an-email",
+				phone: "555-0100",
+				educationLevel: "College",
+				degree: "Engineering",
+				jobTitle: "Engineer",
+				studentEmail: "student@school.edu"
+			})
+		});
+
+		expect(await actions.default(input)).toMatchObject({
+			status: 400,
+			data: { message: "Please complete all required parent profile fields." }
 		});
 		expect(insert).not.toHaveBeenCalled();
 	});

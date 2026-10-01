@@ -19,6 +19,9 @@ export function getProfileCompleteness(
 	if (role === "parent") {
 		const parent = profile as ParentProfile | null;
 		const missingFields = missing([
+			["first name", parent?.firstName],
+			["last name", parent?.lastName],
+			["email address", parent?.email],
 			["phone number", parent?.phone],
 			["level of education", parent?.educationLevel],
 			["degree", parent?.degree],

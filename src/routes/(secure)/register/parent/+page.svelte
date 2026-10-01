@@ -51,6 +51,47 @@
 							};
 						}}
 					>
+						<div class="row g-3 mb-4">
+							<div class="col-md-6">
+								<label for="firstName" class="form-label fw-semibold">
+									First Name <span class="text-danger">*</span>
+								</label>
+								<input
+									id="firstName"
+									name="firstName"
+									class="form-control"
+									value={data.profile?.firstName ?? ""}
+									required
+								/>
+							</div>
+							<div class="col-md-6">
+								<label for="lastName" class="form-label fw-semibold">
+									Last Name <span class="text-danger">*</span>
+								</label>
+								<input
+									id="lastName"
+									name="lastName"
+									class="form-control"
+									value={data.profile?.lastName ?? ""}
+									required
+								/>
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<label for="email" class="form-label fw-semibold">
+								Email Address <span class="text-danger">*</span>
+							</label>
+							<input
+								id="email"
+								name="email"
+								type="email"
+								class="form-control"
+								value={data.profile?.email ?? data.user.username}
+								required
+							/>
+						</div>
+
 						{#if !data.hasProfile}
 							<div class="mb-4">
 								<label for="phone" class="form-label fw-semibold">
@@ -91,44 +132,51 @@
 							</div>
 						{/if}
 
-						<div class="mb-4">
-							<label for="educationLevel" class="form-label fw-semibold"
-								>Level of Education <span class="text-danger">*</span></label
-							>
-							<input
-								id="educationLevel"
-								name="educationLevel"
-								class="form-control"
-								value={data.profile?.educationLevel ?? ""}
-								required
-							/>
-						</div>
-						<div class="row g-3 mb-4">
-							<div class="col-md-6">
-								<label for="degree" class="form-label fw-semibold"
-									>Degree <span class="text-danger">*</span></label
+						<fieldset class="mb-4">
+							<legend class="h6 fw-semibold mb-3">Education and work information</legend>
+							<div class="mb-3">
+								<label for="educationLevel" class="form-label fw-semibold"
+									>Level of Education <span class="text-danger">*</span></label
 								>
 								<input
-									id="degree"
-									name="degree"
+									id="educationLevel"
+									name="educationLevel"
 									class="form-control"
-									value={data.profile?.degree ?? ""}
+									value={data.profile?.educationLevel ?? ""}
 									required
 								/>
 							</div>
-							<div class="col-md-6">
-								<label for="jobTitle" class="form-label fw-semibold"
-									>Job Title <span class="text-danger">*</span></label
-								>
-								<input
-									id="jobTitle"
-									name="jobTitle"
-									class="form-control"
-									value={data.profile?.jobTitle ?? ""}
-									required
-								/>
+							<div class="row g-3">
+								<div class="col-md-6">
+									<label for="degree" class="form-label fw-semibold"
+										>Degree <span class="text-danger">*</span></label
+									>
+									<input
+										id="degree"
+										name="degree"
+										class="form-control"
+										value={data.profile?.degree ?? ""}
+										required
+									/>
+								</div>
+								<div class="col-md-6">
+									<label for="jobTitle" class="form-label fw-semibold"
+										>Job Title <span class="text-danger">*</span></label
+									>
+									<input
+										id="jobTitle"
+										name="jobTitle"
+										class="form-control"
+										value={data.profile?.jobTitle ?? ""}
+										required
+									/>
+								</div>
 							</div>
-						</div>
+							<div class="form-text mt-3">
+								Many companies have grant programs. Sharing your place of work helps us match you to
+								grants that may apply to our team.
+							</div>
+						</fieldset>
 
 						<div class="mb-4">
 							<div class="d-flex justify-content-between align-items-center mb-2">

@@ -64,6 +64,9 @@ export const actions: Actions = {
 			.getAll("studentEmail")
 			.map((value) => (value as string).toLowerCase().trim())
 			.filter(Boolean);
+		const firstName = (formData.get("firstName") as string)?.trim();
+		const lastName = (formData.get("lastName") as string)?.trim();
+		const email = (formData.get("email") as string)?.trim().toLowerCase();
 		const phone = (formData.get("phone") as string)?.trim();
 		const educationLevel = (formData.get("educationLevel") as string)?.trim();
 		const degree = (formData.get("degree") as string)?.trim();
@@ -73,7 +76,15 @@ export const actions: Actions = {
 			return fail(400, { message: "Enter a valid student email address." });
 		}
 
-		if (!phone || !educationLevel || !degree || !jobTitle) {
+		if (
+			!firstName ||
+			!lastName ||
+			!isValidEmail(email) ||
+			!phone ||
+			!educationLevel ||
+			!degree ||
+			!jobTitle
+		) {
 			return fail(400, { message: "Please complete all required parent profile fields." });
 		}
 
@@ -95,10 +106,10 @@ export const actions: Actions = {
 			// 2. Save or update the complete parent profile.
 			await db
 				.insert(table.parentProfiles)
-				.values({ userId, phone, educationLevel, degree, jobTitle })
+				.values({ userId, firstName, lastName, email, phone, educationLevel, degree, jobTitle })
 				.onConflictDoUpdate({
 					target: table.parentProfiles.userId,
-					set: { phone, educationLevel, degree, jobTitle }
+					set: { firstName, lastName, email, phone, educationLevel, degree, jobTitle }
 				});
 
 			// 3. Link registered students and save the rest for automatic linking later.
