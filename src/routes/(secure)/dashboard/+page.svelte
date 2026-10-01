@@ -1,5 +1,6 @@
 <script lang="ts">
 	import DashHeader, { type Page } from "$lib/components/DashHeader.svelte";
+	import { getPaymentStatusLabel, isFreeEvent } from "$lib/eventPricing";
 	import { hasPendingActionItems } from "$lib/profileActions";
 	import type { PageProps } from "./$types";
 
@@ -63,7 +64,9 @@
 							<p class="text-muted mb-0">No event registrations yet.</p>
 						{:else}
 							<!-- Action items -->
-							{@const pending = registrations.filter((r) => !r.paid || !r.formCompleted)}
+							{@const pending = registrations.filter(
+								(r) => (r.cost > 0 && !r.paid) || !r.formCompleted
+							)}
 							{#if pending.length > 0}
 								<h6 class="text-warning fw-bold mb-2">
 									<i class="fa fa-exclamation-triangle me-1"></i> Action Items
@@ -78,7 +81,7 @@
 												{#if !reg.formCompleted}
 													<span class="badge bg-danger">Form Incomplete</span>
 												{/if}
-												{#if !reg.paid}
+												{#if reg.cost > 0 && !reg.paid}
 													<span class="badge bg-warning text-dark">Payment Pending</span>
 												{/if}
 											</span>
@@ -105,11 +108,13 @@
 													{reg.formCompleted ? "Form ✓" : "Form Pending"}
 												</span>
 												<span
-													class="badge {reg.paid ? 'bg-success' : 'bg-warning text-dark'}"
+													class="badge {isFreeEvent(reg.cost) || reg.paid
+														? 'bg-success'
+														: 'bg-warning text-dark'}"
 													title="Payment"
 												>
 													<i class="fa fa-dollar me-1"></i>
-													{reg.paid ? "Paid ✓" : "Unpaid"}
+													{getPaymentStatusLabel(reg.cost, reg.paid)}
 												</span>
 											</span>
 										</div>
@@ -246,8 +251,12 @@
 												<span class="badge {reg.formCompleted ? 'bg-success' : 'bg-secondary'}">
 													{reg.formCompleted ? "Form ✓" : "Form Pending"}
 												</span>
-												<span class="badge {reg.paid ? 'bg-success' : 'bg-warning text-dark'}">
-													{reg.paid ? "Paid ✓" : "Unpaid"}
+												<span
+													class="badge {isFreeEvent(reg.cost) || reg.paid
+														? 'bg-success'
+														: 'bg-warning text-dark'}"
+												>
+													{getPaymentStatusLabel(reg.cost, reg.paid)}
 												</span>
 											</div>
 										</div>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import { getEventCostLabel } from "$lib/eventPricing";
 	import type { PageProps } from "./$types";
 
 	let { data, form }: PageProps = $props();
@@ -56,7 +57,7 @@
 							</span>
 							<span class="meta-item">
 								<i class="fa fa-usd"></i>
-								Cost: ${event.cost.toFixed(2)}
+								Cost: {getEventCostLabel(event.cost)}
 							</span>
 						</div>
 

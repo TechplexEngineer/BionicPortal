@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import { isFreeEvent } from "$lib/eventPricing";
 	import type { PageProps } from "./$types";
 
 	let { data, form }: PageProps = $props();
@@ -231,30 +232,35 @@
 									>
 									<td class="text-muted small">{reg.student.userid}</td>
 									<td>
-										<form
-											method="post"
-											action="?/togglePaid"
-											use:enhance={() => {
-												updating = true;
-												return async ({ update }) => {
-													await update();
-													updating = false;
-												};
-											}}
-										>
-											<input type="hidden" name="id" value={reg.id} />
-											<input type="hidden" name="paid" value={reg.paid} />
-											<button
-												type="submit"
-												class="btn btn-sm rounded-pill px-3 {reg.paid
-													? 'btn-success-subtle text-success border-success-subtle'
-													: 'btn-danger-subtle text-danger border-danger-subtle'} fw-bold"
-												disabled={updating}
-												style="font-size: 0.7rem;"
+										{#if isFreeEvent(data.event.cost)}
+											<span
+												class="badge rounded-pill bg-success-subtle text-success border border-success-subtle"
+												>FREE</span
 											>
-												{reg.paid ? "PAID" : "UNPAID"}
-											</button>
-										</form>
+										{:else}<form
+												method="post"
+												action="?/togglePaid"
+												use:enhance={() => {
+													updating = true;
+													return async ({ update }) => {
+														await update();
+														updating = false;
+													};
+												}}
+											>
+												<input type="hidden" name="id" value={reg.id} />
+												<input type="hidden" name="paid" value={reg.paid} />
+												<button
+													type="submit"
+													class="btn btn-sm rounded-pill px-3 {reg.paid
+														? 'btn-success-subtle text-success border-success-subtle'
+														: 'btn-danger-subtle text-danger border-danger-subtle'} fw-bold"
+													disabled={updating}
+													style="font-size: 0.7rem;"
+												>
+													{reg.paid ? "PAID" : "UNPAID"}
+												</button>
+											</form>{/if}
 									</td>
 									<td>
 										{#if data.forms.length > 0}
