@@ -1,6 +1,7 @@
 import { fail } from "@sveltejs/kit";
 import { and, eq, isNull, ne, or, sql } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
+import { getProfileCompleteness } from "$lib/server/profileCompleteness";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load = (async ({ locals, url }) => {
@@ -21,6 +22,11 @@ export const load = (async ({ locals, url }) => {
 			phone: table.students.phone,
 			parentPhone: table.students.parentPhone,
 			customFields: table.students.customFields,
+			intoleranceLevel: table.students.intoleranceLevel,
+			tshirtSize: table.students.tshirtSize,
+			currentGrade: table.students.currentGrade,
+			gender: table.students.gender,
+			dateOfBirth: table.students.dateOfBirth,
 			hidden: table.students.hidden,
 			parentCount: sql<number>`count(${table.parentStudentLinks.parentId})`,
 			attendanceCount: sql<number>`(
@@ -70,6 +76,7 @@ export const load = (async ({ locals, url }) => {
 
 	const studentsWithParentLinks = studentsWithParents.map((student) => ({
 		...student,
+		profileComplete: !getProfileCompleteness("user", student).incomplete,
 		parents: parentLinks.filter((parent) => parent.studentId === student.userid)
 	}));
 
