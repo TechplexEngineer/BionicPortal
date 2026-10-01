@@ -28,12 +28,33 @@
 		<div class="col-md-6">
 			<div class="card shadow-sm border-0">
 				<div class="card-body p-4">
-					<h1 class="h2 card-title fw-bold mb-2">Parent Registration</h1>
-					<p class="text-body-secondary mb-4">Signed in as {data.user.username}</p>
-					<p class="text-secondary mb-4">
-						Enter your students' school email addresses to link their accounts to yours. Once
-						connected, you can manage registrations and view attendance.
+					<div class="d-flex align-items-start gap-3 mb-2">
+						<div
+							class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+							style="width: 2.5rem; height: 2.5rem;"
+						>
+							1
+						</div>
+						<div>
+							<h1 class="h2 card-title fw-bold mb-1">Create your parent account</h1>
+							<p class="text-body-secondary mb-0">Signed in as {data.user.username}</p>
+						</div>
+					</div>
+					<p class="text-secondary mt-3 mb-4">
+						Your student has already registered. Complete your parent profile and enter the same
+						email address they used so we can connect you to their account.
 					</p>
+
+					<div class="alert alert-info mb-4" role="note">
+						<strong>What happens next?</strong>
+						<ol class="mb-0 mt-2 ps-3">
+							<li>Complete your parent contact and background information below.</li>
+							<li>Link each student using their school email address.</li>
+							<li>
+								Open your parent dashboard to complete any event forms that need your signature.
+							</li>
+						</ol>
+					</div>
 
 					{#if form?.message}
 						<div class="alert alert-danger mb-4" role="alert">
@@ -133,7 +154,10 @@
 						{/if}
 
 						<fieldset class="mb-4">
-							<legend class="h6 fw-semibold mb-3">Education and work information</legend>
+							<legend class="h6 fw-semibold mb-1">About you</legend>
+							<p class="form-text mb-3">
+								This information helps the team identify grant and employer-matching opportunities.
+							</p>
 							<div class="mb-3">
 								<label for="educationLevel" class="form-label fw-semibold"
 									>Level of Education <span class="text-danger">*</span></label
@@ -172,16 +196,13 @@
 									/>
 								</div>
 							</div>
-							<div class="form-text mt-3">
-								Many companies have grant programs. Sharing your place of work helps us match you to
-								grants that may apply to our team.
-							</div>
 						</fieldset>
 
 						<div class="mb-4">
 							<div class="d-flex justify-content-between align-items-center mb-2">
 								<label class="form-label fw-semibold mb-0" for="studentEmail-0">
-									Student School Emails {#if !data.hasProfile}<span class="text-danger">*</span
+									Student school email addresses {#if !data.hasProfile}<span class="text-danger"
+											>*</span
 										>{/if}
 								</label>
 								<button
@@ -222,8 +243,9 @@
 								</div>
 							{/each}
 							<div class="form-text mt-2">
-								Your students must have already completed their student registration with these
-								emails. Homeschool students can use the personal email on their student profile.
+								Use the exact email address your student used when registering. Add another address
+								if you have more than one student. Homeschool students can use the personal email on
+								their student profile.
 							</div>
 						</div>
 
@@ -237,7 +259,9 @@
 									></span>
 									Connecting...
 								{:else}
-									Connect to Students
+									{data.hasProfile
+										? "Save changes and view dashboard"
+										: "Create account and continue"}
 								{/if}
 							</button>
 						</div>
