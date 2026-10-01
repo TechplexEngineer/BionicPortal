@@ -12,8 +12,9 @@
 
 	interface Props {
 		user: App.Locals["user"] | null;
+		isImpersonating: boolean;
 	}
-	let { user }: Props = $props();
+	let { user, isImpersonating }: Props = $props();
 
 	function getGravatarUrl(username: string, size: number = 32) {
 		if (!username) return "";
@@ -92,6 +93,11 @@
 
 		{#if headerState.loginVisible}
 			{#if !!user}
+				{#if isImpersonating}
+					<form method="POST" action="/impersonate" class="me-2">
+						<button type="submit" class="btn btn-warning btn-sm">Stop impersonating</button>
+					</form>
+				{/if}
 				<div class="dropdown text-end">
 					<button
 						class="d-block btn btn-link link-body-emphasis text-decoration-none dropdown-toggle"

@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { actions as createActions } from "./new/+page.server";
 import { actions as editActions } from "./[userid]/+page.server";
+import { actions as userActions } from "./+page.server";
 import { actions as shopActions } from "../shop/+page.server";
+import * as auth from "$lib/server/auth";
 
 function event(fields: Record<string, string>) {
 	const values = vi.fn().mockResolvedValue(undefined);
@@ -105,6 +107,73 @@ describe("admin email-only accounts", () => {
 			expect(db.update).not.toHaveBeenCalled();
 		});
 	}
+});
+
+describe("restricted user impersonation", () => {
+	it("allows Blake to switch to another user's session and redirects to the dashboard", async () => {
+		const values = vi.fn().mockResolvedValue(undefined);
+		const db = {
+			query: {
+				user: {
+					findFirst: vi.fn().mockResolvedValue({
+						id: "target-user",
+						username: "member@example.org",
+						role: "user"
+					})
+				}
+			},
+			insert: vi.fn().mockReturnValue({ values })
+		};
+		const cookies = {
+			get: vi.fn().mockReturnValue("blake-session-token"),
+			set: vi.fn()
+		};
+		const input = {
+			request: new Request("https://portal.team4909.org/admin/users", {
+				method: "POST",
+				body: new URLSearchParams({ id: "target-user" })
+			}),
+			cookies,
+			url: new URL("https://portal.team4909.org/admin/users"),
+			locals: {
+				db,
+				user: { id: "blake", username: "Blake@Team4909.org", role: "admin" }
+			}
+		} as unknown as Parameters<NonNullable<typeof userActions.impersonate>>[0];
+
+		await expect(userActions.impersonate(input)).rejects.toMatchObject({
+			status: 303,
+			location: "/dashboard"
+		});
+		expect(values).toHaveBeenCalledWith(
+			expect.objectContaining({ userId: "target-user", expiresAt: expect.any(Date) })
+		);
+		expect(cookies.set).toHaveBeenCalledWith(
+			auth.impersonationOriginCookieName,
+			"blake-session-token",
+			expect.objectContaining({ httpOnly: true })
+		);
+	});
+
+	it("rejects every user other than Blake before looking up a target", async () => {
+		const findFirst = vi.fn();
+		const input = {
+			request: new Request("http://localhost/admin/users", {
+				method: "POST",
+				body: new URLSearchParams({ id: "target-user" })
+			}),
+			locals: {
+				db: { query: { user: { findFirst } } },
+				user: { id: "admin", username: "other@example.org", role: "admin" }
+			}
+		} as unknown as Parameters<NonNullable<typeof userActions.impersonate>>[0];
+
+		expect(await userActions.impersonate(input)).toMatchObject({
+			status: 403,
+			data: { message: "Only Blake can impersonate users" }
+		});
+		expect(findFirst).not.toHaveBeenCalled();
+	});
 });
 
 describe("shop location bulk updates", () => {

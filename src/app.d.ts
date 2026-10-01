@@ -21,6 +21,7 @@ declare global {
 		interface Locals {
 			user: import("$lib/server/auth").SessionValidationResult["user"]; //User | null;
 			session: import("$lib/server/auth").SessionValidationResult["session"];
+			isImpersonating: boolean;
 			db: DbInstance;
 		}
 	} // interface Error {}

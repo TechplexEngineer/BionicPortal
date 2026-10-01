@@ -14,8 +14,18 @@
 	];
 </script>
 
-{#snippet action(id: string)}
+{#snippet action(id: string, row: Record)}
 	<a href={`/admin/users/${id}`} class="btn btn-primary btn-sm me-1">Edit</a>
+	{#if data.canImpersonate}
+		<form method="POST" action="?/impersonate" style="display:inline;">
+			<input type="hidden" name="id" value={id} />
+			<button
+				type="submit"
+				class="btn btn-secondary btn-sm me-1"
+				disabled={row.username.trim().toLowerCase() === "blake@team4909.org"}>Impersonate</button
+			>
+		</form>
+	{/if}
 	<form method="POST" action="?/delete" style="display:inline;">
 		<input type="hidden" name="id" value={id} />
 		<button

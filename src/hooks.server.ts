@@ -4,6 +4,8 @@ import { getDb } from "$lib/server/db";
 import { sequence } from "@sveltejs/kit/hooks";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
+	event.locals.isImpersonating =
+		event.cookies.get(auth.impersonationOriginCookieName) !== undefined;
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
 
 	if (!sessionToken) {
