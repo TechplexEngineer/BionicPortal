@@ -12,3 +12,4 @@
 - **Unique Each Keys**: When adding keyed Svelte loops to reusable tables, key by the rendered column position or another guaranteed-unique identity; data-field names can legitimately repeat across columns.
 - **Student List Visibility**: Keep hidden status available to row actions, but do not render it as a student-list column when the UI requirement is to expose only the toggle action.
 - **Navbar Route Labels**: When a requested navbar label includes a route in parentheses, treat the parenthetical as destination clarification rather than text to display unless explicitly requested.
+- **Admin Navigation Grouping**: When an admin area gains a peer dashboard such as Parents, place it in the primary tab list rather than nesting it under a related entity like Students.

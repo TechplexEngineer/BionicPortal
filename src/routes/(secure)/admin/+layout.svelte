@@ -39,9 +39,15 @@
 				{
 					name: "Attendance",
 					route: "/admin/students/attendance"
-				},
+				}
+			]
+		},
+		{
+			name: "Parents",
+			route: "/admin/parents",
+			nested: [
 				{
-					name: "Parents",
+					name: "Overview",
 					route: "/admin/parents"
 				}
 			]
