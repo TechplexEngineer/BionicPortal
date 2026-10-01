@@ -18,7 +18,11 @@ export const load: PageServerLoad = async (event) => {
 		.from(table.mentorProfiles)
 		.where(eq(table.mentorProfiles.userId, event.locals.user.id));
 
-	return { profile: profile ?? null, email: event.locals.user.username };
+	return {
+		profile: profile ?? null,
+		email: event.locals.user.username,
+		mentorApproved: event.locals.user.mentorApproved
+	};
 };
 
 export const actions: Actions = {
@@ -72,7 +76,7 @@ export const actions: Actions = {
 			if (event.locals.user.role === "user") {
 				await event.locals.db
 					.update(table.user)
-					.set({ role: "mentor" })
+					.set({ role: "mentor", mentorApproved: false })
 					.where(eq(table.user.id, event.locals.user.id));
 			}
 		} catch (error) {

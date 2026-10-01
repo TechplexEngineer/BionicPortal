@@ -10,7 +10,8 @@ export const user = sqliteTable("user", {
 	id: text("id").primaryKey(),
 	username: text("username").notNull().unique(),
 	passwordHash: text("password_hash").notNull(),
-	role: text("role").notNull().default("user")
+	role: text("role").notNull().default("user"),
+	mentorApproved: integer("mentor_approved", { mode: "boolean" }).notNull().default(true)
 });
 export type User = typeof user.$inferSelect;
 

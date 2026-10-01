@@ -19,7 +19,7 @@ describe("magic-link routes", () => {
 		vi.resetAllMocks();
 		sqlite = new Database(":memory:");
 		sqlite.exec(`CREATE TABLE magic_codes (email TEXT PRIMARY KEY, code TEXT NOT NULL, expires_at INTEGER NOT NULL);
-		CREATE TABLE user (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL);
+		CREATE TABLE user (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL, mentor_approved INTEGER NOT NULL DEFAULT 1);
 		CREATE TABLE session (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL);`);
 		db = drizzle(sqlite) as unknown as DbInstance;
 	});
@@ -44,7 +44,7 @@ describe("magic-link routes", () => {
 	}
 	it("logs in directly in development, normalizes the email, and preserves the return path", async () => {
 		sqlite
-			.prepare("INSERT INTO user VALUES (?, ?, ?, ?)")
+			.prepare("INSERT INTO user (id, username, password_hash, role) VALUES (?, ?, ?, ?)")
 			.run("admin-id", "Person@Example.org", "existing", "admin");
 		const input = event({ email: " Person@Example.org ", next: "https://evil.example/phishing" });
 
@@ -122,7 +122,7 @@ describe("magic-link routes", () => {
 	});
 	it("does not consume on GET and preserves existing admin role on POST", async () => {
 		sqlite
-			.prepare("INSERT INTO user VALUES (?, ?, ?, ?)")
+			.prepare("INSERT INTO user (id, username, password_hash, role) VALUES (?, ?, ?, ?)")
 			.run("admin-id", "Person@Example.org", "existing", "admin");
 		const token = await issueMagicLink(db, "person@example.org");
 		const input = verificationEvent({ token: token! });
@@ -154,10 +154,10 @@ describe("magic-link routes", () => {
 	});
 	it("rejects ambiguous legacy usernames without creating a session", async () => {
 		sqlite
-			.prepare("INSERT INTO user VALUES (?, ?, ?, ?)")
+			.prepare("INSERT INTO user (id, username, password_hash, role) VALUES (?, ?, ?, ?)")
 			.run("one", "Person@Example.org", "existing", "admin");
 		sqlite
-			.prepare("INSERT INTO user VALUES (?, ?, ?, ?)")
+			.prepare("INSERT INTO user (id, username, password_hash, role) VALUES (?, ?, ?, ?)")
 			.run("two", "person@example.org", "existing", "user");
 		const token = await issueMagicLink(db, "person@example.org");
 		expect(await verification.default!(verificationEvent({ token: token! }))).toMatchObject({
