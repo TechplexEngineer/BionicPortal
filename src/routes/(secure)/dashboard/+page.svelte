@@ -1,6 +1,6 @@
 <script lang="ts">
 	import DashHeader, { type Page } from "$lib/components/DashHeader.svelte";
-	import { getPaymentStatusLabel, isFreeEvent } from "$lib/eventPricing";
+	import { getPaymentStatusLabel, isFreeEvent, requiresPayment } from "$lib/eventPricing";
 	import { hasPendingActionItems } from "$lib/profileActions";
 	import type { PageProps } from "./$types";
 
@@ -186,7 +186,7 @@
 													</span>
 												{/if}
 											{/if}
-											{#if !item.paid}
+											{#if requiresPayment(item.cost, item.paid)}
 												{#if item.invoicePaymentLink}
 													<a
 														href={item.invoicePaymentLink}

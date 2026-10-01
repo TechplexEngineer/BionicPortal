@@ -6,6 +6,7 @@ import * as table from "$lib/server/db/schema";
 import { getAgeOnDate, getFormStatus } from "$lib/server/formWorkflow";
 import { getProfileCompleteness } from "$lib/server/profileCompleteness";
 import type { Role } from "$lib/roles";
+import { requiresPayment } from "$lib/eventPricing";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user!;
@@ -225,7 +226,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.filter((r) => new Date(r.endDate) >= now)
 		.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-	const actionItems = upcomingRegistrations.filter((r) => !r.paid || !r.formCompleted);
+	const actionItems = upcomingRegistrations.filter(
+		(r) => requiresPayment(r.cost, r.paid) || !r.formCompleted
+	);
 
 	return {
 		role,
