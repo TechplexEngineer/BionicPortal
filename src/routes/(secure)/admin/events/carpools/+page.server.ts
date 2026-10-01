@@ -1,5 +1,5 @@
-import { fail, redirect } from "@sveltejs/kit";
-import { eq, and, sql } from "drizzle-orm";
+import { fail } from "@sveltejs/kit";
+import { eq, and } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -16,7 +16,8 @@ export const load: PageServerLoad = async (event) => {
 			id: table.user.id,
 			username: table.user.username
 		})
-		.from(table.user);
+		.from(table.user)
+		.where(eq(table.user.role, "mentor"));
 
 	const carpoolSpots = await db.select().from(table.carpoolSpots);
 
@@ -39,7 +40,9 @@ export const actions: Actions = {
 		if (!capacityStr || capacityStr.trim() === "") {
 			await db
 				.delete(table.carpoolSpots)
-				.where(and(eq(table.carpoolSpots.eventId, eventId), eq(table.carpoolSpots.mentorId, mentorId)));
+				.where(
+					and(eq(table.carpoolSpots.eventId, eventId), eq(table.carpoolSpots.mentorId, mentorId))
+				);
 			return { success: true };
 		}
 
@@ -49,11 +52,7 @@ export const actions: Actions = {
 		}
 
 		// Get mentor name for default driver name
-		const [mentor] = await db
-			.select()
-			.from(table.user)
-			.where(eq(table.user.id, mentorId))
-			.limit(1);
+		const [mentor] = await db.select().from(table.user).where(eq(table.user.id, mentorId)).limit(1);
 
 		const driverName = mentor?.username || "Unknown";
 
