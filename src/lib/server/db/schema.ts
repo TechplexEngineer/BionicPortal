@@ -428,6 +428,9 @@ export const parentProfiles = sqliteTable("parent_profiles", {
 	userId: text("user_id")
 		.primaryKey()
 		.references(() => user.id),
+	firstName: text("first_name"),
+	lastName: text("last_name"),
+	email: text("email"),
 	phone: text("phone"),
 	educationLevel: text("education_level"),
 	degree: text("degree"),
