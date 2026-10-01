@@ -29,7 +29,15 @@ function event(fields: Record<string, string> = validFields) {
 				method: "POST",
 				body: new URLSearchParams(fields)
 			}),
-			locals: { user: { id: "user-1", username: "mentor@example.com", role: "user" }, db }
+			locals: {
+				user: {
+					id: "user-1",
+					username: "mentor@example.com",
+					role: "user",
+					mentorApproved: true
+				},
+				db
+			}
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0],
 		values,
 		set
@@ -65,7 +73,7 @@ describe("mentor registration", () => {
 			tshirtSize: "L",
 			firstAlumni: "yes"
 		});
-		expect(set).toHaveBeenCalledWith({ role: "mentor" });
+		expect(set).toHaveBeenCalledWith({ role: "mentor", mentorApproved: false });
 	});
 
 	it("rejects incomplete registration fields before writing", async () => {

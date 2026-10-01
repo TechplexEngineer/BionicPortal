@@ -50,8 +50,26 @@ describe("admin email-only accounts", () => {
 			password: "stale-client-password"
 		});
 		await expect(editActions.edit(input)).resolves.toEqual({ success: true });
-		expect(set).toHaveBeenCalledWith({ username: "updated@example.com", role: "parent" });
+		expect(set).toHaveBeenCalledWith({
+			username: "updated@example.com",
+			role: "parent",
+			mentorApproved: true
+		});
 		expect(where).toHaveBeenCalledOnce();
+	});
+
+	it("approves a mentor only when the admin checks dashboard access", async () => {
+		const { input, set } = event({
+			username: "mentor@example.com",
+			role: "mentor",
+			mentorApproved: "on"
+		});
+		await expect(editActions.edit(input)).resolves.toEqual({ success: true });
+		expect(set).toHaveBeenCalledWith({
+			username: "mentor@example.com",
+			role: "mentor",
+			mentorApproved: true
+		});
 	});
 
 	for (const [name, action] of [
