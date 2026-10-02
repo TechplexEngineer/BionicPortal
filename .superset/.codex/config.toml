@@ -1,0 +1,13 @@
+sandbox_mode = "workspace-write"
+
+[permissions.paseo.network]
+enabled = true
+mode = "limited"
+allow_local_binding = false
+
+[permissions.paseo.network.domains]
+"127.0.0.1" = "allow"
+"localhost" = "allow"
+
+[features.network_proxy]
+enabled = true
