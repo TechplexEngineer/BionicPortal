@@ -27,6 +27,26 @@ export const session = sqliteTable("session", {
 });
 export type Session = typeof session.$inferSelect;
 
+export const passkey = sqliteTable("passkey", {
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	publicKey: text("public_key").notNull(),
+	counter: integer("counter").notNull(),
+	transports: text("transports").notNull().default("[]"),
+	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+	name: text("name").notNull()
+});
+
+export const passkeyChallenge = sqliteTable("passkey_challenge", {
+	id: text("id").primaryKey(),
+	challenge: text("challenge").notNull(),
+	ceremony: text("ceremony").notNull(),
+	userId: text("user_id"),
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull()
+});
+
 // ----------------------------------------------------------------------------
 // Students Table
 // ----------------------------------------------------------------------------
@@ -83,6 +103,22 @@ export const shopLocationInsertSchema = createInsertSchema(shopLocations, {
 	location: (schema) => schema.min(1).max(100),
 	item: (schema) => schema.min(1).max(255)
 });
+
+// ----------------------------------------------------------------------------
+// Standard Operating Procedures Table
+// ----------------------------------------------------------------------------
+export const sops = sqliteTable("sops", {
+	id: text("id").primaryKey(),
+	title: text("title").notNull(),
+	content: text("content").notNull(),
+	createdAt: integer("created_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: integer("updated_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`)
+});
+export type Sop = typeof sops.$inferSelect;
 
 export const studentsRelations = relations(students, ({ many }) => ({
 	attendance: many(attendance),

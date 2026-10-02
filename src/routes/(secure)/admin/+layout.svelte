@@ -97,6 +97,16 @@
 					route: "/admin/shop"
 				}
 			]
+		},
+		{
+			name: "SOPs",
+			route: "/sops",
+			nested: [
+				{
+					name: "Overview",
+					route: "/sops"
+				}
+			]
 		}
 	];
 
