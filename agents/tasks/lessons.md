@@ -7,3 +7,4 @@
 - When a user corrects a form requirement after implementation, enforce it in both the browser markup and the server action, and add a regression test for bypassing client-side validation.
 - When a UI card gains a new task source, include that source in the empty-state predicate so “caught up” is shown only when every task source is complete.
 - For highly confident bounded changes, proceed with implementation without waiting for explicit design approval.
+- Enhanced delete forms must call the framework-provided `cancel()` inside the `use:enhance` submit callback and immediately return; do not rely on a separate `onsubmit` `preventDefault()` handler.

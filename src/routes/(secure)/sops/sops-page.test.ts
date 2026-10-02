@@ -18,6 +18,8 @@ describe("SOP page", () => {
 		expect(deleteForm).toBeDefined();
 		expect(deleteForm).toContain("use:enhance={({ cancel }) =>");
 		expect(deleteForm).toContain("cancel();");
+		expect(deleteForm).toContain("return;");
 		expect(deleteForm).not.toContain("onsubmit=");
+		expect(deleteForm?.indexOf("cancel();")).toBeLessThan(deleteForm!.indexOf("return;"));
 	});
 });
