@@ -9,7 +9,10 @@ describe("SOP page", () => {
 		expect(pageMarkup).toContain('import SvelteMarkdown from "@humanspeak/svelte-markdown"');
 		expect(pageMarkup).toContain("<SvelteMarkdown source={data.selectedSop.content} />");
 		expect(pageMarkup).toContain("goto(selectedHref(String(result.data.id)))");
-		expect(pageMarkup).toContain("editing = false");
+		expect(pageMarkup).toContain('editorMode = "new"');
+		expect(pageMarkup).toContain('action={editorMode === "edit" ? "?/update" : "?/create"}');
+		expect(pageMarkup).toContain('{#if editorMode === "edit" && data.selectedSop}');
+		expect(pageMarkup).toContain("editorMode = null");
 	});
 
 	it("cancels delete before enhanced submission", () => {
@@ -21,5 +24,7 @@ describe("SOP page", () => {
 		expect(deleteForm).toContain("return;");
 		expect(deleteForm).not.toContain("onsubmit=");
 		expect(deleteForm?.indexOf("cancel();")).toBeLessThan(deleteForm!.indexOf("return;"));
+		expect(deleteForm).toContain('name="id" value={data.selectedSop.id}');
+		expect(deleteForm).toContain('goto(resolve("/sops"))');
 	});
 });

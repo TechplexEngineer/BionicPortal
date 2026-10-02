@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { eq } from "drizzle-orm";
+import * as table from "$lib/server/db/schema";
 import { actions, load } from "./+page.server";
 
 function dbWithSops(sops: unknown[]) {
@@ -42,5 +44,23 @@ describe("SOP access", () => {
 				request: new Request("http://localhost/sops", { method: "POST" })
 			} as unknown as Parameters<NonNullable<typeof actions.create>>[0])
 		).rejects.toMatchObject({ status: 302, location: "/dashboard" });
+	});
+
+	it("deletes only the SOP identified by the form", async () => {
+		const where = vi.fn().mockResolvedValue({ success: true });
+		const db = {
+			delete: vi.fn().mockReturnValue({ where })
+		};
+
+		await actions.delete({
+			locals: { user: { id: "admin", role: "admin" }, db },
+			request: new Request("http://localhost/sops", {
+				method: "POST",
+				body: new URLSearchParams({ id: "sop-to-delete" })
+			})
+		} as unknown as Parameters<NonNullable<typeof actions.delete>>[0]);
+
+		expect(db.delete).toHaveBeenCalledWith(table.sops);
+		expect(where).toHaveBeenCalledWith(eq(table.sops.id, "sop-to-delete"));
 	});
 });
