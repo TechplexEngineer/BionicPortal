@@ -10,6 +10,9 @@
 	let { data }: PageProps = $props();
 	type StudentRow = Record<string, any>;
 	const showArchivedUrl = "/admin/students?showArchived=true";
+	let exportUrl: "/admin/students/export" | "/admin/students/export?showArchived=true" = $derived(
+		data.showArchived ? "/admin/students/export?showArchived=true" : "/admin/students/export"
+	);
 
 	const columns: TableColumns = [
 		// Userid	FirstName	LastName	Data	Hidden
@@ -90,6 +93,9 @@
 {/snippet}
 
 {#snippet studentToolbar()}
+	<a href={resolve(exportUrl)} class="btn btn-outline-success btn-sm">
+		<i class="fa fa-download me-1"></i>Export CSV
+	</a>
 	{#if data.showArchived}
 		<a href={resolve("/admin/students")} class="btn btn-outline-secondary btn-sm"
 			>Show current students only</a
