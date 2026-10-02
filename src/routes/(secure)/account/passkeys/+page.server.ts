@@ -1,7 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { passkey } from "$lib/server/db/schema";
-import { getLoginUrl } from "$lib/server/authRedirect";
+import { getLoginUrl, getSafeReturnPath } from "$lib/server/authRedirect";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -11,7 +11,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			.select({ id: passkey.id, name: passkey.name, createdAt: passkey.createdAt })
 			.from(passkey)
 			.where(eq(passkey.userId, locals.user.id)),
-		isImpersonating: locals.isImpersonating
+		isImpersonating: locals.isImpersonating,
+		next: url.searchParams.has("next") ? getSafeReturnPath(url.searchParams.get("next")) : null
 	};
 };
 

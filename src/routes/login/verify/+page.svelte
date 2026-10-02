@@ -39,6 +39,15 @@
 						<button type="submit" class="btn btn-primary w-100" disabled={signingIn}
 							>{signingIn ? "Signing in…" : "Sign in"}</button
 						>
+						{#if data.showPasskeySetup}
+							<button
+								type="submit"
+								name="setupPasskey"
+								value="1"
+								class="btn btn-outline-primary w-100 mt-2"
+								disabled={signingIn}>Sign in to set up a passkey</button
+							>
+						{/if}
 					</form>
 				{:else if !form?.message}
 					<div class="alert alert-danger" role="alert">

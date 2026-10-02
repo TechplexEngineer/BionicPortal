@@ -20,6 +20,7 @@ describe("magic-link routes", () => {
 		sqlite = new Database(":memory:");
 		sqlite.exec(`CREATE TABLE magic_codes (email TEXT PRIMARY KEY, code TEXT NOT NULL, expires_at INTEGER NOT NULL);
 		CREATE TABLE user (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL, mentor_approved INTEGER NOT NULL DEFAULT 1);
+		CREATE TABLE passkey (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, public_key TEXT NOT NULL, counter INTEGER NOT NULL, transports TEXT NOT NULL, created_at INTEGER NOT NULL, name TEXT NOT NULL);
 		CREATE TABLE session (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL);`);
 		db = drizzle(sqlite) as unknown as DbInstance;
 	});
@@ -129,7 +130,8 @@ describe("magic-link routes", () => {
 		input.url.searchParams.set("token", token!);
 		expect(await load(input as unknown as Parameters<typeof load>[0])).toEqual({
 			token,
-			next: "/dashboard"
+			next: "/dashboard",
+			showPasskeySetup: true
 		});
 		expect(sqlite.prepare("SELECT count(*) AS count FROM magic_codes").get().count).toBe(1);
 		await expect(verification.default!(input)).rejects.toMatchObject({
@@ -150,6 +152,59 @@ describe("magic-link routes", () => {
 		await expect(verification.default!(input)).rejects.toMatchObject({
 			status: 303,
 			location: "/attend?event=42"
+		});
+	});
+	it("offers setup only for a valid link without an existing passkey", async () => {
+		const token = await issueMagicLink(db, "person@example.org");
+		const input = verificationEvent({});
+		input.url.searchParams.set("token", token!);
+		expect(await load(input as unknown as Parameters<typeof load>[0])).toMatchObject({
+			showPasskeySetup: true
+		});
+		expect(sqlite.prepare("SELECT count(*) AS count FROM user").get().count).toBe(0);
+		expect(sqlite.prepare("SELECT count(*) AS count FROM magic_codes").get().count).toBe(1);
+
+		sqlite
+			.prepare("INSERT INTO user (id, username, password_hash, role) VALUES (?, ?, ?, ?)")
+			.run("user-1", "person@example.org", "MAGIC_LINK_ONLY", "user");
+		expect(await load(input as unknown as Parameters<typeof load>[0])).toMatchObject({
+			showPasskeySetup: true
+		});
+		sqlite
+			.prepare("INSERT INTO passkey VALUES (?, ?, ?, ?, ?, ?, ?)")
+			.run("key-1", "user-1", "public-key", 0, "[]", Date.now(), "Passkey");
+		expect(await load(input as unknown as Parameters<typeof load>[0])).toMatchObject({
+			showPasskeySetup: false
+		});
+	});
+	it("signs in before redirecting to passkey setup and cannot reuse the link", async () => {
+		const token = await issueMagicLink(db, "new@example.org");
+		const input = verificationEvent({ token: token!, setupPasskey: "1", next: "/attend" });
+		await expect(verification.default!(input)).rejects.toMatchObject({
+			status: 303,
+			location: "/account/passkeys?next=%2Fattend"
+		});
+		expect(input.cookies.set).toHaveBeenCalled();
+		expect(sqlite.prepare("SELECT user_id FROM session").get()).toBeTruthy();
+		expect(
+			await verification.default!(verificationEvent({ token: token!, setupPasskey: "1" }))
+		).toMatchObject({ status: 400 });
+	});
+	it("does not redirect existing passkey users to setup on a forged setup choice", async () => {
+		sqlite
+			.prepare("INSERT INTO user (id, username, password_hash, role) VALUES (?, ?, ?, ?)")
+			.run("user-1", "person@example.org", "MAGIC_LINK_ONLY", "user");
+		sqlite
+			.prepare("INSERT INTO passkey VALUES (?, ?, ?, ?, ?, ?, ?)")
+			.run("key-1", "user-1", "public-key", 0, "[]", Date.now(), "Passkey");
+		const token = await issueMagicLink(db, "person@example.org");
+		await expect(
+			verification.default!(
+				verificationEvent({ token: token!, setupPasskey: "1", next: "/attend" })
+			)
+		).rejects.toMatchObject({
+			status: 303,
+			location: "/attend"
 		});
 	});
 	it("rejects ambiguous legacy usernames without creating a session", async () => {

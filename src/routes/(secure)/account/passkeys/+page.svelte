@@ -69,4 +69,5 @@
 			{/each}
 		</ul>
 	{/if}
+	{#if data.next}<a class="btn btn-link mt-3" href={data.next}>Continue to the portal</a>{/if}
 </main>

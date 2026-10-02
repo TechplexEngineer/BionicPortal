@@ -8,3 +8,4 @@
 - When a UI card gains a new task source, include that source in the empty-state predicate so “caught up” is shown only when every task source is complete.
 - For highly confident bounded changes, proceed with implementation without waiting for explicit design approval.
 - Enhanced delete forms must call the framework-provided `cancel()` inside the `use:enhance` submit callback and immediately return; do not rely on a separate `onsubmit` `preventDefault()` handler.
+- When offering passkey setup from an email-link landing page, verify and consume the link and establish the user's session before navigating to enrollment; a GET must never enroll a credential.
