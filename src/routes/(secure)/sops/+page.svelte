@@ -168,6 +168,7 @@
 								use:enhance={({ cancel }) => {
 									if (!confirm("Delete this SOP?")) {
 										cancel();
+										return;
 									}
 								}}
 							>
