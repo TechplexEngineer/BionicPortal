@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import { renderSopMarkdown } from "$lib/sopMarkdown";
+	import SvelteMarkdown from "@humanspeak/svelte-markdown";
 	import { searchSops } from "$lib/sopSearch";
 	import type { PageProps } from "./$types";
 
@@ -23,7 +24,6 @@
 	});
 
 	const isAdmin = $derived(data.user.role === "admin");
-	const renderedDraft = $derived(renderSopMarkdown(draftContent));
 	const selectedHref = (id: string) => resolve(`/sops?id=${encodeURIComponent(id)}`);
 </script>
 
@@ -97,7 +97,19 @@
 						>
 					</div>
 					<div class="card-body">
-						<form method="post" action={data.selectedSop ? "?/update" : "?/create"} use:enhance>
+						<form
+							method="post"
+							action={data.selectedSop ? "?/update" : "?/create"}
+							use:enhance={() => {
+								return async ({ result, update }) => {
+									await update();
+									if (result.type === "success" && result.data && "id" in result.data) {
+										editing = false;
+										await goto(selectedHref(String(result.data.id)));
+									}
+								};
+							}}
+						>
 							{#if data.selectedSop}<input
 									type="hidden"
 									name="id"
@@ -123,15 +135,13 @@
 							></textarea>
 							<div class="d-flex justify-content-between align-items-center mt-3">
 								<small class="text-muted"
-									>Markdown: headings, lists, links, bold, italic, and code.</small
+									>GitHub-flavored Markdown: headings, lists, tables, task lists, links, and code.</small
 								><button class="btn btn-primary" type="submit">Save SOP</button>
 							</div>
 						</form>
 						<hr />
 						<h2 class="h6">Preview</h2>
-						<!-- The renderer escapes source HTML and only permits https links. -->
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<div class="sop-content">{@html renderedDraft}</div>
+						<div class="sop-content"><SvelteMarkdown source={draftContent} /></div>
 					</div>
 				</div>
 			{:else if data.selectedSop}
@@ -149,17 +159,16 @@
 							>{/if}
 					</div>
 					<div class="card-body sop-content">
-						<!-- The renderer escapes source HTML and only permits https links. -->
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html renderSopMarkdown(data.selectedSop.content)}
+						<SvelteMarkdown source={data.selectedSop.content} />
 					</div>
 					{#if isAdmin}<div class="card-footer text-end">
 							<form
 								method="post"
 								action="?/delete"
-								use:enhance
-								onsubmit={(event) => {
-									if (!confirm("Delete this SOP?")) event.preventDefault();
+								use:enhance={({ cancel }) => {
+									if (!confirm("Delete this SOP?")) {
+										cancel();
+									}
 								}}
 							>
 								<input type="hidden" name="id" value={data.selectedSop.id} /><button
