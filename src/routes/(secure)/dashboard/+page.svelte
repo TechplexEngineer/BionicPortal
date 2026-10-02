@@ -6,7 +6,7 @@
 
 	let { data }: PageProps = $props();
 
-	let navPages: Page[] = [
+	let navPages: Page[] = $state([
 		{
 			name: "Dashboard",
 			route: "/dashboard",
@@ -17,7 +17,17 @@
 				}
 			]
 		}
-	];
+	]);
+	if (data.role === "mentor" || data.role === "admin") {
+		navPages = [
+			...navPages,
+			{
+				name: "SOPs",
+				route: "/sops",
+				nested: [{ name: "Overview", route: "/sops" }]
+			}
+		];
+	}
 
 	function formatDate(dateStr: string) {
 		return new Date(dateStr).toLocaleDateString("en-US", {

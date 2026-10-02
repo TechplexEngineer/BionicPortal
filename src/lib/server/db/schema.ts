@@ -84,6 +84,22 @@ export const shopLocationInsertSchema = createInsertSchema(shopLocations, {
 	item: (schema) => schema.min(1).max(255)
 });
 
+// ----------------------------------------------------------------------------
+// Standard Operating Procedures Table
+// ----------------------------------------------------------------------------
+export const sops = sqliteTable("sops", {
+	id: text("id").primaryKey(),
+	title: text("title").notNull(),
+	content: text("content").notNull(),
+	createdAt: integer("created_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: integer("updated_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`)
+});
+export type Sop = typeof sops.$inferSelect;
+
 export const studentsRelations = relations(students, ({ many }) => ({
 	attendance: many(attendance),
 	registrations: many(eventRegistrations)
