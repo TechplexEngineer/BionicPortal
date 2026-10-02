@@ -118,6 +118,7 @@
 					<ul class="dropdown-menu dropdown-menu-end text-small">
 						<li><span class="dropdown-item-text">{user.username}</span></li>
 						<li><hr class="dropdown-divider" /></li>
+						<li><a class="dropdown-item" href="/account/passkeys">Passkeys</a></li>
 						<li>
 							<a class="dropdown-item" href="https://gravatar.com" target="_blank">Edit Avatar</a>
 						</li>

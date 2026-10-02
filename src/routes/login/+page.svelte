@@ -2,8 +2,39 @@
 	import { enhance } from "$app/forms";
 	import { dev } from "$app/environment";
 	import type { ActionData, PageData } from "./$types";
+	import { startAuthentication, browserSupportsWebAuthn } from "@simplewebauthn/browser";
+	import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let requesting = $state(false);
+	let passkeyBusy = $state(false);
+	let passkeyError = $state("");
+	let passkeySupported = $state(false);
+	$effect(() => {
+		passkeySupported = browserSupportsWebAuthn();
+	});
+
+	async function signInWithPasskey() {
+		passkeyBusy = true;
+		passkeyError = "";
+		try {
+			const optionsResponse = await fetch("/api/passkeys/login/options", { method: "POST" });
+			if (!optionsResponse.ok) throw new Error("Could not start passkey sign-in");
+			const optionsJSON = (await optionsResponse.json()) as PublicKeyCredentialRequestOptionsJSON;
+			const response = await startAuthentication({ optionsJSON });
+			const verifyResponse = await fetch("/api/passkeys/login/verify", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ response, next: data.next })
+			});
+			if (!verifyResponse.ok) throw new Error("Unable to sign in with this passkey");
+			const result = (await verifyResponse.json()) as { next: string };
+			window.location.assign(result.next);
+		} catch (error) {
+			passkeyError = error instanceof Error ? error.message : "Passkey sign-in failed";
+		} finally {
+			passkeyBusy = false;
+		}
+	}
 </script>
 
 <svelte:head><title>Login | Bionic Portal</title></svelte:head>
@@ -26,6 +57,7 @@
 						{form.message}
 					</div>
 				{/if}
+				{#if passkeyError}<div class="alert alert-danger" role="status">{passkeyError}</div>{/if}
 				{#if form?.success && !dev}
 					<p>
 						Check your inbox for <strong>{form.email}</strong>. Your link expires in 15 minutes.
@@ -77,6 +109,17 @@
 									: "Send sign-in link"}
 					</button>
 				</form>
+				{#if passkeySupported}
+					<div class="text-center my-3 text-body-secondary">or</div>
+					<button
+						class="btn btn-outline-primary w-100"
+						type="button"
+						onclick={signInWithPasskey}
+						disabled={passkeyBusy}
+					>
+						{passkeyBusy ? "Signing in…" : "Sign in with a passkey"}
+					</button>
+				{/if}
 			</div>
 		</div>
 	</div>

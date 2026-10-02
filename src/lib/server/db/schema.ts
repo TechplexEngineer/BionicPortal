@@ -27,6 +27,26 @@ export const session = sqliteTable("session", {
 });
 export type Session = typeof session.$inferSelect;
 
+export const passkey = sqliteTable("passkey", {
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	publicKey: text("public_key").notNull(),
+	counter: integer("counter").notNull(),
+	transports: text("transports").notNull().default("[]"),
+	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+	name: text("name").notNull()
+});
+
+export const passkeyChallenge = sqliteTable("passkey_challenge", {
+	id: text("id").primaryKey(),
+	challenge: text("challenge").notNull(),
+	ceremony: text("ceremony").notNull(),
+	userId: text("user_id"),
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull()
+});
+
 // ----------------------------------------------------------------------------
 // Students Table
 // ----------------------------------------------------------------------------
