@@ -8,7 +8,7 @@
 
 	let { data, form }: PageProps = $props();
 	let query = $state("");
-	let editing = $state(false);
+	let editorMode = $state<"new" | "edit" | null>(null);
 	let draftTitle = $state(data.selectedSop?.title ?? "");
 	let draftContent = $state(data.selectedSop?.content ?? "");
 
@@ -17,7 +17,7 @@
 	});
 
 	$effect(() => {
-		if (!editing) {
+		if (editorMode === null) {
 			draftTitle = data.selectedSop?.title ?? "";
 			draftContent = data.selectedSop?.content ?? "";
 		}
@@ -40,7 +40,7 @@
 				class="btn btn-primary"
 				type="button"
 				onclick={() => {
-					editing = true;
+					editorMode = "new";
 					draftTitle = "";
 					draftContent = "";
 				}}
@@ -87,30 +87,30 @@
 		</aside>
 
 		<section class="col-lg-8" aria-label="SOP content">
-			{#if editing}
+			{#if editorMode !== null}
 				<div class="card shadow-sm">
 					<div class="card-header d-flex justify-content-between align-items-center">
-						<strong>{data.selectedSop ? "Edit SOP" : "New SOP"}</strong><button
+						<strong>{editorMode === "edit" ? "Edit SOP" : "New SOP"}</strong><button
 							class="btn btn-sm btn-outline-secondary"
 							type="button"
-							onclick={() => (editing = false)}>Cancel</button
+							onclick={() => (editorMode = null)}>Cancel</button
 						>
 					</div>
 					<div class="card-body">
 						<form
 							method="post"
-							action={data.selectedSop ? "?/update" : "?/create"}
+							action={editorMode === "edit" ? "?/update" : "?/create"}
 							use:enhance={() => {
 								return async ({ result, update }) => {
 									await update();
 									if (result.type === "success" && result.data && "id" in result.data) {
-										editing = false;
+										editorMode = null;
 										await goto(selectedHref(String(result.data.id)));
 									}
 								};
 							}}
 						>
-							{#if data.selectedSop}<input
+							{#if editorMode === "edit" && data.selectedSop}<input
 									type="hidden"
 									name="id"
 									value={data.selectedSop.id}
@@ -155,7 +155,7 @@
 						{#if isAdmin}<button
 								class="btn btn-outline-primary"
 								type="button"
-								onclick={() => (editing = true)}>Edit</button
+								onclick={() => (editorMode = "edit")}>Edit</button
 							>{/if}
 					</div>
 					<div class="card-body sop-content">
@@ -170,6 +170,10 @@
 										cancel();
 										return;
 									}
+									return async ({ result, update }) => {
+										await update();
+										if (result.type === "success") await goto(resolve("/sops"));
+									};
 								}}
 							>
 								<input type="hidden" name="id" value={data.selectedSop.id} /><button
