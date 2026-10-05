@@ -10,6 +10,12 @@ describe("event forms list layout", () => {
 		expect(pageMarkup).toContain("Create New Form");
 	});
 
+	it("provides a form-only copy control for forms from other events", () => {
+		expect(pageMarkup).toContain('action="?/copy"');
+		expect(pageMarkup).toContain('name="sourceFormId"');
+		expect(pageMarkup).toContain("Copy form");
+	});
+
 	it("renders each form with field counts and view/edit links", () => {
 		expect(pageMarkup).toContain("{#each data.forms as savedForm (savedForm.id)}");
 		expect(pageMarkup).toContain("{savedForm.name}");

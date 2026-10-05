@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { enhance } from "$app/forms";
 	import { resolve } from "$app/paths";
 	import type { PageProps } from "./$types";
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 </script>
 
 <svelte:head><title>Forms | {data.event.name} | Bionic Portal</title></svelte:head>
@@ -27,6 +28,33 @@
 	<div class="card">
 		<div class="card-body">
 			<h2 class="h5">Saved forms</h2>
+			{#if form?.success}
+				<div class="alert alert-success" role="status">{form.message}</div>
+			{:else if form?.message}
+				<div class="alert alert-danger" role="alert">{form.message}</div>
+			{/if}
+			{#if data.sourceEvents.some((sourceEvent) => sourceEvent.forms?.length)}
+				<form method="post" action="?/copy" use:enhance class="row g-2 align-items-end mb-4">
+					<div class="col-md-8">
+						<label class="form-label" for="source-form">Copy a form from another event</label>
+						<select id="source-form" name="sourceFormId" class="form-select" required>
+							<option value="">Choose a form…</option>
+							{#each data.sourceEvents as sourceEvent}
+								{#if sourceEvent.forms?.length}
+									<optgroup label={sourceEvent.name}>
+										{#each sourceEvent.forms as sourceForm}
+											<option value={sourceForm.id}>{sourceForm.name}</option>
+										{/each}
+									</optgroup>
+								{/if}
+							{/each}
+						</select>
+					</div>
+					<div class="col-md-auto">
+						<button class="btn btn-outline-primary" type="submit">Copy form</button>
+					</div>
+				</form>
+			{/if}
 			{#if data.forms.length === 0}
 				<p class="text-muted mb-0">No forms added yet.</p>
 			{:else}
@@ -42,7 +70,8 @@
 							<div class="d-flex gap-2">
 								<a
 									class="btn btn-outline-secondary btn-sm"
-									href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/base`)}>View</a
+									href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/base`)}
+									>View</a
 								>
 								<a
 									class="btn btn-outline-primary btn-sm"
