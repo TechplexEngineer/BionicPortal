@@ -21,13 +21,21 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 export const actions: Actions = {
-	save: async ({ request, locals, params }) => {
+	save: async ({ request, locals, platform, params }) => {
 		const formData = await request.formData();
 		const name = formData.get("name")?.toString().trim();
 		const definitionValue = formData.get("definition")?.toString();
+		const pdf = formData.get("pdf");
+		const replacementPdf = pdf instanceof File && pdf.size > 0 ? pdf : null;
 
 		if (!name || !definitionValue) {
 			return fail(400, { message: "A form name and definition are required." });
+		}
+		if (pdf !== null && !(pdf instanceof File)) {
+			return fail(400, { message: "The replacement document must be a PDF." });
+		}
+		if (replacementPdf?.type && replacementPdf.type !== "application/pdf") {
+			return fail(400, { message: "The replacement document must be a PDF." });
 		}
 
 		let definition;
@@ -38,15 +46,30 @@ export const actions: Actions = {
 		}
 
 		const [form] = await locals.db
-			.select({ id: table.eventForms.id })
+			.select({ id: table.eventForms.id, basePdfKey: table.eventForms.basePdfKey })
 			.from(table.eventForms)
 			.where(and(eq(table.eventForms.id, params.formId), eq(table.eventForms.eventId, params.id)));
 		if (!form) return fail(404, { message: "Form not found" });
 
-		await locals.db
-			.update(table.eventForms)
-			.set({ name, definition })
-			.where(and(eq(table.eventForms.id, params.formId), eq(table.eventForms.eventId, params.id)));
+		try {
+			if (replacementPdf) {
+				const bucket = platform?.env.FORMS_BUCKET;
+				if (!bucket) throw new Error("Forms storage is not configured");
+				await bucket.put(form.basePdfKey, await replacementPdf.arrayBuffer(), {
+					httpMetadata: { contentType: "application/pdf" }
+				});
+			}
+
+			await locals.db
+				.update(table.eventForms)
+				.set({ name, definition })
+				.where(
+					and(eq(table.eventForms.id, params.formId), eq(table.eventForms.eventId, params.id))
+				);
+		} catch (error) {
+			console.error("Failed to update event form:", error);
+			return fail(500, { message: "Unable to update the form." });
+		}
 
 		throw redirect(303, `/admin/events/${params.id}/forms`);
 	}

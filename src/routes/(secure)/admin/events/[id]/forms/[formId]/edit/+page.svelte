@@ -21,7 +21,7 @@
 	<header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
 		<div>
 			<h1 class="h2 mb-1">Edit {data.form.name}</h1>
-			<p class="text-muted mb-0">Configure fields for {data.event.name}.</p>
+			<p class="text-muted mb-0">Replace the PDF or configure fields for {data.event.name}.</p>
 		</div>
 		<a class="btn btn-outline-secondary" href={resolve(`/admin/events/${data.event.id}/forms`)}
 			>Back to forms</a
@@ -48,6 +48,7 @@
 	<form
 		method="post"
 		action="?/save"
+		enctype="multipart/form-data"
 		use:enhance={() => {
 			saving = true;
 			return async ({ update }) => {
@@ -58,6 +59,19 @@
 	>
 		<input type="hidden" name="name" value={name} />
 		<input type="hidden" name="definition" value={JSON.stringify(definition)} />
+		<div class="mt-3">
+			<label class="form-label" for="replacement-pdf"
+				>Replace blank PDF <span class="text-muted">(optional)</span></label
+			>
+			<input
+				id="replacement-pdf"
+				name="pdf"
+				class="form-control"
+				type="file"
+				accept="application/pdf,.pdf"
+			/>
+			<div class="form-text">Replacing the PDF keeps the existing fields and form responses.</div>
+		</div>
 		<button class="btn btn-primary mt-3" type="submit" disabled={saving}>
 			{saving ? "Saving…" : "Save form"}
 		</button>
