@@ -3,6 +3,8 @@
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import SvelteMarkdown from "@humanspeak/svelte-markdown";
+	import { adminNavPages } from "$lib/adminNavigation";
+	import DashHeader from "$lib/components/DashHeader.svelte";
 	import { searchSops } from "$lib/sopSearch";
 	import type { PageProps } from "./$types";
 
@@ -30,6 +32,9 @@
 <svelte:head><title>SOPs | Bionic Portal</title></svelte:head>
 
 <div class="container py-3">
+	{#if isAdmin}
+		<DashHeader pages={adminNavPages} />
+	{/if}
 	<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
 		<div>
 			<h1 class="mb-1">Standard Operating Procedures</h1>
