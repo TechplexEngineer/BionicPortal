@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const [event] = await locals.db.select().from(table.events).where(eq(table.events.id, params.id));
 	if (!event) throw redirect(302, "/admin/events");
 
@@ -16,7 +16,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		event: { id: event.id, ...event.data },
-		form: { id: form.id, name: form.name, definition: form.definition }
+		form: { id: form.id, name: form.name, definition: form.definition },
+		confirmDelete: url.searchParams.get("delete") === "1"
 	};
 };
 

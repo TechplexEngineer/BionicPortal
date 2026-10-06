@@ -86,27 +86,8 @@
 										href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/edit`)}
 										>Edit</a
 									>
-									<a
-										class="btn btn-outline-danger btn-sm"
-										href={resolve(
-											`/admin/events/${data.event.id}/forms?delete=${encodeURIComponent(savedForm.id)}`
-										)}>Delete</a
-									>
 								</div>
 							</div>
-							{#if data.deleteFormId === savedForm.id}
-								<div class="alert alert-warning mt-3 mb-0">
-									<p class="mb-2">Delete {savedForm.name}? This cannot be undone.</p>
-									<form method="post" action="?/delete" class="d-flex gap-2">
-										<input type="hidden" name="formId" value={savedForm.id} />
-										<button class="btn btn-danger btn-sm" type="submit">Confirm delete</button>
-										<a
-											class="btn btn-outline-secondary btn-sm"
-											href={resolve(`/admin/events/${data.event.id}/forms`)}>Cancel</a
-										>
-									</form>
-								</div>
-							{/if}
 						</div>
 					{/each}
 				</div>

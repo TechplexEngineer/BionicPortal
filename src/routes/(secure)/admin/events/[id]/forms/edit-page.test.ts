@@ -41,7 +41,8 @@ describe("event form editor server", () => {
 		const db = createDb();
 		const result = await load({
 			locals: { db },
-			params: { id: "event-1", formId: "form-1" }
+			params: { id: "event-1", formId: "form-1" },
+			url: new URL("http://localhost/admin/events/event-1/forms/form-1/edit")
 		} as unknown as Parameters<typeof load>[0]);
 
 		expect(result).toMatchObject({
@@ -51,6 +52,15 @@ describe("event form editor server", () => {
 				definition: { version: 1, fields: [] }
 			}
 		});
+	});
+
+	it("opens a confirmation on the editor URL", async () => {
+		const result = await load({
+			locals: { db: createDb() },
+			params: { id: "event-1", formId: "form-1" },
+			url: new URL("http://localhost/admin/events/event-1/forms/form-1/edit?delete=1")
+		} as unknown as Parameters<typeof load>[0]);
+		expect(result).toMatchObject({ confirmDelete: true });
 	});
 
 	it("updates only name and definition before redirecting to the forms list", async () => {
@@ -97,5 +107,14 @@ describe("event form editor page", () => {
 		expect(pageMarkup).toContain('name="definition"');
 		expect(pageMarkup).toContain('name="name"');
 		expect(pageMarkup).toContain('action="?/save"');
+	});
+
+	it("places the delete confirmation in the editor and submits to the existing action", () => {
+		expect(pageMarkup).toContain("Delete form");
+		expect(pageMarkup).toContain("data.confirmDelete");
+		expect(pageMarkup).toContain("Confirm delete");
+		expect(pageMarkup).toContain('name="formId" value={data.form.id}');
+		expect(pageMarkup).toContain("forms?/delete");
+		expect(pageMarkup).toContain("Cancel");
 	});
 });

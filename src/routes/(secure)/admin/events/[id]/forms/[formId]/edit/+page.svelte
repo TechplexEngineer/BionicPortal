@@ -23,10 +23,34 @@
 			<h1 class="h2 mb-1">Edit {data.form.name}</h1>
 			<p class="text-muted mb-0">Configure fields for {data.event.name}.</p>
 		</div>
-		<a class="btn btn-outline-secondary" href={resolve(`/admin/events/${data.event.id}/forms`)}
-			>Back to forms</a
-		>
+		<div class="d-flex gap-2">
+			<a class="btn btn-outline-secondary" href={resolve(`/admin/events/${data.event.id}/forms`)}
+				>Back to forms</a
+			>
+			<a
+				class="btn btn-outline-danger"
+				href={resolve(`/admin/events/${data.event.id}/forms/${data.form.id}/edit?delete=1`)}
+				>Delete form</a
+			>
+		</div>
 	</header>
+	{#if data.confirmDelete}
+		<div class="alert alert-warning" role="alert">
+			<p class="mb-2">Delete {data.form.name}? This cannot be undone.</p>
+			<form
+				method="post"
+				action={resolve(`/admin/events/${data.event.id}/forms?/delete`)}
+				class="d-flex gap-2"
+			>
+				<input type="hidden" name="formId" value={data.form.id} />
+				<button class="btn btn-danger" type="submit">Confirm delete</button>
+				<a
+					class="btn btn-outline-secondary"
+					href={resolve(`/admin/events/${data.event.id}/forms/${data.form.id}/edit`)}>Cancel</a
+				>
+			</form>
+		</div>
+	{/if}
 
 	{#if form?.message}
 		<div class="alert alert-danger" role="alert">{form.message}</div>

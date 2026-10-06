@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { actions, load } from "./+page.server";
+import { actions } from "./+page.server";
 
 const databases: Database.Database[] = [];
 
@@ -46,16 +46,6 @@ function requestFor(formId: string, setupResult: ReturnType<typeof setup>) {
 }
 
 describe("event form deletion", () => {
-	it("loads the requested inline confirmation", async () => {
-		const state = setup();
-		const result = await load({
-			locals: { db: state.db },
-			params: { id: "event-1" },
-			url: new URL("http://localhost/admin/events/event-1/forms?delete=form-1")
-		} as unknown as Parameters<typeof load>[0]);
-		expect(result).toMatchObject({ deleteFormId: "form-1" });
-	});
-
 	it("rejects a non-admin action request", async () => {
 		const state = setup();
 		const input = requestFor("form-1", state);
