@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import { resolve } from "$app/paths";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
@@ -84,6 +85,12 @@
 										class="btn btn-outline-secondary btn-sm"
 									>
 										<i class="fa fa-users me-1"></i> Regs
+									</a>
+									<a
+										href={resolve(`/admin/events/${event.id}/forms`)}
+										class="btn btn-outline-secondary btn-sm"
+									>
+										<i class="fa fa-file-alt me-1"></i> Forms ({event.formCount})
 									</a>
 									{#if event.needsCarpool === true}
 										<a
