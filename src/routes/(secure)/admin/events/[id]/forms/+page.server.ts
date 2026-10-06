@@ -1,9 +1,9 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { eq } from "drizzle-orm";
+import { and, eq, notExists } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const [event] = await locals.db.select().from(table.events).where(eq(table.events.id, params.id));
 	if (!event) throw redirect(302, "/admin/events");
 	const allForms = await locals.db.select().from(table.eventForms);
@@ -13,6 +13,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		event: { id: event.id, ...event.data },
 		forms,
+		deleteFormId: url.searchParams.get("delete"),
 		sourceEvents: events
 			.filter((sourceEvent) => sourceEvent.id !== params.id)
 			.map((sourceEvent) => ({
@@ -65,5 +66,70 @@ export const actions: Actions = {
 		}
 
 		return { success: true, message: `Copied ${sourceForm.name}.` };
+	},
+	delete: async ({ locals, params, platform, request }) => {
+		if (locals.user?.role !== "admin") return fail(403, { message: "Forbidden." });
+		const formId = (await request.formData()).get("formId");
+		if (typeof formId !== "string" || !formId) {
+			return fail(400, { message: "Invalid form ID." });
+		}
+
+		const [event] = await locals.db
+			.select({ data: table.events.data })
+			.from(table.events)
+			.where(eq(table.events.id, params.id));
+		if (!event) return fail(404, { message: "Event not found." });
+
+		const [form] = await locals.db
+			.select({ basePdfKey: table.eventForms.basePdfKey })
+			.from(table.eventForms)
+			.where(and(eq(table.eventForms.id, formId), eq(table.eventForms.eventId, params.id)));
+		if (!form) return fail(404, { message: "Form not found." });
+		const bucket = platform?.env.FORMS_BUCKET;
+		if (!bucket) {
+			console.error("Forms storage is not configured");
+			return fail(503, { message: "Form storage is unavailable." });
+		}
+
+		const deleted = await locals.db
+			.delete(table.eventForms)
+			.where(
+				and(
+					eq(table.eventForms.id, formId),
+					eq(table.eventForms.eventId, params.id),
+					notExists(
+						locals.db
+							.select({ id: table.eventFormSubmissions.id })
+							.from(table.eventFormSubmissions)
+							.where(eq(table.eventFormSubmissions.eventFormId, formId))
+					)
+				)
+			)
+			.returning({ id: table.eventForms.id });
+		if (deleted.length === 0) {
+			return fail(409, { message: "This form has submissions and cannot be deleted." });
+		}
+
+		const remainingForms = await locals.db
+			.select({ id: table.eventForms.id })
+			.from(table.eventForms)
+			.where(eq(table.eventForms.eventId, params.id))
+			.limit(1);
+		const message =
+			remainingForms.length === 0 && !event.data.permissionFormUrl
+				? "Form deleted. Review registration form statuses for this event."
+				: "Form deleted.";
+
+		try {
+			await bucket.delete(form.basePdfKey);
+		} catch (error) {
+			console.error("Failed to remove event form PDF:", form.basePdfKey, error);
+			return {
+				success: true,
+				warning: true,
+				message: `${message} Its blank PDF could not be removed from storage.`
+			};
+		}
+		return { success: true, message };
 	}
 };

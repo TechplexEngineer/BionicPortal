@@ -24,25 +24,32 @@
 			>
 		</div>
 	</header>
+	{#if form?.message}
+		<div
+			class="alert {form.warning
+				? 'alert-warning'
+				: form.success
+					? 'alert-success'
+					: 'alert-danger'}"
+			role="alert"
+		>
+			{form.message}
+		</div>
+	{/if}
 
 	<div class="card">
 		<div class="card-body">
 			<h2 class="h5">Saved forms</h2>
-			{#if form?.success}
-				<div class="alert alert-success" role="status">{form.message}</div>
-			{:else if form?.message}
-				<div class="alert alert-danger" role="alert">{form.message}</div>
-			{/if}
 			{#if data.sourceEvents.some((sourceEvent) => sourceEvent.forms?.length)}
 				<form method="post" action="?/copy" use:enhance class="row g-2 align-items-end mb-4">
 					<div class="col-md-8">
 						<label class="form-label" for="source-form">Copy a form from another event</label>
 						<select id="source-form" name="sourceFormId" class="form-select" required>
 							<option value="">Choose a form…</option>
-							{#each data.sourceEvents as sourceEvent}
+							{#each data.sourceEvents as sourceEvent (sourceEvent.id)}
 								{#if sourceEvent.forms?.length}
 									<optgroup label={sourceEvent.name}>
-										{#each sourceEvent.forms as sourceForm}
+										{#each sourceEvent.forms as sourceForm (sourceForm.id)}
 											<option value={sourceForm.id}>{sourceForm.name}</option>
 										{/each}
 									</optgroup>
@@ -60,25 +67,46 @@
 			{:else}
 				<div class="list-group list-group-flush">
 					{#each data.forms as savedForm (savedForm.id)}
-						<div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-							<div>
-								<div class="fw-semibold">{savedForm.name}</div>
-								<div class="text-muted small">
-									{(savedForm.definition as { fields: unknown[] }).fields.length} fields
+						<div class="list-group-item px-0">
+							<div class="d-flex justify-content-between align-items-center">
+								<div>
+									<div class="fw-semibold">{savedForm.name}</div>
+									<div class="text-muted small">
+										{(savedForm.definition as { fields: unknown[] }).fields.length} fields
+									</div>
+								</div>
+								<div class="d-flex gap-2">
+									<a
+										class="btn btn-outline-secondary btn-sm"
+										href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/base`)}
+										>View</a
+									>
+									<a
+										class="btn btn-outline-primary btn-sm"
+										href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/edit`)}
+										>Edit</a
+									>
+									<a
+										class="btn btn-outline-danger btn-sm"
+										href={resolve(
+											`/admin/events/${data.event.id}/forms?delete=${encodeURIComponent(savedForm.id)}`
+										)}>Delete</a
+									>
 								</div>
 							</div>
-							<div class="d-flex gap-2">
-								<a
-									class="btn btn-outline-secondary btn-sm"
-									href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/base`)}
-									>View</a
-								>
-								<a
-									class="btn btn-outline-primary btn-sm"
-									href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/edit`)}
-									>Edit</a
-								>
-							</div>
+							{#if data.deleteFormId === savedForm.id}
+								<div class="alert alert-warning mt-3 mb-0">
+									<p class="mb-2">Delete {savedForm.name}? This cannot be undone.</p>
+									<form method="post" action="?/delete" class="d-flex gap-2">
+										<input type="hidden" name="formId" value={savedForm.id} />
+										<button class="btn btn-danger btn-sm" type="submit">Confirm delete</button>
+										<a
+											class="btn btn-outline-secondary btn-sm"
+											href={resolve(`/admin/events/${data.event.id}/forms`)}>Cancel</a
+										>
+									</form>
+								</div>
+							{/if}
 						</div>
 					{/each}
 				</div>

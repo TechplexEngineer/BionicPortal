@@ -39,6 +39,7 @@
 		"@testing-library/jest-dom": "^7.0.1",
 		"@testing-library/svelte": "^5.4.2",
 		"@types/bcrypt": "^6.0.0",
+		"@types/better-sqlite3": "^7.6.13",
 		"@types/bootstrap": "^5.2.10",
 		"@types/glob": "^8.1.0",
 		"@types/md5": "^2.3.5",

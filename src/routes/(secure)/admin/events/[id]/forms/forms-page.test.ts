@@ -38,4 +38,14 @@ describe("event forms list layout", () => {
 		expect(pageMarkup).not.toContain("PdfFormDesigner");
 		expect(pageMarkup).not.toContain('action="?/save"');
 	});
+
+	it("offers an inline confirmation and shows action feedback", () => {
+		expect(pageMarkup).toContain("encodeURIComponent(savedForm.id)");
+		expect(pageMarkup).toContain("data.deleteFormId === savedForm.id");
+		expect(pageMarkup).toContain('action="?/delete"');
+		expect(pageMarkup).toContain('name="formId" value={savedForm.id}');
+		expect(pageMarkup).toContain("Confirm delete");
+		expect(pageMarkup).toContain("Cancel");
+		expect(pageMarkup).toContain("form?.message");
+	});
 });
