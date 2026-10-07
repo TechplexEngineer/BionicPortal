@@ -21,7 +21,7 @@ function requireSopEditor(user: App.Locals["user"]) {
 	if (
 		!user ||
 		(user.role !== "admin" && user.role !== "mentor") ||
-		(user.role === "mentor" && user.mentorApproved === false)
+		(user.role === "mentor" && user.mentorApproved !== true)
 	) {
 		throw redirect(302, "/dashboard");
 	}
@@ -78,6 +78,37 @@ export const actions: Actions = {
 			.set({ ...parsed.data, updatedAt: new Date() })
 			.where(eq(table.sops.id, id));
 		return { success: "SOP saved.", id };
+	},
+	archive: async ({ locals, request }) => {
+		const user = requireSopAccess(locals.user);
+		if (user.role === "mentor") requireSopEditor(user);
+		const id = (await request.formData()).get("id");
+		if (typeof id !== "string" || !id) return fail(400, { message: "Invalid SOP ID" });
+
+		const [sop] = await locals.db.select().from(table.sops).where(eq(table.sops.id, id)).limit(1);
+		if (!sop || sop.archived || (user.role === "user" && sop.private)) {
+			return fail(400, { message: "SOP cannot be archived" });
+		}
+
+		await locals.db
+			.update(table.sops)
+			.set({ archived: true, updatedAt: new Date() })
+			.where(eq(table.sops.id, id));
+		return { success: "SOP archived.", id };
+	},
+	restore: async ({ locals, request }) => {
+		requireSopEditor(locals.user);
+		const id = (await request.formData()).get("id");
+		if (typeof id !== "string" || !id) return fail(400, { message: "Invalid SOP ID" });
+
+		const [sop] = await locals.db.select().from(table.sops).where(eq(table.sops.id, id)).limit(1);
+		if (!sop || !sop.archived) return fail(400, { message: "SOP cannot be restored" });
+
+		await locals.db
+			.update(table.sops)
+			.set({ archived: false, updatedAt: new Date() })
+			.where(eq(table.sops.id, id));
+		return { success: "SOP restored.", id };
 	},
 	delete: async ({ locals, request }) => {
 		if (locals.user?.role !== "admin") throw redirect(302, "/dashboard");

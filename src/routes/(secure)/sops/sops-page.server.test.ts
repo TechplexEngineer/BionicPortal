@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { and, eq } from "drizzle-orm";
@@ -117,7 +118,7 @@ describe("SOP access", () => {
 		const values = vi.fn();
 		const db = { insert: vi.fn().mockReturnValue({ values }) };
 		await actions.create({
-			locals: { user: { id: "mentor", role: "mentor" }, db },
+			locals: { user: { id: "mentor", role: "mentor", mentorApproved: true }, db },
 			request: new Request("http://localhost/sops", {
 				method: "POST",
 				body: new URLSearchParams({ title: "New SOP", content: "Instructions" })
@@ -147,7 +148,7 @@ describe("SOP access", () => {
 		const set = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
 		const db = { update: vi.fn().mockReturnValue({ set }) };
 		await actions.update({
-			locals: { user: { id: "mentor", role: "mentor" }, db },
+			locals: { user: { id: "mentor", role: "mentor", mentorApproved: true }, db },
 			request: new Request("http://localhost/sops", {
 				method: "POST",
 				body: new URLSearchParams({
@@ -207,5 +208,190 @@ describe("SOP access", () => {
 
 		expect(db.delete).toHaveBeenCalledWith(table.sops);
 		expect(where).toHaveBeenCalledWith(eq(table.sops.id, "sop-to-delete"));
+	});
+});
+
+describe("SOP lifecycle actions", () => {
+	const databases: Database.Database[] = [];
+	afterEach(() => {
+		for (const database of databases) database.close();
+		databases.length = 0;
+	});
+
+	function fixture() {
+		const sqlite = new Database(":memory:");
+		databases.push(sqlite);
+		sqlite.exec(`CREATE TABLE sops (
+			id text PRIMARY KEY NOT NULL,
+			title text NOT NULL,
+			content text NOT NULL,
+			private integer NOT NULL DEFAULT 1,
+			archived integer NOT NULL DEFAULT 0,
+			created_at integer NOT NULL,
+			updated_at integer NOT NULL
+		)`);
+		const insert = sqlite.prepare(`INSERT INTO sops
+			(id, title, content, private, archived, created_at, updated_at)
+			VALUES (?, ?, 'Instructions', ?, ?, 1, 1)`);
+		insert.run("shared", "Shared", 0, 0);
+		insert.run("private", "Private", 1, 0);
+		insert.run("archived", "Archived", 0, 1);
+		return { sqlite, db: drizzle(sqlite, { schema: table }) };
+	}
+
+	function event(
+		db: ReturnType<typeof fixture>["db"],
+		role: string,
+		fields: Record<string, string>,
+		mentorApproved = true
+	) {
+		return {
+			locals: { user: { id: role, role, mentorApproved }, db },
+			request: new Request("http://localhost/sops", {
+				method: "POST",
+				body: new URLSearchParams(fields)
+			})
+		} as unknown as Parameters<NonNullable<typeof actions.archive>>[0];
+	}
+
+	function state(sqlite: Database.Database, id: string) {
+		return sqlite.prepare("SELECT private, archived FROM sops WHERE id = ?").get(id);
+	}
+
+	it("lets an approved mentor create and update a shared SOP", async () => {
+		const { sqlite, db } = fixture();
+		const created = await actions.create(
+			event(db, "mentor", {
+				title: "Mentor SOP",
+				content: "First version",
+				shareWithStudents: "on"
+			})
+		);
+		expect(created).toMatchObject({ success: "SOP created.", id: expect.any(String) });
+		const id = (created as { id: string }).id;
+		expect(state(sqlite, id)).toEqual({ private: 0, archived: 0 });
+
+		const updated = await actions.update(
+			event(db, "mentor", {
+				id,
+				title: "Revised SOP",
+				content: "Second version"
+			})
+		);
+		expect(updated).toMatchObject({ success: "SOP saved.", id });
+		expect(sqlite.prepare("SELECT title, content, private FROM sops WHERE id = ?").get(id)).toEqual(
+			{
+				title: "Revised SOP",
+				content: "Second version",
+				private: 1
+			}
+		);
+	});
+
+	it.each(["admin", "mentor"])(
+		"lets an approved %s archive only the requested active SOP",
+		async (role) => {
+			const { sqlite, db } = fixture();
+			const result = await actions.archive(event(db, role, { id: "private" }));
+			expect(result).toMatchObject({ success: expect.any(String), id: "private" });
+			expect(state(sqlite, "private")).toEqual({ private: 1, archived: 1 });
+			expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
+		}
+	);
+
+	it("lets a student archive a shared active SOP globally", async () => {
+		const { sqlite, db } = fixture();
+		const result = await actions.archive(event(db, "user", { id: "shared" }));
+		expect(result).toMatchObject({ success: expect.any(String), id: "shared" });
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 1 });
+		expect(state(sqlite, "private")).toEqual({ private: 1, archived: 0 });
+	});
+
+	it.each(["private", "archived", "missing"])(
+		"rejects a student's archive of %s SOPs",
+		async (id) => {
+			const { sqlite, db } = fixture();
+			const result = await actions.archive(event(db, "user", { id }));
+			expect(result).toMatchObject({ status: 400 });
+			expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
+			expect(state(sqlite, "private")).toEqual({ private: 1, archived: 0 });
+			expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 1 });
+		}
+	);
+
+	it("rejects archiving an SOP that is already archived", async () => {
+		const { sqlite, db } = fixture();
+		const result = await actions.archive(event(db, "admin", { id: "archived" }));
+		expect(result).toMatchObject({ status: 400 });
+		expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 1 });
+	});
+
+	it.each(["admin", "mentor"])(
+		"lets an approved %s restore only the requested archived SOP",
+		async (role) => {
+			const { sqlite, db } = fixture();
+			const result = await actions.restore(event(db, role, { id: "archived" }));
+			expect(result).toMatchObject({ success: expect.any(String), id: "archived" });
+			expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 0 });
+			expect(state(sqlite, "private")).toEqual({ private: 1, archived: 0 });
+		}
+	);
+
+	it.each(["shared", "missing"])("rejects restoring a %s SOP", async (id) => {
+		const { sqlite, db } = fixture();
+		const result = await actions.restore(event(db, "admin", { id }));
+		expect(result).toMatchObject({ status: 400 });
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
+	});
+
+	it.each(["archive", "restore"])("rejects a missing id for %s", async (action) => {
+		const { sqlite, db } = fixture();
+		const result = await actions[action](event(db, "admin", {}));
+		expect(result).toMatchObject({ status: 400 });
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
+	});
+
+	it("does not let a student restore or permanently delete an SOP", async () => {
+		const { sqlite, db } = fixture();
+		await expect(actions.restore(event(db, "user", { id: "archived" }))).rejects.toMatchObject({
+			status: 302
+		});
+		await expect(actions.delete(event(db, "user", { id: "shared" }))).rejects.toMatchObject({
+			status: 302
+		});
+		expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 1 });
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
+	});
+
+	it("does not let a mentor permanently delete an SOP", async () => {
+		const { sqlite, db } = fixture();
+		await expect(actions.delete(event(db, "mentor", { id: "shared" }))).rejects.toMatchObject({
+			status: 302
+		});
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
+	});
+
+	it("keeps permanent deletion available to admins and targets only the requested SOP", async () => {
+		const { sqlite, db } = fixture();
+		const result = await actions.delete(event(db, "admin", { id: "shared" }));
+		expect(result).toMatchObject({ success: expect.any(String) });
+		expect(state(sqlite, "shared")).toBeUndefined();
+		expect(state(sqlite, "private")).toEqual({ private: 1, archived: 0 });
+	});
+
+	it.each(["archive", "restore"])("blocks unapproved mentor %s submissions", async (action) => {
+		const { sqlite, db } = fixture();
+		await expect(
+			actions[action](event(db, "mentor", { id: "archived" }, false))
+		).rejects.toMatchObject({ status: 302 });
+		expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 1 });
+	});
+
+	it("requires an explicit mentor approval on archive", async () => {
+		const { sqlite, db } = fixture();
+		const submission = event(db, "mentor", { id: "shared" });
+		delete (submission.locals.user as { mentorApproved?: boolean }).mentorApproved;
+		await expect(actions.archive(submission)).rejects.toMatchObject({ status: 302 });
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
 	});
 });
