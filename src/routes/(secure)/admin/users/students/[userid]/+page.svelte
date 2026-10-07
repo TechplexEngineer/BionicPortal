@@ -13,7 +13,7 @@
 <div class="container py-4">
 	<header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
 		<h1 class="h2 mb-0">Edit Student</h1>
-		<a href="/admin/students" class="btn btn-outline-secondary btn-sm">Back to Students</a>
+		<a href="/admin/users/students" class="btn btn-outline-secondary btn-sm">Back to Students</a>
 	</header>
 
 	<form

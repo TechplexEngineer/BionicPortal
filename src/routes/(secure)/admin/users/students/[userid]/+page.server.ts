@@ -62,7 +62,7 @@ export const actions: Actions = {
 		}
 
 		if (newUserid !== params.userid) {
-			throw redirect(303, `/admin/students/${encodeURIComponent(newUserid)}`);
+			throw redirect(303, `/admin/users/students/${encodeURIComponent(newUserid)}`);
 		}
 
 		return { success: true };

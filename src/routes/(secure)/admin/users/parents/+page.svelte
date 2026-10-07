@@ -3,7 +3,7 @@
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
-	import { layoutState } from "../+layout.svelte";
+	import { layoutState } from "../../+layout.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
@@ -25,7 +25,7 @@
 	<div class="d-flex flex-wrap gap-1">
 		{#each students as student}
 			<a
-				href={resolve(`/admin/students/${student.studentId}`)}
+				href={resolve(`/admin/users/students/${student.studentId}`)}
 				class="badge bg-info text-dark text-decoration-none"
 				title={`Edit ${student.studentFirstName} ${student.studentLastName}`}
 			>

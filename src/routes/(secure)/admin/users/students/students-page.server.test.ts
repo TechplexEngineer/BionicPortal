@@ -44,7 +44,7 @@ function loadEvent(students: Record<string, unknown>[]) {
 
 	return {
 		input: {
-			url: new URL("http://localhost/admin/students"),
+			url: new URL("http://localhost/admin/users/students"),
 			locals: { db }
 		} as unknown as Parameters<typeof load>[0],
 		db
@@ -73,7 +73,7 @@ function deleteEvent(id: string) {
 
 	return {
 		input: {
-			request: new Request("http://localhost/admin/students", {
+			request: new Request("http://localhost/admin/users/students", {
 				method: "POST",
 				body: new URLSearchParams({ id })
 			}),
@@ -94,7 +94,7 @@ function toggleHiddenEvent(id: string) {
 
 	return {
 		input: {
-			request: new Request("http://localhost/admin/students", {
+			request: new Request("http://localhost/admin/users/students", {
 				method: "POST",
 				body: new URLSearchParams({ id })
 			}),
