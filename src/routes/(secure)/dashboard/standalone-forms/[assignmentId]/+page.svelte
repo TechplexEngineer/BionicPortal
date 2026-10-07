@@ -2,6 +2,7 @@
 	import "@team4909/bionic-sign/styles.css";
 	import { PdfFormFiller, type FormDefinition, type FormSubmission } from "@team4909/bionic-sign";
 	import { enhance } from "$app/forms";
+	import { resolve } from "$app/paths";
 	import { tick } from "svelte";
 	import type { PageProps } from "./$types";
 
@@ -9,6 +10,7 @@
 	let filler = $state<{ submit: () => Promise<FormSubmission> }>();
 	let values = $state("{}");
 	let pending = $state(false);
+	let uploading = $state(false);
 	let errorMessage = $state("");
 	let action = $state<"saveDraft" | "submit">("saveDraft");
 	const studentDefinition: FormDefinition = {
@@ -42,7 +44,7 @@
 
 <svelte:head><title>{data.form.name} | Bionic Portal</title></svelte:head>
 <div class="container py-4" style="max-width: 1100px;">
-	<a href="/dashboard" class="text-decoration-none">← Dashboard</a>
+	<a href={resolve("/dashboard")} class="text-decoration-none">← Dashboard</a>
 	<h1 class="h2 mt-3">{data.form.name}</h1>
 	{#if data.studentSubmitted}
 		<div
@@ -100,5 +102,40 @@
 				>
 			</div>
 		</form>
+		{#if !data.studentSubmitted}
+			<div class="card mt-4">
+				<div class="card-body">
+					<h2 class="h5">Upload a completed form</h2>
+					<p class="text-muted mb-3">
+						If you already have a signed paper copy, upload a PDF or photo instead. This will submit
+						the form as-is and skip the parent-signature step for now.
+					</p>
+					<form
+						method="post"
+						action="?/upload"
+						enctype="multipart/form-data"
+						use:enhance={() =>
+							({ update }) =>
+								update().finally(() => (uploading = false))}
+						onsubmit={() => (uploading = true)}
+					>
+						<label class="form-label" for="standalone-student-upload"
+							>PDF, JPEG, PNG, or WebP (max 10 MB)</label
+						>
+						<input
+							id="standalone-student-upload"
+							class="form-control"
+							type="file"
+							name="upload"
+							accept="application/pdf,image/jpeg,image/png,image/webp"
+							required
+						/>
+						<button class="btn btn-outline-primary mt-3" type="submit" disabled={uploading}>
+							{uploading ? "Uploading…" : "Upload and submit"}
+						</button>
+					</form>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>

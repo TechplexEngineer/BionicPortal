@@ -7,6 +7,7 @@ import {
 	hasRequiredValues,
 	validateOwnedValues
 } from "$lib/server/formWorkflow";
+import { storeFormUpload } from "$lib/server/formUploads";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -131,7 +132,44 @@ async function saveValues(
 	}
 }
 
+async function uploadCompletedForm({
+	request,
+	locals,
+	params,
+	platform
+}: Parameters<Actions["upload"]>[0]) {
+	const row = await getAssignment(locals.db, locals.user!.username, params.assignmentId);
+	if (!row) return fail(404, { message: "Form assignment not found." });
+	if (row.assignment.studentSubmittedAt)
+		return fail(409, { message: "This form has already been submitted." });
+	const bucket = platform?.env.FORMS_BUCKET;
+	if (!bucket) return fail(503, { message: "Forms storage is unavailable." });
+	try {
+		const upload = (await request.formData()).get("upload");
+		if (!(upload instanceof File)) throw new Error("Choose a file to upload.");
+		const signedPdfKey = await storeFormUpload(
+			bucket,
+			`standalone-forms/${row.form.id}/uploads/${row.assignment.id}`,
+			upload
+		);
+		await locals.db
+			.update(table.standaloneFormAssignments)
+			.set({
+				studentSubmittedAt: new Date(),
+				parentRequired: false,
+				signedPdfKey
+			})
+			.where(eq(table.standaloneFormAssignments.id, row.assignment.id));
+		return { success: true, message: "Uploaded form submitted." };
+	} catch (caught) {
+		return fail(400, {
+			message: caught instanceof Error ? caught.message : "Unable to upload form."
+		});
+	}
+}
+
 export const actions: Actions = {
 	saveDraft: (event) => saveValues(event, false),
-	submit: (event) => saveValues(event, true)
+	submit: (event) => saveValues(event, true),
+	upload: uploadCompletedForm
 };

@@ -7,7 +7,8 @@ function input(
 	values: object,
 	studentValues: object = {},
 	parentRequired = false,
-	noFields = false
+	noFields = false,
+	upload?: File
 ) {
 	const assignment = {
 		id: "assignment-1",
@@ -59,6 +60,7 @@ function input(
 	};
 	const body = new FormData();
 	body.set("values", JSON.stringify(values));
+	if (upload) body.set("upload", upload);
 	return {
 		request: new Request("http://localhost/dashboard/standalone-forms/assignment-1", {
 			method: "POST",
@@ -127,6 +129,34 @@ describe("standalone student form", () => {
 				studentSubmittedAt: expect.any(Date),
 				parentRequired: false,
 				signedPdfKey: "forms/form-1/signed/assignment-1.pdf"
+			})
+		);
+	});
+
+	it("accepts a student-uploaded scan as the interim final submission", async () => {
+		const event = input(
+			{},
+			{},
+			true,
+			false,
+			new File(["scan"], "signed.png", { type: "image/png" })
+		);
+		const db = event.locals.db as unknown as { update: ReturnType<typeof vi.fn> };
+		const set = vi.fn(() => ({ where: vi.fn().mockResolvedValue(undefined) }));
+		db.update.mockReturnValue({ set });
+		const bucket = event.platform?.env.FORMS_BUCKET as unknown as { put: ReturnType<typeof vi.fn> };
+
+		expect(await actions.upload(event)).toMatchObject({ success: true });
+		expect(bucket.put).toHaveBeenCalledWith(
+			"standalone-forms/form-1/uploads/assignment-1.png",
+			expect.any(Uint8Array),
+			{ httpMetadata: { contentType: "image/png" } }
+		);
+		expect(set).toHaveBeenCalledWith(
+			expect.objectContaining({
+				studentSubmittedAt: expect.any(Date),
+				parentRequired: false,
+				signedPdfKey: "standalone-forms/form-1/uploads/assignment-1.png"
 			})
 		);
 	});
