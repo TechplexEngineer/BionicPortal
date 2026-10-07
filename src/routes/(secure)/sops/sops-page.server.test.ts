@@ -2,16 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 import Database from "better-sqlite3";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import { actions, load } from "./+page.server";
 
 function dbWithSops(sops: unknown[]) {
 	const query = {
 		from: vi.fn().mockReturnThis(),
+		where: vi.fn().mockReturnThis(),
 		orderBy: vi.fn().mockResolvedValue(sops)
 	};
-	return { select: vi.fn().mockReturnValue(query) };
+	return { db: { select: vi.fn().mockReturnValue(query) }, query };
 }
 
 describe("SOP access", () => {
@@ -57,8 +58,30 @@ describe("SOP access", () => {
 		expect(table.sops.archived.name).toBe("archived");
 	});
 
-	it("allows mentors to read SOPs", async () => {
+	it("returns only shared active SOPs to students", async () => {
+		const { db, query } = dbWithSops([]);
 		const result = await load({
+			locals: {
+				user: {
+					id: "student",
+					role: "user",
+					username: "student@example.com"
+				},
+				db
+			},
+			url: new URL("http://localhost/sops")
+		} as unknown as Parameters<typeof load>[0]);
+
+		expect(result.user.role).toBe("user");
+		expect(result.sops).toEqual([]);
+		expect(query.where).toHaveBeenCalledWith(
+			and(eq(table.sops.private, false), eq(table.sops.archived, false))
+		);
+	});
+
+	it("returns active SOPs to mentors by default", async () => {
+		const { db, query } = dbWithSops([]);
+		await load({
 			locals: {
 				user: {
 					id: "mentor",
@@ -66,29 +89,78 @@ describe("SOP access", () => {
 					username: "mentor@example.com",
 					mentorApproved: true
 				},
-				db: dbWithSops([])
+				db
 			},
 			url: new URL("http://localhost/sops")
 		} as unknown as Parameters<typeof load>[0]);
-
-		expect(result.user.role).toBe("mentor");
-		expect(result.sops).toEqual([]);
+		expect(query.where).toHaveBeenCalledWith(eq(table.sops.archived, false));
 	});
 
-	it("keeps SOP writes admin-only", async () => {
-		await expect(
-			actions.create({
-				locals: {
-					user: {
-						id: "mentor",
-						role: "mentor",
-						username: "mentor@example.com",
-						mentorApproved: true
-					}
+	it("includes active and archived SOPs for mentors when archived=1", async () => {
+		const { db, query } = dbWithSops([]);
+		await load({
+			locals: {
+				user: {
+					id: "mentor",
+					role: "mentor",
+					username: "mentor@example.com",
+					mentorApproved: true
 				},
-				request: new Request("http://localhost/sops", { method: "POST" })
-			} as unknown as Parameters<NonNullable<typeof actions.create>>[0])
-		).rejects.toMatchObject({ status: 302, location: "/dashboard" });
+				db
+			},
+			url: new URL("http://localhost/sops?archived=1")
+		} as unknown as Parameters<typeof load>[0]);
+		expect(query.where).not.toHaveBeenCalled();
+	});
+
+	it("defaults new SOPs to private when the sharing checkbox is absent", async () => {
+		const values = vi.fn();
+		const db = { insert: vi.fn().mockReturnValue({ values }) };
+		await actions.create({
+			locals: { user: { id: "mentor", role: "mentor" }, db },
+			request: new Request("http://localhost/sops", {
+				method: "POST",
+				body: new URLSearchParams({ title: "New SOP", content: "Instructions" })
+			})
+		} as unknown as Parameters<NonNullable<typeof actions.create>>[0]);
+		expect(values).toHaveBeenCalledWith(
+			expect.objectContaining({ title: "New SOP", content: "Instructions", private: true })
+		);
+	});
+
+	it("defaults an updated SOP to private when the sharing checkbox is absent", async () => {
+		const set = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const db = { update: vi.fn().mockReturnValue({ set }) };
+		await actions.update({
+			locals: { user: { id: "admin", role: "admin" }, db },
+			request: new Request("http://localhost/sops", {
+				method: "POST",
+				body: new URLSearchParams({ id: "sop-1", title: "Updated", content: "Instructions" })
+			})
+		} as unknown as Parameters<NonNullable<typeof actions.update>>[0]);
+		expect(set).toHaveBeenCalledWith(
+			expect.objectContaining({ title: "Updated", content: "Instructions", private: true })
+		);
+	});
+
+	it("lets mentors share an updated SOP when the sharing checkbox is checked", async () => {
+		const set = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const db = { update: vi.fn().mockReturnValue({ set }) };
+		await actions.update({
+			locals: { user: { id: "mentor", role: "mentor" }, db },
+			request: new Request("http://localhost/sops", {
+				method: "POST",
+				body: new URLSearchParams({
+					id: "sop-1",
+					title: "Updated",
+					content: "Instructions",
+					shareWithStudents: "on"
+				})
+			})
+		} as unknown as Parameters<NonNullable<typeof actions.update>>[0]);
+		expect(set).toHaveBeenCalledWith(
+			expect.objectContaining({ title: "Updated", content: "Instructions", private: false })
+		);
 	});
 
 	it("deletes only the SOP identified by the form", async () => {
