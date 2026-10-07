@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getEventCostLabel, getPaymentStatusLabel, isFreeEvent } from "./eventPricing";
+import { getEventCostLabel, getPaymentStatusLabel, isFreeEvent, requiresPayment } from "./eventPricing";
 
 describe("event pricing", () => {
 	it("treats zero and negative costs as free events", () => {
@@ -18,5 +18,12 @@ describe("event pricing", () => {
 		expect(getEventCostLabel(25)).toBe("$25.00");
 		expect(getPaymentStatusLabel(25, true)).toBe("Paid ✓");
 		expect(getPaymentStatusLabel(25, false)).toBe("Unpaid");
+	});
+
+	it("never requires payment for a free event", () => {
+		expect(requiresPayment(0, false)).toBe(false);
+		expect(requiresPayment(-1, false)).toBe(false);
+		expect(requiresPayment(25, false)).toBe(true);
+		expect(requiresPayment(25, true)).toBe(false);
 	});
 });

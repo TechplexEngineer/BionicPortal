@@ -3,6 +3,7 @@ import { eq, and } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 import * as XLSX from 'xlsx';
+import { isFreeEvent } from "$lib/eventPricing";
 
 export const load: PageServerLoad = async (event) => {
     const db = event.locals.db;
@@ -49,6 +50,12 @@ export const actions: Actions = {
         const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]) as Record<string, any>[];
 
         const db = locals.db;
+        const [eventRecord] = await db.select()
+            .from(table.events)
+            .where(eq(table.events.id, eventId));
+        if (!eventRecord) {
+            return fail(404, { error: "Event not found" });
+        }
         let importedCount = 0;
 
         for (const row of rows) {
@@ -83,10 +90,11 @@ export const actions: Actions = {
                 }
 
                 // 2. Parse statuses
-                let paid = false;
+                let paid = isFreeEvent(eventRecord.data.cost);
                 if (mapping.paid && row[mapping.paid] !== undefined) {
                     const val = row[mapping.paid].toString().toLowerCase();
-                    paid = val === "true" || val === "1" || val === "yes" || val === "paid";
+                    paid = isFreeEvent(eventRecord.data.cost) ||
+                        val === "true" || val === "1" || val === "yes" || val === "paid";
                 }
 
                 let formCompleted = false;

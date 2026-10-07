@@ -4,6 +4,7 @@ import * as table from "$lib/server/db/schema";
 import * as qb from "$lib/server/quickbooks";
 import type { DbInstance } from "$lib/server/db";
 import type { Actions, PageServerLoad } from "./$types";
+import { isFreeEvent } from "$lib/eventPricing";
 
 export const load: PageServerLoad = async (event) => {
 	const db = event.locals.db;
@@ -323,6 +324,11 @@ export const actions: Actions = {
 			.from(table.students)
 			.where(eq(table.students.userid, studentId));
 		if (!student) return fail(404, { message: "Student not found" });
+		const [eventRecord] = await db
+			.select()
+			.from(table.events)
+			.where(eq(table.events.id, eventId));
+		if (!eventRecord) return fail(404, { message: "Event not found" });
 		const [existing] = await db
 			.select()
 			.from(table.eventRegistrations)
@@ -339,7 +345,7 @@ export const actions: Actions = {
 				id: crypto.randomUUID(),
 				studentId,
 				eventId,
-				paid: false,
+				paid: isFreeEvent(eventRecord.data.cost),
 				formCompleted: false
 			});
 			return { success: true };
