@@ -2,6 +2,7 @@
 	import { enhance } from "$app/forms";
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
+	import { page } from "$app/state";
 	import SvelteMarkdown from "@humanspeak/svelte-markdown";
 	import { adminNavPages } from "$lib/adminNavigation";
 	import DashHeader from "$lib/components/DashHeader.svelte";
@@ -13,6 +14,7 @@
 	let editorMode = $state<"new" | "edit" | null>(null);
 	let draftTitle = $state(data.selectedSop?.title ?? "");
 	let draftContent = $state(data.selectedSop?.content ?? "");
+	let draftShared = $state(false);
 
 	let filteredSops = $derived.by(() => {
 		return searchSops(data.sops, query);
@@ -22,11 +24,18 @@
 		if (editorMode === null) {
 			draftTitle = data.selectedSop?.title ?? "";
 			draftContent = data.selectedSop?.content ?? "";
+			draftShared = data.selectedSop?.private === false;
 		}
 	});
 
 	const isAdmin = $derived(data.user.role === "admin");
-	const selectedHref = (id: string) => resolve(`/sops?id=${encodeURIComponent(id)}`);
+	const isManager = $derived(
+		data.user.role === "admin" || (data.user.role === "mentor" && data.user.mentorApproved)
+	);
+	const isStudent = $derived(data.user.role === "user");
+	const archivedView = $derived(page.url.searchParams.get("archived") === "1");
+	const selectedHref = (id: string) =>
+		resolve(`/sops?${archivedView ? "archived=1&" : ""}id=${encodeURIComponent(id)}`);
 </script>
 
 <svelte:head><title>SOPs | Bionic Portal</title></svelte:head>
@@ -38,9 +47,9 @@
 	<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
 		<div>
 			<h1 class="mb-1">Standard Operating Procedures</h1>
-			<p class="text-muted mb-0">Private processes shared with approved mentors and admins.</p>
+			<p class="text-muted mb-0">Browse and manage standard operating procedures.</p>
 		</div>
-		{#if isAdmin}
+		{#if isManager}
 			<button
 				class="btn btn-primary"
 				type="button"
@@ -48,6 +57,7 @@
 					editorMode = "new";
 					draftTitle = "";
 					draftContent = "";
+					draftShared = false;
 				}}
 			>
 				<i class="fa fa-plus me-1"></i> New SOP
@@ -64,6 +74,20 @@
 
 	<div class="row g-4">
 		<aside class="col-lg-4" aria-label="Available SOPs">
+			{#if isManager}
+				<nav class="btn-group mb-3 w-100" aria-label="SOP status">
+					<a
+						class="btn {archivedView ? 'btn-outline-secondary' : 'btn-secondary'}"
+						href={resolve("/sops")}
+						aria-current={archivedView ? undefined : "page"}>Active SOPs</a
+					>
+					<a
+						class="btn {archivedView ? 'btn-secondary' : 'btn-outline-secondary'}"
+						href={resolve("/sops?archived=1")}
+						aria-current={archivedView ? "page" : undefined}>Show archived</a
+					>
+				</nav>
+			{/if}
 			<label class="form-label" for="sop-search">Search SOPs</label>
 			<input
 				id="sop-search"
@@ -80,7 +104,10 @@
 							: ''}"
 						href={selectedHref(sop.id)}
 					>
-						<div class="fw-semibold">{sop.title}</div>
+						<div class="fw-semibold">
+							{sop.title}
+							{#if sop.archived}<span class="badge text-bg-secondary ms-1">Archived</span>{/if}
+						</div>
 						<small class={data.selectedSop?.id === sop.id ? "text-white-50" : "text-muted"}
 							>Updated {sop.updatedAt.toLocaleDateString()}</small
 						>
@@ -92,7 +119,7 @@
 		</aside>
 
 		<section class="col-lg-8" aria-label="SOP content">
-			{#if editorMode !== null}
+			{#if isManager && editorMode !== null}
 				<div class="card shadow-sm">
 					<div class="card-header d-flex justify-content-between align-items-center">
 						<strong>{editorMode === "edit" ? "Edit SOP" : "New SOP"}</strong><button
@@ -138,6 +165,16 @@
 								required
 								bind:value={draftContent}
 							></textarea>
+							<div class="form-check mt-3">
+								<input
+									id="sop-share"
+									class="form-check-input"
+									type="checkbox"
+									name="shareWithStudents"
+									bind:checked={draftShared}
+								/>
+								<label class="form-check-label" for="sop-share">Share with students</label>
+							</div>
 							<div class="d-flex justify-content-between align-items-center mt-3">
 								<small class="text-muted"
 									>GitHub-flavored Markdown: headings, lists, tables, task lists, links, and code.</small
@@ -157,35 +194,73 @@
 							<small class="text-muted">Updated {data.selectedSop.updatedAt.toLocaleString()}</small
 							>
 						</div>
-						{#if isAdmin}<button
+						{#if isManager}<button
 								class="btn btn-outline-primary"
 								type="button"
-								onclick={() => (editorMode = "edit")}>Edit</button
+								onclick={() => {
+									draftShared = data.selectedSop?.private === false;
+									editorMode = "edit";
+								}}>Edit</button
 							>{/if}
 					</div>
 					<div class="card-body sop-content">
 						<SvelteMarkdown source={data.selectedSop.content} />
 					</div>
-					{#if isAdmin}<div class="card-footer text-end">
-							<form
-								method="post"
-								action="?/delete"
-								use:enhance={({ cancel }) => {
-									if (!confirm("Delete this SOP?")) {
-										cancel();
-										return;
-									}
-									return async ({ result, update }) => {
-										await update();
-										if (result.type === "success") await goto(resolve("/sops"));
-									};
-								}}
-							>
-								<input type="hidden" name="id" value={data.selectedSop.id} /><button
-									class="btn btn-sm btn-outline-danger"
-									type="submit">Delete SOP</button
+					{#if isManager || isStudent}<div
+							class="card-footer d-flex justify-content-end flex-wrap gap-2"
+						>
+							{#if !data.selectedSop.archived}
+								<form
+									method="post"
+									action="?/archive"
+									use:enhance={() => {
+										return async ({ result, update }) => {
+											await update();
+											if (result.type === "success") await goto(resolve("/sops"));
+										};
+									}}
 								>
-							</form>
+									<input type="hidden" name="id" value={data.selectedSop.id} />
+									<button class="btn btn-sm btn-outline-secondary" type="submit">Archive SOP</button
+									>
+								</form>
+							{/if}
+							{#if isManager && data.selectedSop.archived}
+								<form
+									method="post"
+									action="?/restore"
+									use:enhance={() => {
+										return async ({ result, update }) => {
+											await update();
+											if (result.type === "success") await goto(resolve("/sops"));
+										};
+									}}
+								>
+									<input type="hidden" name="id" value={data.selectedSop.id} />
+									<button class="btn btn-sm btn-outline-primary" type="submit">Restore SOP</button>
+								</form>
+							{/if}
+							{#if isAdmin}
+								<form
+									method="post"
+									action="?/delete"
+									use:enhance={({ cancel }) => {
+										if (!confirm("Delete this SOP?")) {
+											cancel();
+											return;
+										}
+										return async ({ result, update }) => {
+											await update();
+											if (result.type === "success") await goto(resolve("/sops"));
+										};
+									}}
+								>
+									<input type="hidden" name="id" value={data.selectedSop.id} /><button
+										class="btn btn-sm btn-outline-danger"
+										type="submit">Delete SOP</button
+									>
+								</form>
+							{/if}
 						</div>{/if}
 				</div>
 			{:else}
