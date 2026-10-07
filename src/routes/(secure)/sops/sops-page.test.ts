@@ -30,7 +30,7 @@ const second = {
 function renderSopPage(selectedSop = first) {
 	return render(Page, {
 		data: {
-			user: { role: "mentor", mentorApproved: true },
+			user: { role: "mentor" },
 			sops: [first, second],
 			selectedSop
 		}
@@ -99,7 +99,7 @@ describe("SOP page", () => {
 		);
 		await page.rerender({
 			data: {
-				user: { role: "mentor", mentorApproved: true },
+				user: { role: "mentor" },
 				sops: [first, second],
 				selectedSop: second
 			}
@@ -154,9 +154,9 @@ describe("SOP page", () => {
 		);
 	});
 
-	it("lets admins and approved mentors open the editor while students cannot", () => {
+	it("lets admins and mentors open the editor while students cannot", () => {
 		expect(pageMarkup).toContain("const isManager = $derived(");
-		expect(pageMarkup).toContain('data.user.role === "mentor" && data.user.mentorApproved');
+		expect(pageMarkup).toContain('data.user.role === "admin" || data.user.role === "mentor"');
 		expect(pageMarkup).toContain('const isStudent = $derived(data.user.role === "user")');
 		expect(pageMarkup).toMatch(/\{#if isManager\}[\s\S]*?<button[\s\S]*?New SOP[\s\S]*?<\/button>/);
 		expect(pageMarkup).toMatch(/\{#if isManager\}<button[\s\S]*?Edit<\/button\s*>/);

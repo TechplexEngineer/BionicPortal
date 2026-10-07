@@ -11,22 +11,14 @@ const sopForm = z.object({
 });
 
 function requireSopAccess(user: App.Locals["user"]) {
-	if (
-		!user ||
-		!["user", "mentor", "admin"].includes(user.role) ||
-		(user.role === "mentor" && user.mentorApproved !== true)
-	) {
+	if (!user || !["user", "mentor", "admin"].includes(user.role)) {
 		throw redirect(302, "/dashboard");
 	}
 	return user;
 }
 
 function requireSopEditor(user: App.Locals["user"]) {
-	if (
-		!user ||
-		(user.role !== "admin" && user.role !== "mentor") ||
-		(user.role === "mentor" && user.mentorApproved !== true)
-	) {
+	if (!user || (user.role !== "admin" && user.role !== "mentor")) {
 		throw redirect(302, "/dashboard");
 	}
 }

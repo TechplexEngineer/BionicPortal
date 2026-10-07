@@ -4,11 +4,11 @@
 
 ## Goal
 
-Allow admins and approved mentors to create and manage SOPs that default to private, allow them to explicitly share SOPs with students, and allow any student to archive an SOP globally while preserving admin/mentor restore access.
+Allow admins and mentors to create and manage SOPs that default to private, allow them to explicitly share SOPs with students, and allow any student to archive an SOP globally while preserving admin/mentor restore access.
 
 ## Current behavior
 
-- SOPs are available only to admins and approved mentors.
+- SOPs are available only to admins and mentors.
 - Only admins can create, edit, and permanently delete SOPs.
 - The database stores title, Markdown content, and timestamps only.
 
@@ -17,7 +17,7 @@ Allow admins and approved mentors to create and manage SOPs that default to priv
 | Role | Active private SOP | Active shared SOP | Archived SOP | Create/edit | Archive | Restore | Delete |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Admin | View | View | View when archived view is selected | Yes | Yes | Yes | Yes |
-| Approved mentor | View | View | View when archived view is selected | Yes | Yes | Yes | No |
+| Mentor | View | View | View when archived view is selected | Yes | Yes | Yes | No |
 | Student | No access | View | No access | No | Yes | No | No |
 
 Students can archive a shared, active SOP. Archiving is global, so it removes that SOP from the active list for all roles. Admins and mentors can select an archived view and restore the SOP for everyone. Archived SOPs remain editable by admins and mentors.
@@ -42,6 +42,7 @@ Existing SOP rows will be backfilled as shared (`private = false`) and active (`
 - Archive accepts an SOP id and changes only `archived` to `true`; it is available to admins, mentors, and students, but the server must reject student attempts against private or already archived SOPs.
 - Restore accepts an SOP id and changes only `archived` to `false`; it is available only to admins and mentors.
 - Permanent delete remains admin-only.
+- Mentor authorization follows the application's `mentor` role; there is no separate approval flag on the session user.
 - All actions must validate the target SOP and return a controlled failure for invalid ids or unauthorized state transitions.
 
 ## UI behavior

@@ -81,19 +81,18 @@ describe("SOP access", () => {
 	});
 
 	it.each([false, undefined])(
-		"redirects a mentor with approval %s before loading SOPs",
+		"grants SOP read access by mentor role when legacy approval is %s",
 		async (mentorApproved) => {
-			const db = { select: vi.fn() };
-			await expect(
-				load({
-					locals: {
-						user: { id: "mentor", role: "mentor", mentorApproved },
-						db
-					},
-					url: new URL("http://localhost/sops?archived=1&id=private")
-				} as unknown as Parameters<typeof load>[0])
-			).rejects.toMatchObject({ status: 302, location: "/dashboard" });
-			expect(db.select).not.toHaveBeenCalled();
+			const { db } = dbWithSops([]);
+			const result = await load({
+				locals: {
+					user: { id: "mentor", role: "mentor", mentorApproved },
+					db
+				},
+				url: new URL("http://localhost/sops?archived=1&id=private")
+			} as unknown as Parameters<typeof load>[0]);
+			expect(result.user.role).toBe("mentor");
+			expect(result.sops).toEqual([]);
 		}
 	);
 
@@ -185,34 +184,6 @@ describe("SOP access", () => {
 		);
 	});
 
-	it("rejects SOP creation by an unapproved mentor", async () => {
-		await expect(
-			actions.create({
-				locals: { user: { id: "mentor", role: "mentor", mentorApproved: false }, db: {} },
-				request: new Request("http://localhost/sops", {
-					method: "POST",
-					body: new URLSearchParams({ title: "New SOP", content: "Instructions" })
-				})
-			} as unknown as Parameters<NonNullable<typeof actions.create>>[0])
-		).rejects.toMatchObject({ status: 302, location: "/dashboard" });
-	});
-
-	it("rejects SOP updates by an unapproved mentor", async () => {
-		await expect(
-			actions.update({
-				locals: { user: { id: "mentor", role: "mentor", mentorApproved: false }, db: {} },
-				request: new Request("http://localhost/sops", {
-					method: "POST",
-					body: new URLSearchParams({
-						id: "sop-1",
-						title: "Updated",
-						content: "Instructions"
-					})
-				})
-			} as unknown as Parameters<NonNullable<typeof actions.update>>[0])
-		).rejects.toMatchObject({ status: 302, location: "/dashboard" });
-	});
-
 	it("deletes only the SOP identified by the form", async () => {
 		const where = vi.fn().mockReturnValue({
 			returning: vi.fn().mockResolvedValue([{ id: "sop-to-delete" }])
@@ -265,11 +236,10 @@ describe("SOP lifecycle actions", () => {
 	function event(
 		db: ReturnType<typeof fixture>["db"],
 		role: string,
-		fields: Record<string, string>,
-		mentorApproved = true
+		fields: Record<string, string>
 	) {
 		return {
-			locals: { user: { id: role, role, mentorApproved }, db },
+			locals: { user: { id: role, role }, db },
 			request: new Request("http://localhost/sops", {
 				method: "POST",
 				body: new URLSearchParams(fields)
@@ -326,7 +296,7 @@ describe("SOP lifecycle actions", () => {
 		expect(result.selectedSop?.id).toBe("shared");
 	});
 
-	it("lets an approved mentor create and update a shared SOP", async () => {
+	it("lets a mentor create and update a shared SOP using role-based access", async () => {
 		const { sqlite, db } = fixture();
 		const created = await actions.create(
 			event(db, "mentor", {
@@ -368,7 +338,7 @@ describe("SOP lifecycle actions", () => {
 	});
 
 	it.each(["admin", "mentor"])(
-		"lets an approved %s archive only the requested active SOP",
+		"lets a %s role archive only the requested active SOP",
 		async (role) => {
 			const { sqlite, db } = fixture();
 			const result = await actions.archive(event(db, role, { id: "private" }));
@@ -430,7 +400,7 @@ describe("SOP lifecycle actions", () => {
 	});
 
 	it.each(["admin", "mentor"])(
-		"lets an approved %s restore only the requested archived SOP",
+		"lets a %s role restore only the requested archived SOP",
 		async (role) => {
 			const { sqlite, db } = fixture();
 			const result = await actions.restore(event(db, role, { id: "archived" }));
@@ -498,22 +468,6 @@ describe("SOP lifecycle actions", () => {
 		const { sqlite, db } = fixture();
 		const result = await actions.delete(event(db, "admin", { id: "missing" }));
 		expect(result).toMatchObject({ status: 400, data: { message: "SOP not found" } });
-		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
-	});
-
-	it.each(["archive", "restore"])("blocks unapproved mentor %s submissions", async (action) => {
-		const { sqlite, db } = fixture();
-		await expect(
-			actions[action](event(db, "mentor", { id: "archived" }, false))
-		).rejects.toMatchObject({ status: 302 });
-		expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 1 });
-	});
-
-	it("requires an explicit mentor approval on archive", async () => {
-		const { sqlite, db } = fixture();
-		const submission = event(db, "mentor", { id: "shared" });
-		delete (submission.locals.user as { mentorApproved?: boolean }).mentorApproved;
-		await expect(actions.archive(submission)).rejects.toMatchObject({ status: 302 });
 		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
 	});
 });
