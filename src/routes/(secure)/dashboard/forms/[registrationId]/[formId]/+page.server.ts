@@ -10,6 +10,7 @@ import {
 	validateOwnedValues
 } from "$lib/server/formWorkflow";
 import { issueParentFormInvite } from "$lib/server/parentInvites";
+import { storeFormUpload } from "$lib/server/formUploads";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -76,7 +77,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		student: row.student,
 		definition,
 		studentValues,
-		status: getFormStatus({ definition, studentValues, parentValues, under18 }),
+		uploaded: Boolean(
+			row.submission?.signedPdfKey &&
+			row.submission?.studentCompleted &&
+			row.submission?.parentCompleted
+		),
+		status:
+			row.submission?.signedPdfKey &&
+			row.submission.studentCompleted &&
+			row.submission.parentCompleted
+				? "complete"
+				: getFormStatus({ definition, studentValues, parentValues, under18 }),
 		parentEmails:
 			row.student.parentEmails
 				?.split(",")
@@ -113,21 +124,81 @@ async function saveStudentDraft(
 				})
 				.where(eq(table.eventFormSubmissions.id, existing.id));
 		} else {
-			await locals.db
-				.insert(table.eventFormSubmissions)
-				.values({
-					id: crypto.randomUUID(),
-					registrationId: row.registration.id,
-					eventFormId: row.form.id,
-					values: studentValues,
-					studentValues,
-					parentValues: {},
-					studentCompleted
-				});
+			await locals.db.insert(table.eventFormSubmissions).values({
+				id: crypto.randomUUID(),
+				registrationId: row.registration.id,
+				eventFormId: row.form.id,
+				values: studentValues,
+				studentValues,
+				parentValues: {},
+				studentCompleted
+			});
 		}
 		return { success: true, message: "Draft saved." };
 	} catch (error) {
 		return fail(400, { message: error instanceof Error ? error.message : "Unable to save draft." });
+	}
+}
+
+async function uploadCompletedForm({
+	request,
+	locals,
+	params,
+	platform
+}: Parameters<Actions["upload"]>[0]) {
+	const row = await getAuthorizedForm(
+		locals.db,
+		locals.user!.username,
+		params.registrationId,
+		params.formId
+	);
+	if (!row) return fail(404, { message: "Form not found" });
+	const bucket = platform?.env.FORMS_BUCKET;
+	if (!bucket) return fail(503, { message: "Forms storage is unavailable." });
+	try {
+		const upload = (await request.formData()).get("upload");
+		if (!(upload instanceof File)) throw new Error("Choose a file to upload.");
+		const submission = row.submission ?? {
+			id: crypto.randomUUID(),
+			studentValues: {},
+			parentValues: {},
+			studentCompleted: false,
+			parentCompleted: false
+		};
+		const signedPdfKey = await storeFormUpload(
+			bucket,
+			`forms/${row.form.id}/${row.registration.id}/uploads/${submission.id}`,
+			upload
+		);
+		if (row.submission) {
+			await locals.db
+				.update(table.eventFormSubmissions)
+				.set({
+					signedPdfKey,
+					studentCompleted: true,
+					parentCompleted: true,
+					parentCompletedAt: new Date()
+				})
+				.where(eq(table.eventFormSubmissions.id, row.submission.id));
+		} else {
+			await locals.db.insert(table.eventFormSubmissions).values({
+				id: submission.id,
+				registrationId: row.registration.id,
+				eventFormId: row.form.id,
+				signedPdfKey,
+				values: {},
+				studentValues: {},
+				parentValues: {},
+				studentCompleted: true,
+				parentCompleted: true,
+				parentCompletedAt: new Date()
+			});
+		}
+		return { success: true, message: "Uploaded form submitted." };
+	} catch (caught) {
+		return fail(400, {
+			message: caught instanceof Error ? caught.message : "Unable to upload form."
+		});
 	}
 }
 
@@ -136,6 +207,7 @@ export const actions: Actions = {
 		saveStudentDraft(request, locals, params.registrationId, params.formId),
 	submit: ({ request, locals, params }) =>
 		saveStudentDraft(request, locals, params.registrationId, params.formId),
+	upload: uploadCompletedForm,
 	sendParent: async ({ request, locals, params, url, platform }) => {
 		const row = await getAuthorizedForm(
 			locals.db,
