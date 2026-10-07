@@ -6,6 +6,8 @@
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
+	const attendanceUrl = "/admin/users/students/attendance";
+	const archivedAttendanceUrl = `${attendanceUrl}?showArchived=true`;
 
 	const columns: TableColumns = [
 		{ data: "first", title: "First" },
@@ -29,8 +31,18 @@
 	layoutState.pageTitle = "Student Attendance";
 </script>
 
+{#snippet attendanceToolbar()}
+	{#if data.showArchived}
+		<a href={attendanceUrl} class="btn btn-outline-secondary btn-sm">Show current students only</a>
+	{:else}
+		<a href={archivedAttendanceUrl} class="btn btn-outline-secondary btn-sm"
+			>Show hidden and last year's students</a
+		>
+	{/if}
+{/snippet}
+
 <div class="container">
 	<h1>{layoutState.pageTitle}</h1>
 
-	<TableForObjectArray data={data.attend} {columns} />
+	<TableForObjectArray data={data.attend} {columns} toolbar={attendanceToolbar} />
 </div>

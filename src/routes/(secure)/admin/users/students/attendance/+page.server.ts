@@ -1,9 +1,12 @@
-import { sql } from "drizzle-orm";
+import { and, eq, isNull, ne, or, sql } from "drizzle-orm";
+import * as table from "$lib/server/db/schema";
 import { ATTENDANCE_SEASON_START, ATTENDANCE_SEASON_START_TIMESTAMP } from "$lib/server/attendance";
 import type { PageServerLoad } from "./$types";
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	// SELECT * FROM attendance JOIN users ON users.userid=attendance.userid
+	const showArchived = url.searchParams.get("showArchived") === "true";
+	const lastYear = String(new Date().getFullYear() - 1);
 
 	const meetingsResult = await locals.db.run(sql`
         SELECT DATE(timestamp, 'unixepoch') as date, COUNT(*) as count
@@ -15,6 +18,16 @@ export const load = (async ({ locals }) => {
 		(meetingsResult.results as unknown as { date: string; count: number }[]) ?? [];
 
 	const students = await locals.db.query.students.findMany({
+		where: showArchived
+			? undefined
+			: and(
+					eq(table.students.hidden, false),
+					or(
+						isNull(table.students.graduationYear),
+						eq(table.students.graduationYear, ""),
+						ne(table.students.graduationYear, lastYear)
+					)
+				),
 		with: {
 			attendance: {
 				where: (attendance, { gte }) => gte(attendance.timestamp, ATTENDANCE_SEASON_START_TIMESTAMP)
@@ -60,5 +73,5 @@ export const load = (async ({ locals }) => {
 		attend.push(row);
 	}
 
-	return { students, meetings, attend };
+	return { students, meetings, attend, showArchived };
 }) satisfies PageServerLoad;
