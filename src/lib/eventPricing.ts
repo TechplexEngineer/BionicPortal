@@ -2,6 +2,10 @@ export function isFreeEvent(cost: number): boolean {
 	return cost <= 0;
 }
 
+export function requiresPayment(cost: number, paid: boolean): boolean {
+	return !isFreeEvent(cost) && !paid;
+}
+
 export function getEventCostLabel(cost: number): string {
 	return isFreeEvent(cost) ? "Free" : `$${cost.toFixed(2)}`;
 }
