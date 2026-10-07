@@ -130,7 +130,9 @@ describe("SOP access", () => {
 	});
 
 	it("defaults an updated SOP to private when the sharing checkbox is absent", async () => {
-		const set = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const set = vi.fn().mockReturnValue({
+			where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: "sop-1" }]) })
+		});
 		const db = { update: vi.fn().mockReturnValue({ set }) };
 		await actions.update({
 			locals: { user: { id: "admin", role: "admin" }, db },
@@ -145,7 +147,9 @@ describe("SOP access", () => {
 	});
 
 	it("lets mentors share an updated SOP when the sharing checkbox is checked", async () => {
-		const set = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const set = vi.fn().mockReturnValue({
+			where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: "sop-1" }]) })
+		});
 		const db = { update: vi.fn().mockReturnValue({ set }) };
 		await actions.update({
 			locals: { user: { id: "mentor", role: "mentor", mentorApproved: true }, db },
@@ -193,7 +197,9 @@ describe("SOP access", () => {
 	});
 
 	it("deletes only the SOP identified by the form", async () => {
-		const where = vi.fn().mockResolvedValue({ success: true });
+		const where = vi.fn().mockReturnValue({
+			returning: vi.fn().mockResolvedValue([{ id: "sop-to-delete" }])
+		});
 		const db = {
 			delete: vi.fn().mockReturnValue({ where })
 		};
@@ -304,6 +310,17 @@ describe("SOP lifecycle actions", () => {
 				private: 1
 			}
 		);
+	});
+
+	it("rejects updating a nonexistent SOP", async () => {
+		const { sqlite, db } = fixture();
+		const result = await actions.update(
+			event(db, "admin", { id: "missing", title: "Updated", content: "New instructions" })
+		);
+		expect(result).toMatchObject({ status: 400, data: { message: "SOP not found" } });
+		expect(sqlite.prepare("SELECT title FROM sops WHERE id = ?").get("shared")).toEqual({
+			title: "Shared"
+		});
 	});
 
 	it.each(["admin", "mentor"])(
@@ -431,6 +448,13 @@ describe("SOP lifecycle actions", () => {
 		expect(result).toMatchObject({ success: expect.any(String) });
 		expect(state(sqlite, "shared")).toBeUndefined();
 		expect(state(sqlite, "private")).toEqual({ private: 1, archived: 0 });
+	});
+
+	it("rejects deleting a nonexistent SOP", async () => {
+		const { sqlite, db } = fixture();
+		const result = await actions.delete(event(db, "admin", { id: "missing" }));
+		expect(result).toMatchObject({ status: 400, data: { message: "SOP not found" } });
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
 	});
 
 	it.each(["archive", "restore"])("blocks unapproved mentor %s submissions", async (action) => {

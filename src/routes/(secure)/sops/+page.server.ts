@@ -73,10 +73,12 @@ export const actions: Actions = {
 		if (!parsed.success)
 			return fail(400, { message: parsed.error.issues[0]?.message ?? "Invalid SOP" });
 
-		await locals.db
+		const updated = await locals.db
 			.update(table.sops)
 			.set({ ...parsed.data, updatedAt: new Date() })
-			.where(eq(table.sops.id, id));
+			.where(eq(table.sops.id, id))
+			.returning({ id: table.sops.id });
+		if (updated.length === 0) return fail(400, { message: "SOP not found" });
 		return { success: "SOP saved.", id };
 	},
 	archive: async ({ locals, request }) => {
@@ -124,7 +126,11 @@ export const actions: Actions = {
 		if (locals.user?.role !== "admin") throw redirect(302, "/dashboard");
 		const id = (await request.formData()).get("id");
 		if (typeof id !== "string" || !id) return fail(400, { message: "Invalid SOP ID" });
-		await locals.db.delete(table.sops).where(eq(table.sops.id, id));
+		const deleted = await locals.db
+			.delete(table.sops)
+			.where(eq(table.sops.id, id))
+			.returning({ id: table.sops.id });
+		if (deleted.length === 0) return fail(400, { message: "SOP not found" });
 		return { success: "SOP deleted." };
 	}
 };
