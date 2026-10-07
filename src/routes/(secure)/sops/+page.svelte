@@ -33,9 +33,7 @@
 	});
 
 	const isAdmin = $derived(data.user.role === "admin");
-	const isManager = $derived(
-		data.user.role === "admin" || (data.user.role === "mentor" && data.user.mentorApproved)
-	);
+	const isManager = $derived(data.user.role === "admin" || data.user.role === "mentor");
 	const isStudent = $derived(data.user.role === "user");
 	const archivedView = $derived(page.url.searchParams.get("archived") === "1");
 	const activeHref = (id: string) => resolve(`/sops?id=${encodeURIComponent(id)}`);
