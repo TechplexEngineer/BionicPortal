@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { validateDefinition } from "@team4909/bionic-sign";
 import * as table from "$lib/server/db/schema";
 import { getOwnedFields } from "$lib/server/formWorkflow";
@@ -69,7 +69,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			eq(table.standaloneFormAssignments.formId, table.standaloneForms.id)
 		)
 		.innerJoin(table.students, eq(table.standaloneFormAssignments.studentId, table.students.userid))
-		.where(inArray(table.standaloneFormAssignments.studentId, studentIds));
+		.where(
+			and(
+				inArray(table.standaloneFormAssignments.studentId, studentIds),
+				eq(table.standaloneForms.status, "assigned")
+			)
+		);
 	const standaloneTasks = standaloneRows
 		.filter(({ assignment }) =>
 			Boolean(

@@ -39,6 +39,7 @@ function input(
 			id: "form-1",
 			name: "Consent",
 			basePdfKey: "standalone-forms/form-1/base.pdf",
+			status: "assigned",
 			definition
 		},
 		student: { firstName: "Sam", lastName: "Student", dateOfBirth }

@@ -34,14 +34,39 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.from(table.students)
 		.where(eq(table.students.userid, user.username));
 
-	const standaloneRows = await db
-		.select({ assignment: table.standaloneFormAssignments, form: table.standaloneForms })
-		.from(table.standaloneFormAssignments)
-		.innerJoin(
-			table.standaloneForms,
-			eq(table.standaloneFormAssignments.formId, table.standaloneForms.id)
-		)
-		.where(eq(table.standaloneFormAssignments.studentId, user.username));
+	const assignedStandaloneForms = await db
+		.select()
+		.from(table.standaloneForms)
+		.where(eq(table.standaloneForms.status, "assigned"));
+	const existingStandaloneRows = student
+		? await db
+				.select({ assignment: table.standaloneFormAssignments, form: table.standaloneForms })
+				.from(table.standaloneFormAssignments)
+				.innerJoin(
+					table.standaloneForms,
+					eq(table.standaloneFormAssignments.formId, table.standaloneForms.id)
+				)
+				.where(eq(table.standaloneFormAssignments.studentId, user.username))
+		: [];
+	const standaloneRows = existingStandaloneRows.filter((row) => row.form.status === "assigned");
+	if (student) {
+		for (const form of assignedStandaloneForms) {
+			if (standaloneRows.some((row) => row.form.id === form.id)) continue;
+			const assignment = {
+				id: crypto.randomUUID(),
+				formId: form.id,
+				studentId: user.username,
+				studentValues: {},
+				parentValues: {},
+				studentSubmittedAt: null,
+				parentRequired: null,
+				parentCompletedAt: null,
+				signedPdfKey: null
+			};
+			await db.insert(table.standaloneFormAssignments).values(assignment).onConflictDoNothing();
+			standaloneRows.push({ assignment, form });
+		}
+	}
 	const assignedForms = standaloneRows.map(({ assignment, form }) =>
 		getStandaloneAssignmentStatus(
 			assignment.id,

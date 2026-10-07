@@ -30,6 +30,7 @@ async function getAuthorizedAssignment(
 			)
 		)
 		.where(eq(table.standaloneFormAssignments.id, assignmentId));
+	if (row && row.form.status !== "assigned") return null;
 	if (!row || !row.assignment.studentSubmittedAt || !row.assignment.parentRequired) return null;
 	const definition = validateDefinition(row.form.definition);
 	if (!getOwnedFields(definition, "parent").some((field) => field.required)) return null;

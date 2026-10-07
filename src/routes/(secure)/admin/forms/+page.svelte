@@ -11,7 +11,7 @@
 	<header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
 		<div>
 			<h1 class="h2 mb-1">Standalone forms</h1>
-			<p class="text-muted mb-0">Assign forms to students independently of events.</p>
+			<p class="text-muted mb-0">Publish forms for every student independently of events.</p>
 		</div>
 		<a class="btn btn-primary" href={resolve("/admin/forms/new")}>Create form</a>
 	</header>
@@ -41,7 +41,7 @@
 							<div>
 								<div class="fw-semibold">{savedForm.name}</div>
 								<div class="text-muted small">
-									{savedForm.assignmentCount} assigned · {(
+									{savedForm.studentCount} student records · {(
 										savedForm.definition as { fields: unknown[] }
 									).fields.length} fields
 								</div>
@@ -55,11 +55,27 @@
 									class="btn btn-outline-primary btn-sm"
 									href={resolve(`/admin/forms/${savedForm.id}/edit`)}>Edit</a
 								>
-								<a
-									class="btn btn-primary btn-sm"
-									href={resolve(`/admin/forms/${savedForm.id}/assignments`)}>Assignments</a
+								<span
+									class="badge {savedForm.status === 'assigned' ? 'bg-success' : 'bg-secondary'}"
 								>
-								{#if savedForm.assignmentCount === 0}
+									{savedForm.status === "assigned" ? "Assigned to all students" : "Draft"}
+								</span>
+								<a
+									class="btn btn-outline-primary btn-sm"
+									href={resolve(`/admin/forms/${savedForm.id}/assignments`)}>View progress</a
+								>
+								<form method="post" action="?/toggleStatus" use:enhance>
+									<input type="hidden" name="formId" value={savedForm.id} />
+									<input
+										type="hidden"
+										name="status"
+										value={savedForm.status === "assigned" ? "draft" : "assigned"}
+									/>
+									<button class="btn btn-primary btn-sm" type="submit">
+										{savedForm.status === "assigned" ? "Return to draft" : "Assign to all students"}
+									</button>
+								</form>
+								{#if savedForm.studentCount === 0}
 									<form
 										method="post"
 										action="?/delete"

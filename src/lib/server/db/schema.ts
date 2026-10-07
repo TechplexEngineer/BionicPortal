@@ -205,12 +205,13 @@ export const eventForms = sqliteTable("event_forms", {
 });
 export type EventForm = typeof eventForms.$inferSelect;
 
-// Forms assigned directly to students, independently of event registration.
+// Forms published independently of event registration. Assignment rows store each student's work.
 export const standaloneForms = sqliteTable("standalone_forms", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	basePdfKey: text("base_pdf_key").notNull(),
-	definition: text("definition", { mode: "json" }).notNull()
+	definition: text("definition", { mode: "json" }).notNull(),
+	status: text("status").notNull().default("draft")
 });
 export type StandaloneForm = typeof standaloneForms.$inferSelect;
 

@@ -26,7 +26,8 @@ async function getAssignment(db: App.Locals["db"], studentId: string, assignment
 		.where(
 			and(
 				eq(table.standaloneFormAssignments.id, assignmentId),
-				eq(table.standaloneFormAssignments.studentId, studentId)
+				eq(table.standaloneFormAssignments.studentId, studentId),
+				eq(table.standaloneForms.status, "assigned")
 			)
 		);
 	return row;

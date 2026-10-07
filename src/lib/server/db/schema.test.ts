@@ -4,6 +4,7 @@ import {
 	eventFormSubmissions,
 	eventForms,
 	parentFormInvites,
+	standaloneForms,
 	shopLocations,
 	students,
 	eventInsertSchema
@@ -72,6 +73,10 @@ describe("Database Schema tests", () => {
 				consumedAt: expect.anything()
 			})
 		);
+	});
+
+	it("standalone forms have a draft or assigned publication status", () => {
+		expect(getTableColumns(standaloneForms)).toHaveProperty("status");
 	});
 
 	it("defaults event carpooling to disabled", () => {

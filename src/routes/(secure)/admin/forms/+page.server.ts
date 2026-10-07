@@ -14,12 +14,49 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		forms: forms.map((form) => ({
 			...form,
-			assignmentCount: assignments.filter((assignment) => assignment.formId === form.id).length
+			studentCount: assignments.filter((assignment) => assignment.formId === form.id).length
 		}))
 	};
 };
 
 export const actions: Actions = {
+	toggleStatus: async ({ request, locals }) => {
+		if (locals.user?.role !== "admin") return fail(403, { message: "Forbidden." });
+		const formData = await request.formData();
+		const formId = formData.get("formId")?.toString();
+		const nextStatus = formData.get("status")?.toString();
+		if (!formId || (nextStatus !== "draft" && nextStatus !== "assigned")) {
+			return fail(400, { message: "Invalid form status." });
+		}
+		const [form] = await locals.db
+			.select({ id: table.standaloneForms.id, status: table.standaloneForms.status })
+			.from(table.standaloneForms)
+			.where(eq(table.standaloneForms.id, formId));
+		if (!form) return fail(404, { message: "Form not found." });
+		if (nextStatus === "assigned" && form.status !== "assigned") {
+			const students = await locals.db
+				.select({ userid: table.students.userid })
+				.from(table.students)
+				.where(eq(table.students.hidden, false));
+			await Promise.all(
+				students.map((student) =>
+					locals.db
+						.insert(table.standaloneFormAssignments)
+						.values({ id: crypto.randomUUID(), formId, studentId: student.userid })
+						.onConflictDoNothing()
+				)
+			);
+		}
+		await locals.db
+			.update(table.standaloneForms)
+			.set({ status: nextStatus })
+			.where(eq(table.standaloneForms.id, formId));
+		return {
+			success: true,
+			message:
+				nextStatus === "assigned" ? "Form assigned to all students." : "Form returned to draft."
+		};
+	},
 	delete: async ({ request, locals, platform }) => {
 		if (locals.user?.role !== "admin") return fail(403, { message: "Forbidden." });
 		const formId = (await request.formData()).get("formId");

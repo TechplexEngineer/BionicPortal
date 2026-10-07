@@ -14,7 +14,8 @@ export const GET: RequestHandler = async ({ locals, platform, params }) => {
 		.where(
 			and(
 				eq(table.standaloneFormAssignments.id, params.assignmentId),
-				eq(table.standaloneFormAssignments.studentId, locals.user!.username)
+				eq(table.standaloneFormAssignments.studentId, locals.user!.username),
+				eq(table.standaloneForms.status, "assigned")
 			)
 		);
 	if (!row) throw error(404, "Form assignment not found");

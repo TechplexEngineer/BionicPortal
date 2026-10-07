@@ -25,7 +25,12 @@ export const GET: RequestHandler = async ({ locals, platform, params }) => {
 				eq(table.parentStudentLinks.parentId, locals.user!.id)
 			)
 		)
-		.where(eq(table.standaloneFormAssignments.id, params.assignmentId));
+		.where(
+			and(
+				eq(table.standaloneFormAssignments.id, params.assignmentId),
+				eq(table.standaloneForms.status, "assigned")
+			)
+		);
 	if (!row || !row.assignment.studentSubmittedAt || !row.assignment.parentRequired)
 		throw error(404, "Form not found");
 	const definition = validateDefinition(row.form.definition);
