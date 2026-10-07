@@ -80,6 +80,23 @@ describe("SOP access", () => {
 		);
 	});
 
+	it.each([false, undefined])(
+		"redirects a mentor with approval %s before loading SOPs",
+		async (mentorApproved) => {
+			const db = { select: vi.fn() };
+			await expect(
+				load({
+					locals: {
+						user: { id: "mentor", role: "mentor", mentorApproved },
+						db
+					},
+					url: new URL("http://localhost/sops?archived=1&id=private")
+				} as unknown as Parameters<typeof load>[0])
+			).rejects.toMatchObject({ status: 302, location: "/dashboard" });
+			expect(db.select).not.toHaveBeenCalled();
+		}
+	);
+
 	it("returns active SOPs to mentors by default", async () => {
 		const { db, query } = dbWithSops([]);
 		await load({
@@ -281,6 +298,33 @@ describe("SOP lifecycle actions", () => {
 			}
 		});
 	}
+
+	it.each([
+		["/sops?id=private", "private"],
+		["/sops?id=archived", "archived"],
+		["/sops?archived=1&id=private", "private"],
+		["/sops?archived=1&id=archived", "archived"]
+	])("keeps %s hidden from a student's SOP list and selection", async (path, hiddenId) => {
+		const { db } = fixture();
+		const result = await load({
+			locals: { user: { id: "student", role: "user" }, db },
+			url: new URL(path, "http://localhost")
+		} as unknown as Parameters<typeof load>[0]);
+
+		expect(result.sops.map((sop) => sop.id)).toEqual(["shared"]);
+		expect(result.sops.find((sop) => sop.id === hiddenId)).toBeUndefined();
+		expect(result.selectedSop).toBeNull();
+	});
+
+	it("lets a student select a shared active SOP", async () => {
+		const { db } = fixture();
+		const result = await load({
+			locals: { user: { id: "student", role: "user" }, db },
+			url: new URL("http://localhost/sops?id=shared")
+		} as unknown as Parameters<typeof load>[0]);
+
+		expect(result.selectedSop?.id).toBe("shared");
+	});
 
 	it("lets an approved mentor create and update a shared SOP", async () => {
 		const { sqlite, db } = fixture();

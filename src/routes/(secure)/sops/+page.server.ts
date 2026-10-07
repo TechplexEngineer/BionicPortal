@@ -11,7 +11,11 @@ const sopForm = z.object({
 });
 
 function requireSopAccess(user: App.Locals["user"]) {
-	if (!user || !["user", "mentor", "admin"].includes(user.role)) {
+	if (
+		!user ||
+		!["user", "mentor", "admin"].includes(user.role) ||
+		(user.role === "mentor" && user.mentorApproved !== true)
+	) {
 		throw redirect(302, "/dashboard");
 	}
 	return user;
