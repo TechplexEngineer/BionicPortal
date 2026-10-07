@@ -71,7 +71,7 @@
 							href="/compete">Events</a
 						>
 					</li>
-					{#if user.role === "admin"}
+					{#if user.role === "admin" || user.role === "mentor"}
 						<li class="nav-item dropdown">
 							<a
 								class="nav-link dropdown-toggle {$page.url.pathname.startsWith('/admin')

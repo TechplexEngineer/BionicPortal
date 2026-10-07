@@ -12,6 +12,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const db = locals.db;
 	const role = user.role;
 
+	if (role === "mentor" || role === "admin") {
+		return redirect(302, "/admin");
+	}
+
 	if (role === "parent") {
 		return redirect(302, "/dashboard/parent");
 		// Load parent-specific data

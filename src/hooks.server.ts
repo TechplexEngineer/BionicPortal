@@ -1,6 +1,7 @@
 import type { Handle } from "@sveltejs/kit";
 import * as auth from "$lib/server/auth";
 import { getDb } from "$lib/server/db";
+import { canWriteAdminRequest } from "$lib/server/adminAccess";
 import { sequence } from "@sveltejs/kit/hooks";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
@@ -46,4 +47,16 @@ const protectMagicLink: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(protectMagicLink, addDbToLocals, handleAuth);
+const protectAdminWrites: Handle = async ({ event, resolve }) => {
+	if (!canWriteAdminRequest(event.url.pathname, event.request.method, event.locals.user)) {
+		return new Response("Admin access required", { status: 403 });
+	}
+	return resolve(event);
+};
+
+export const handle: Handle = sequence(
+	protectMagicLink,
+	addDbToLocals,
+	handleAuth,
+	protectAdminWrites
+);

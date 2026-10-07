@@ -44,18 +44,6 @@
 			</select>
 		</div>
 
-		<div class="form-check mb-3">
-			<input
-				class="form-check-input"
-				type="checkbox"
-				id="mentorApproved"
-				name="mentorApproved"
-				checked={data.currentUser.mentorApproved}
-			/>
-			<label class="form-check-label" for="mentorApproved">Approve mentor dashboard access</label>
-			<div class="form-text">This applies when the user has the Mentor role.</div>
-		</div>
-
 		<p class="text-muted">Users sign in with a magic link sent to their email address.</p>
 
 		<button type="submit" class="btn btn-primary me-2">Save Changes</button>

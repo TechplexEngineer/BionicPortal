@@ -36,8 +36,7 @@ export async function validateSessionToken(token: string, db: DbInstance) {
 			user: {
 				id: table.user.id,
 				username: table.user.username,
-				role: table.user.role,
-				mentorApproved: table.user.mentorApproved
+				role: table.user.role
 			},
 			session: table.session
 		})

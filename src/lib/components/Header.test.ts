@@ -22,7 +22,7 @@ describe("Header authenticated navigation", () => {
 	});
 
 	it("renders an admin dropdown containing the admin dashboard", () => {
-		expect(headerMarkup).toMatch(/user\.role === "admin"/);
+		expect(headerMarkup).toMatch(/user\.role === "admin" \|\| user\.role === "mentor"/);
 		expect(headerMarkup).toMatch(/href="\/admin"[^>]*>Admin Dashboard<\/a>/);
 	});
 

@@ -20,5 +20,5 @@ export const POST: RequestHandler = async ({ cookies, locals, platform }) => {
 
 	auth.setSessionTokenCookie({ cookies }, originToken, session.expiresAt);
 	cookies.delete(auth.impersonationOriginCookieName, { path: "/" });
-	throw redirect(303, user.role === "admin" ? "/admin/users" : "/dashboard");
+	throw redirect(303, user.role === "admin" || user.role === "mentor" ? "/admin" : "/dashboard");
 };

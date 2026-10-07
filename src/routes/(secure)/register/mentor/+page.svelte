@@ -23,13 +23,6 @@
 						Tell us a little about yourself and how you can support Team 4909.
 					</p>
 
-					{#if data.profile && !data.mentorApproved}
-						<div class="alert alert-info" role="status">
-							Your mentor registration is awaiting admin approval. You will receive access to the
-							mentor dashboards once an administrator approves your account.
-						</div>
-					{/if}
-
 					{#if form?.message}
 						<div class="alert alert-danger" role="alert">
 							{form.message}

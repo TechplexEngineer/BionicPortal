@@ -14,13 +14,6 @@ function requireLogin(url: URL) {
 }
 export const load: LayoutServerLoad = async (request) => {
 	const user = requireLogin(request.url);
-	if (
-		user.role === "mentor" &&
-		user.mentorApproved === false &&
-		!request.url.pathname.startsWith("/register/mentor")
-	) {
-		return redirect(302, "/register/mentor");
-	}
 	return {
 		user
 	};

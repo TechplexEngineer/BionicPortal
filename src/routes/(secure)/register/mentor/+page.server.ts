@@ -20,8 +20,7 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		profile: profile ?? null,
-		email: event.locals.user.username,
-		mentorApproved: event.locals.user.mentorApproved
+		email: event.locals.user.username
 	};
 };
 
@@ -76,7 +75,7 @@ export const actions: Actions = {
 			if (event.locals.user.role === "user") {
 				await event.locals.db
 					.update(table.user)
-					.set({ role: "mentor", mentorApproved: false })
+					.set({ role: "mentor" })
 					.where(eq(table.user.id, event.locals.user.id));
 			}
 		} catch (error) {
