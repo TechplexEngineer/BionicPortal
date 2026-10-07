@@ -30,3 +30,15 @@ Complete.
 ## Commit
 
 `9c3f08a3148b640b37ceb9bcbd36b7485ea4fd9d` — `feat: filter SOPs by sharing and archive state`.
+
+## Review Fix: Require Approved Mentors for SOP Writes
+
+- Updated `src/routes/(secure)/sops/+page.server.ts` so the editor guard redirects unapproved mentors to `/dashboard` before either create or update can proceed.
+- Added direct action regression tests in `src/routes/(secure)/sops/sops-page.server.test.ts` for create and update submissions by an unapproved mentor.
+- Added the authorization pattern to `agents/tasks/lessons.md`.
+- RED evidence: before the guard change, both tests failed because the actions proceeded to database calls instead of redirecting.
+- Verification command: `npm run test:unit -- --run 'src/routes/(secure)/sops/sops-page.server.test.ts'`
+- Verification output: `Test Files 1 passed (1); Tests 11 passed (11)`.
+- Prettier check passed for the changed TypeScript files and lesson file.
+- Changed files: `src/routes/(secure)/sops/+page.server.ts`, `src/routes/(secure)/sops/sops-page.server.test.ts`, `agents/tasks/lessons.md`, and this report.
+- Fix commit: `3ca7d6456c8f2344a9b6b92f63a473d6c7a484bc` (`fix: block unapproved mentors from SOP edits`).
