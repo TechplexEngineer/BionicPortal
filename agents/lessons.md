@@ -14,3 +14,4 @@
 - **Navbar Route Labels**: When a requested navbar label includes a route in parentheses, treat the parenthetical as destination clarification rather than text to display unless explicitly requested.
 - **Admin Navigation Grouping**: When an admin area gains a peer dashboard such as Parents, place it in the primary tab list rather than nesting it under a related entity like Students.
 - **Action Placement Corrections**: When moving an existing action to a different screen, remove its old control and place the confirmation with the new control; keep the validated server action when it already supports the flow.
+- **Form Action Placement**: When assigned forms belong in Action Items, render the complete assigned-form status list there and remove duplicate dashboard sections.

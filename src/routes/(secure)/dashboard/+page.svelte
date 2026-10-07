@@ -162,21 +162,31 @@
 								</div>
 							</a>
 						{/if}
-						{#if !hasPendingActionItems(data.profileCompleteness.incomplete, data.actionItems.length + data.assignedForms.filter((assignedForm) => !assignedForm.submitted).length)}
-							<div class="text-muted text-center py-3">
-								<i class="fa fa-check-circle fa-2x mb-2 text-success d-block"></i>
-								You're all caught up! No pending tasks.
-							</div>
-						{:else}
+						{#if data.assignedForms.length > 0 || data.actionItems.length > 0}
 							<ul class="list-group list-group-flush">
-								{#each data.assignedForms.filter((assignedForm) => !assignedForm.submitted) as assignedForm}
+								{#each data.assignedForms as assignedForm}
 									<li class="list-group-item px-0">
-										<div class="fw-semibold">{assignedForm.name}</div>
+										<div class="d-flex justify-content-between align-items-center gap-2">
+											<div class="fw-semibold">{assignedForm.name}</div>
+											<span
+												class="badge {assignedForm.submitted
+													? 'bg-success'
+													: assignedForm.studentSubmitted
+														? 'bg-warning text-dark'
+														: 'bg-danger'}"
+											>
+												{assignedForm.submitted
+													? "Submitted"
+													: assignedForm.studentSubmitted
+														? "Waiting for parent"
+														: "Incomplete"}
+											</span>
+										</div>
 										<a
 											href="/dashboard/standalone-forms/{assignedForm.id}"
-											class="badge bg-danger text-decoration-none mt-1"
+											class="small text-decoration-none mt-1 d-inline-block"
 										>
-											{assignedForm.studentSubmitted ? "Waiting for parent" : "Complete form"}
+											{assignedForm.submitted ? "View form" : "Open form"}
 										</a>
 									</li>
 								{/each}
@@ -226,6 +236,11 @@
 									</li>
 								{/each}
 							</ul>
+						{:else if !hasPendingActionItems(data.profileCompleteness.incomplete, 0)}
+							<div class="text-muted text-center py-3">
+								<i class="fa fa-check-circle fa-2x mb-2 text-success d-block"></i>
+								You're all caught up! No pending tasks.
+							</div>
 						{/if}
 					</div>
 				</div>
@@ -286,40 +301,6 @@
 							</ul>
 						{/if}
 					</div>
-				</div>
-			</div>
-			<div class="card shadow-sm mt-4">
-				<div class="card-header bg-primary bg-opacity-10">
-					<h2 class="h5 mb-0"><i class="fa fa-file-text me-2"></i>My Forms</h2>
-				</div>
-				<div class="card-body">
-					{#if data.assignedForms.length === 0}
-						<p class="text-muted mb-0">No forms assigned.</p>
-					{:else}
-						<div class="list-group">
-							{#each data.assignedForms as assignedForm}
-								<a
-									href="/dashboard/standalone-forms/{assignedForm.id}"
-									class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-								>
-									<span>{assignedForm.name}</span>
-									<span
-										class="badge {assignedForm.submitted
-											? 'bg-success'
-											: assignedForm.studentSubmitted
-												? 'bg-warning text-dark'
-												: 'bg-secondary'}"
-									>
-										{assignedForm.submitted
-											? "Submitted"
-											: assignedForm.studentSubmitted
-												? "Waiting for parent"
-												: "Incomplete"}
-									</span>
-								</a>
-							{/each}
-						</div>
-					{/if}
 				</div>
 			</div>
 		</div>
