@@ -1,11 +1,53 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { fireEvent, render, screen } from "@testing-library/svelte";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import Page from "./+page.svelte";
 
 vi.mock("$app/state", () => ({ page: { url: new URL("http://localhost/sops?id=one") } }));
+
+afterEach(cleanup);
+
+const updatedAt = new Date("2026-10-07T12:00:00Z");
+const first = {
+	id: "one",
+	title: "Shared SOP",
+	content: "First draft",
+	private: false,
+	archived: false,
+	updatedAt
+};
+const second = {
+	id: "two",
+	title: "Private SOP",
+	content: "Second draft",
+	private: true,
+	archived: false,
+	updatedAt
+};
+
+function renderSopPage(selectedSop = first) {
+	return render(Page, {
+		data: {
+			user: { role: "mentor", mentorApproved: true },
+			sops: [first, second],
+			selectedSop
+		}
+	} as never);
+}
+
+async function openFirstEditor() {
+	const page = renderSopPage();
+	await fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+	return page;
+}
+
+function selectionLink(name: string) {
+	const link = screen.getByRole("link", { name: new RegExp(name) });
+	link.addEventListener("click", (event) => event.preventDefault());
+	return link;
+}
 
 const pageMarkup = readFileSync(resolve(import.meta.dirname, "+page.svelte"), "utf8");
 
@@ -19,37 +61,58 @@ function actionForm(action: string) {
 
 describe("SOP page", () => {
 	it("closes the current editor before selecting another SOP", async () => {
-		const updatedAt = new Date("2026-10-07T12:00:00Z");
-		const first = {
-			id: "one",
-			title: "Shared SOP",
-			content: "First draft",
-			private: false,
-			archived: false,
-			updatedAt
-		};
-		const second = {
-			id: "two",
-			title: "Private SOP",
-			content: "Second draft",
-			private: true,
-			archived: false,
-			updatedAt
-		};
-		render(Page, {
+		await openFirstEditor();
+		expect(screen.getByRole("button", { name: "Save SOP" })).toBeTruthy();
+		await fireEvent.click(selectionLink("Private SOP"));
+		expect(screen.queryByRole("button", { name: "Save SOP" })).toBeNull();
+	});
+
+	it("keeps the draft open when selecting the current SOP", async () => {
+		await openFirstEditor();
+		await fireEvent.click(selectionLink("Shared SOP"));
+		expect(screen.getByRole("button", { name: "Save SOP" })).toBeTruthy();
+	});
+
+	it.each([
+		["meta", { metaKey: true }],
+		["control", { ctrlKey: true }],
+		["shift", { shiftKey: true }],
+		["middle", { button: 1 }]
+	])("keeps the draft open for a %s click on another SOP", async (_, options) => {
+		await openFirstEditor();
+		await fireEvent.click(selectionLink("Private SOP"), options);
+		expect(screen.getByRole("button", { name: "Save SOP" })).toBeTruthy();
+	});
+
+	it("keeps the draft open for a new-tab link", async () => {
+		await openFirstEditor();
+		const link = selectionLink("Private SOP");
+		link.setAttribute("target", "_blank");
+		await fireEvent.click(link);
+		expect(screen.getByRole("button", { name: "Save SOP" })).toBeTruthy();
+	});
+
+	it("closes an edit when the selected SOP changes outside a link click", async () => {
+		const page = await openFirstEditor();
+		expect((screen.getByRole("textbox", { name: "Title" }) as HTMLInputElement).value).toBe(
+			"Shared SOP"
+		);
+		await page.rerender({
 			data: {
 				user: { role: "mentor", mentorApproved: true },
 				sops: [first, second],
-				selectedSop: first
+				selectedSop: second
 			}
 		} as never);
-
-		await fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-		expect(screen.getByRole("button", { name: "Save SOP" })).toBeTruthy();
-		const otherSop = screen.getByRole("link", { name: /Private SOP/ });
-		otherSop.addEventListener("click", (event) => event.preventDefault());
-		await fireEvent.click(otherSop);
 		expect(screen.queryByRole("button", { name: "Save SOP" })).toBeNull();
+		expect(screen.getByRole("heading", { name: "Private SOP" })).toBeTruthy();
+	});
+
+	it("keeps the edit form target bound to the SOP selected when editing began", async () => {
+		await openFirstEditor();
+		const editForm = screen.getByRole("button", { name: "Save SOP" }).closest("form");
+		expect(editForm?.querySelector<HTMLInputElement>('input[name="id"]')?.value).toBe("one");
+		expect(pageMarkup).toContain("value={editingSopId}");
 	});
 
 	it("shows the shared admin dashboard tabs to admins", () => {
@@ -72,7 +135,7 @@ describe("SOP page", () => {
 		expect(pageMarkup).toContain("await goto(destination)");
 		expect(pageMarkup).toContain('editorMode = "new"');
 		expect(pageMarkup).toContain('action={editorMode === "edit" ? "?/update" : "?/create"}');
-		expect(pageMarkup).toContain('{#if editorMode === "edit" && data.selectedSop}');
+		expect(pageMarkup).toContain('{#if editorMode === "edit" && editingSopId}');
 		expect(pageMarkup).toContain("editorMode = null");
 	});
 
@@ -97,7 +160,7 @@ describe("SOP page", () => {
 		expect(pageMarkup).toContain('const isStudent = $derived(data.user.role === "user")');
 		expect(pageMarkup).toMatch(/\{#if isManager\}[\s\S]*?<button[\s\S]*?New SOP[\s\S]*?<\/button>/);
 		expect(pageMarkup).toMatch(/\{#if isManager\}<button[\s\S]*?Edit<\/button\s*>/);
-		expect(pageMarkup).toContain("{#if isManager && editorMode !== null}");
+		expect(pageMarkup).toContain("{#if isManager && editorMode !== null &&");
 	});
 
 	it("defaults the new editor to private and binds sharing when editing", () => {

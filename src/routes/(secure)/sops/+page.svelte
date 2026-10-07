@@ -12,6 +12,7 @@
 	let { data, form }: PageProps = $props();
 	let query = $state("");
 	let editorMode = $state<"new" | "edit" | null>(null);
+	let editingSopId = $state<string | null>(null);
 	let draftTitle = $state(data.selectedSop?.title ?? "");
 	let draftContent = $state(data.selectedSop?.content ?? "");
 	let draftShared = $state(false);
@@ -21,6 +22,9 @@
 	});
 
 	$effect(() => {
+		if (editorMode === "edit" && editingSopId !== data.selectedSop?.id) {
+			editorMode = null;
+		}
 		if (editorMode === null) {
 			draftTitle = data.selectedSop?.title ?? "";
 			draftContent = data.selectedSop?.content ?? "";
@@ -55,6 +59,7 @@
 				class="btn btn-primary"
 				type="button"
 				onclick={() => {
+					editingSopId = null;
 					editorMode = "new";
 					draftTitle = "";
 					draftContent = "";
@@ -104,7 +109,19 @@
 							? 'active'
 							: ''}"
 						href={selectedHref(sop.id)}
-						onclick={() => (editorMode = null)}
+						onclick={(event) => {
+							if (
+								event.button === 0 &&
+								!event.metaKey &&
+								!event.ctrlKey &&
+								!event.shiftKey &&
+								!event.altKey &&
+								event.currentTarget.target !== "_blank" &&
+								sop.id !== data.selectedSop?.id
+							) {
+								editorMode = null;
+							}
+						}}
 					>
 						<div class="fw-semibold">
 							{sop.title}
@@ -121,7 +138,7 @@
 		</aside>
 
 		<section class="col-lg-8" aria-label="SOP content">
-			{#if isManager && editorMode !== null}
+			{#if isManager && editorMode !== null && (editorMode !== "edit" || (editingSopId !== null && editingSopId === data.selectedSop?.id))}
 				<div class="card shadow-sm">
 					<div class="card-header d-flex justify-content-between align-items-center">
 						<strong>{editorMode === "edit" ? "Edit SOP" : "New SOP"}</strong><button
@@ -147,10 +164,10 @@
 								};
 							}}
 						>
-							{#if editorMode === "edit" && data.selectedSop}<input
+							{#if editorMode === "edit" && editingSopId}<input
 									type="hidden"
 									name="id"
-									value={data.selectedSop.id}
+									value={editingSopId}
 								/>{/if}
 							<label class="form-label" for="sop-title">Title</label>
 							<input
@@ -203,6 +220,7 @@
 								class="btn btn-outline-primary"
 								type="button"
 								onclick={() => {
+									editingSopId = data.selectedSop?.id ?? null;
 									draftShared = data.selectedSop?.private === false;
 									editorMode = "edit";
 								}}>Edit</button
