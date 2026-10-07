@@ -258,6 +258,24 @@ describe("SOP lifecycle actions", () => {
 		return sqlite.prepare("SELECT private, archived FROM sops WHERE id = ?").get(id);
 	}
 
+	function changeBeforeUpdate(
+		db: ReturnType<typeof fixture>["db"],
+		sqlite: Database.Database,
+		statement: string
+	) {
+		return new Proxy(db, {
+			get(target, property, receiver) {
+				if (property === "update") {
+					return (sopTable: typeof table.sops) => {
+						sqlite.exec(statement);
+						return target.update(sopTable);
+					};
+				}
+				return Reflect.get(target, property, receiver);
+			}
+		});
+	}
+
 	it("lets an approved mentor create and update a shared SOP", async () => {
 		const { sqlite, db } = fixture();
 		const created = await actions.create(
@@ -326,6 +344,30 @@ describe("SOP lifecycle actions", () => {
 		expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 1 });
 	});
 
+	it("rejects a student's archive if sharing is revoked after the read", async () => {
+		const { sqlite, db } = fixture();
+		const concurrentDb = changeBeforeUpdate(
+			db,
+			sqlite,
+			"UPDATE sops SET private = 1 WHERE id = 'shared'"
+		);
+		const result = await actions.archive(event(concurrentDb, "user", { id: "shared" }));
+		expect(result).toMatchObject({ status: 400 });
+		expect(state(sqlite, "shared")).toEqual({ private: 1, archived: 0 });
+	});
+
+	it("rejects an archive if another request archives it after the read", async () => {
+		const { sqlite, db } = fixture();
+		const concurrentDb = changeBeforeUpdate(
+			db,
+			sqlite,
+			"UPDATE sops SET archived = 1 WHERE id = 'shared'"
+		);
+		const result = await actions.archive(event(concurrentDb, "admin", { id: "shared" }));
+		expect(result).toMatchObject({ status: 400 });
+		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 1 });
+	});
+
 	it.each(["admin", "mentor"])(
 		"lets an approved %s restore only the requested archived SOP",
 		async (role) => {
@@ -342,6 +384,18 @@ describe("SOP lifecycle actions", () => {
 		const result = await actions.restore(event(db, "admin", { id }));
 		expect(result).toMatchObject({ status: 400 });
 		expect(state(sqlite, "shared")).toEqual({ private: 0, archived: 0 });
+	});
+
+	it("rejects a restore if another request restores it after the read", async () => {
+		const { sqlite, db } = fixture();
+		const concurrentDb = changeBeforeUpdate(
+			db,
+			sqlite,
+			"UPDATE sops SET archived = 0 WHERE id = 'archived'"
+		);
+		const result = await actions.restore(event(concurrentDb, "mentor", { id: "archived" }));
+		expect(result).toMatchObject({ status: 400 });
+		expect(state(sqlite, "archived")).toEqual({ private: 0, archived: 0 });
 	});
 
 	it.each(["archive", "restore"])("rejects a missing id for %s", async (action) => {

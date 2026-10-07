@@ -90,10 +90,18 @@ export const actions: Actions = {
 			return fail(400, { message: "SOP cannot be archived" });
 		}
 
-		await locals.db
+		const updated = await locals.db
 			.update(table.sops)
 			.set({ archived: true, updatedAt: new Date() })
-			.where(eq(table.sops.id, id));
+			.where(
+				and(
+					eq(table.sops.id, id),
+					eq(table.sops.archived, false),
+					user.role === "user" ? eq(table.sops.private, false) : undefined
+				)
+			)
+			.returning({ id: table.sops.id });
+		if (updated.length === 0) return fail(400, { message: "SOP cannot be archived" });
 		return { success: "SOP archived.", id };
 	},
 	restore: async ({ locals, request }) => {
@@ -104,10 +112,12 @@ export const actions: Actions = {
 		const [sop] = await locals.db.select().from(table.sops).where(eq(table.sops.id, id)).limit(1);
 		if (!sop || !sop.archived) return fail(400, { message: "SOP cannot be restored" });
 
-		await locals.db
+		const updated = await locals.db
 			.update(table.sops)
 			.set({ archived: false, updatedAt: new Date() })
-			.where(eq(table.sops.id, id));
+			.where(and(eq(table.sops.id, id), eq(table.sops.archived, true)))
+			.returning({ id: table.sops.id });
+		if (updated.length === 0) return fail(400, { message: "SOP cannot be restored" });
 		return { success: "SOP restored.", id };
 	},
 	delete: async ({ locals, request }) => {
