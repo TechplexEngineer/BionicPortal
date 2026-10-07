@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import Database from "better-sqlite3";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import { actions, load } from "./+page.server";
@@ -12,6 +15,48 @@ function dbWithSops(sops: unknown[]) {
 }
 
 describe("SOP access", () => {
+	it("backfills existing SOPs as shared and active while new SOPs default to private", () => {
+		const db = new Database(":memory:");
+		db.exec(`CREATE TABLE sops (
+			id text PRIMARY KEY NOT NULL,
+			title text NOT NULL,
+			content text NOT NULL,
+			created_at integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
+			updated_at integer DEFAULT CURRENT_TIMESTAMP NOT NULL
+		)`);
+		db.prepare("INSERT INTO sops (id, title, content) VALUES (?, ?, ?)").run(
+			"existing",
+			"Existing SOP",
+			"Content"
+		);
+
+		const migration = readFileSync(
+			join(process.cwd(), "drizzle/0020_sop_visibility_and_archive.sql"),
+			"utf8"
+		);
+		db.exec(migration);
+
+		expect(db.prepare("SELECT private, archived FROM sops WHERE id = ?").get("existing")).toEqual({
+			private: 0,
+			archived: 0
+		});
+		db.prepare("INSERT INTO sops (id, title, content) VALUES (?, ?, ?)").run(
+			"new",
+			"New SOP",
+			"Content"
+		);
+		expect(db.prepare("SELECT private, archived FROM sops WHERE id = ?").get("new")).toEqual({
+			private: 1,
+			archived: 0
+		});
+		db.close();
+	});
+
+	it("exposes visibility fields in the Drizzle SOP schema", () => {
+		expect(table.sops.private.name).toBe("private");
+		expect(table.sops.archived.name).toBe("archived");
+	});
+
 	it("allows mentors to read SOPs", async () => {
 		const result = await load({
 			locals: {
