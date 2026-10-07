@@ -1,6 +1,7 @@
 import { getRequestEvent } from "$app/server";
 import { redirect } from "@sveltejs/kit";
 import { getLoginUrl } from "$lib/server/authRedirect";
+import { canAccessAdmin } from "$lib/server/adminAccess";
 import type { LayoutServerLoad } from "./$types";
 
 function requireLogin(url: URL) {
@@ -10,7 +11,7 @@ function requireLogin(url: URL) {
 		return redirect(302, getLoginUrl(url));
 	}
 
-	if (locals.user.role !== "admin") {
+	if (!canAccessAdmin(locals.user)) {
 		return redirect(302, "/dashboard");
 	}
 

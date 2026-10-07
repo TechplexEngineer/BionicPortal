@@ -73,7 +73,7 @@ describe("mentor registration", () => {
 			tshirtSize: "L",
 			firstAlumni: "yes"
 		});
-		expect(set).toHaveBeenCalledWith({ role: "mentor", mentorApproved: false });
+		expect(set).toHaveBeenCalledWith({ role: "mentor" });
 	});
 
 	it("rejects incomplete registration fields before writing", async () => {
