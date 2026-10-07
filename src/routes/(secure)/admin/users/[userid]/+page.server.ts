@@ -32,10 +32,14 @@ export const actions: Actions = {
 			return fail(400, { message: "Invalid role" });
 		}
 
+		const currentUser = await locals.db.query.user.findFirst({
+			where: (user, { eq }) => eq(user.id, params.userid)
+		});
+		const promotingToMentor = role === "mentor" && currentUser?.role !== "mentor";
 		const updateData: Partial<typeof table.user.$inferInsert> = {
 			username,
 			role,
-			mentorApproved: role === "mentor" ? mentorApproved : true
+			mentorApproved: role === "mentor" ? mentorApproved || promotingToMentor : true
 		};
 
 		try {
