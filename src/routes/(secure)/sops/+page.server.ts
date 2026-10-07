@@ -18,7 +18,11 @@ function requireSopAccess(user: App.Locals["user"]) {
 }
 
 function requireSopEditor(user: App.Locals["user"]) {
-	if (!user || (user.role !== "admin" && user.role !== "mentor")) {
+	if (
+		!user ||
+		(user.role !== "admin" && user.role !== "mentor") ||
+		(user.role === "mentor" && user.mentorApproved === false)
+	) {
 		throw redirect(302, "/dashboard");
 	}
 }

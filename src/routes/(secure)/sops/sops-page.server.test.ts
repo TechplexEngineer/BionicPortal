@@ -163,6 +163,34 @@ describe("SOP access", () => {
 		);
 	});
 
+	it("rejects SOP creation by an unapproved mentor", async () => {
+		await expect(
+			actions.create({
+				locals: { user: { id: "mentor", role: "mentor", mentorApproved: false }, db: {} },
+				request: new Request("http://localhost/sops", {
+					method: "POST",
+					body: new URLSearchParams({ title: "New SOP", content: "Instructions" })
+				})
+			} as unknown as Parameters<NonNullable<typeof actions.create>>[0])
+		).rejects.toMatchObject({ status: 302, location: "/dashboard" });
+	});
+
+	it("rejects SOP updates by an unapproved mentor", async () => {
+		await expect(
+			actions.update({
+				locals: { user: { id: "mentor", role: "mentor", mentorApproved: false }, db: {} },
+				request: new Request("http://localhost/sops", {
+					method: "POST",
+					body: new URLSearchParams({
+						id: "sop-1",
+						title: "Updated",
+						content: "Instructions"
+					})
+				})
+			} as unknown as Parameters<NonNullable<typeof actions.update>>[0])
+		).rejects.toMatchObject({ status: 302, location: "/dashboard" });
+	});
+
 	it("deletes only the SOP identified by the form", async () => {
 		const where = vi.fn().mockResolvedValue({ success: true });
 		const db = {
