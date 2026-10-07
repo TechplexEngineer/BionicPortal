@@ -16,6 +16,7 @@ export const load = (async ({ locals, url }) => {
     `);
 	const meetings: { date: string; count: number }[] =
 		(meetingsResult.results as unknown as { date: string; count: number }[]) ?? [];
+	meetings.sort((a, b) => b.date.localeCompare(a.date));
 
 	const students = await locals.db.query.students.findMany({
 		where: showArchived
