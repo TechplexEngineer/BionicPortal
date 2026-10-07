@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { load } from "./+page.server";
 
-function loadEvent(url = "http://localhost/admin/users/students/attendance") {
+function loadEvent(
+	url = "http://localhost/admin/users/students/attendance",
+	meetings: { date: string; count: number }[] = []
+) {
 	const findMany = vi.fn().mockResolvedValue([]);
 	const db = {
-		run: vi.fn().mockResolvedValue({ results: [] }),
+		run: vi.fn().mockResolvedValue({ results: meetings }),
 		query: { students: { findMany } }
 	};
 
@@ -18,6 +21,17 @@ function loadEvent(url = "http://localhost/admin/users/students/attendance") {
 }
 
 describe("admin student attendance visibility", () => {
+	it("returns meetings newest first for date column rendering", async () => {
+		const { input } = loadEvent("http://localhost/admin/users/students/attendance", [
+			{ date: "2026-09-01", count: 1 },
+			{ date: "2026-10-01", count: 2 }
+		]);
+
+		const result = await load(input);
+
+		expect(result.meetings.map((meeting) => meeting.date)).toEqual(["2026-10-01", "2026-09-01"]);
+	});
+
 	it("filters out hidden students and last year's graduates by default", async () => {
 		const { input, findMany } = loadEvent();
 
