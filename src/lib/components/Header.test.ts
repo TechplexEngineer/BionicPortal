@@ -9,6 +9,10 @@ describe("Header user menu", () => {
 		expect(headerMarkup).toMatch(/<span class="dropdown-item-text">\{user\.username\}<\/span>/);
 	});
 
+	it("shows the username beside the user icon when the navbar has room", () => {
+		expect(headerMarkup).toMatch(/class="d-none d-lg-inline">\{user\.username\}<\/span>/);
+	});
+
 	it("right-aligns the dropdown so it stays within the viewport", () => {
 		expect(headerMarkup).toMatch(/class="dropdown-menu dropdown-menu-end text-small"/);
 	});

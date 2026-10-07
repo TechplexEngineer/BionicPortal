@@ -100,7 +100,7 @@
 				{/if}
 				<div class="dropdown text-end">
 					<button
-						class="d-block btn btn-link link-body-emphasis text-decoration-none dropdown-toggle"
+						class="d-inline-flex align-items-center gap-2 btn btn-link link-body-emphasis text-decoration-none dropdown-toggle"
 						data-bs-toggle="dropdown"
 						aria-expanded="false"
 						data-bs-offset="10,20"
@@ -113,6 +113,7 @@
 							class="rounded-circle"
 							data-bs-offset="10,20"
 						/>
+						<span class="d-none d-lg-inline">{user.username}</span>
 					</button>
 
 					<ul class="dropdown-menu dropdown-menu-end text-small">
