@@ -12,34 +12,6 @@ export const adminNavPages: Page[] = [
 		]
 	},
 	{
-		name: "Students",
-		route: "/admin/students",
-		nested: [
-			{
-				name: "Overview",
-				route: "/admin/students"
-			},
-			{
-				name: "Import",
-				route: "/admin/students/import"
-			},
-			{
-				name: "Attendance",
-				route: "/admin/students/attendance"
-			}
-		]
-	},
-	{
-		name: "Parents",
-		route: "/admin/parents",
-		nested: [
-			{
-				name: "Overview",
-				route: "/admin/parents"
-			}
-		]
-	},
-	{
 		name: "Users",
 		route: "/admin/users",
 		nested: [
@@ -50,6 +22,14 @@ export const adminNavPages: Page[] = [
 			{
 				name: "Create User",
 				route: "/admin/users/new"
+			},
+			{
+				name: "Students",
+				route: "/admin/students"
+			},
+			{
+				name: "Parents",
+				route: "/admin/parents"
 			}
 		]
 	},
