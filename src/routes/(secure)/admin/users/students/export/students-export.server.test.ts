@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { GET } from "./+server";
 
-function exportEvent(url = "http://localhost/admin/students/export") {
+function exportEvent(url = "http://localhost/admin/users/students/export") {
 	const rows = [
 		{ firstName: "Alice", lastName: 'O"Neil' },
 		{ firstName: "Bob", lastName: "Student" }
@@ -35,7 +35,7 @@ describe("student name CSV export", () => {
 
 	it("includes archived students when the overview filter is enabled", async () => {
 		const { input, where } = exportEvent(
-			"http://localhost/admin/students/export?showArchived=true"
+			"http://localhost/admin/users/students/export?showArchived=true"
 		);
 
 		await GET(input);

@@ -14,8 +14,10 @@ describe("admin navigation", () => {
 		expect(adminNavPages.find(({ name }) => name === "Users")?.nested).toEqual([
 			{ name: "Overview", route: "/admin/users" },
 			{ name: "Create User", route: "/admin/users/new" },
-			{ name: "Students", route: "/admin/students" },
-			{ name: "Parents", route: "/admin/parents" }
+			{ name: "Students", route: "/admin/users/students" },
+			{ name: "Import Students", route: "/admin/users/students/import" },
+			{ name: "Student Attendance", route: "/admin/users/students/attendance" },
+			{ name: "Parents", route: "/admin/users/parents" }
 		]);
 		expect(adminNavPages.at(-1)?.nested).toEqual([{ name: "Overview", route: "/sops" }]);
 	});

@@ -25,11 +25,19 @@ export const adminNavPages: Page[] = [
 			},
 			{
 				name: "Students",
-				route: "/admin/students"
+				route: "/admin/users/students"
+			},
+			{
+				name: "Import Students",
+				route: "/admin/users/students/import"
+			},
+			{
+				name: "Student Attendance",
+				route: "/admin/users/students/attendance"
 			},
 			{
 				name: "Parents",
-				route: "/admin/parents"
+				route: "/admin/users/parents"
 			}
 		]
 	},

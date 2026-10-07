@@ -2,7 +2,7 @@
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
-	import { layoutState } from "../../+layout.svelte";
+	import { layoutState } from "../../../+layout.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();

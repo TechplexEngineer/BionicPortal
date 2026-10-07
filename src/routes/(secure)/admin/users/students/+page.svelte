@@ -4,15 +4,18 @@
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
-	import { layoutState } from "../+layout.svelte";
+	import { layoutState } from "../../+layout.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
 	type StudentRow = Record<string, any>;
-	const showArchivedUrl = "/admin/students?showArchived=true";
-	let exportUrl: "/admin/students/export" | "/admin/students/export?showArchived=true" = $derived(
-		data.showArchived ? "/admin/students/export?showArchived=true" : "/admin/students/export"
-	);
+	const showArchivedUrl = "/admin/users/students?showArchived=true";
+	let exportUrl: "/admin/users/students/export" | "/admin/users/students/export?showArchived=true" =
+		$derived(
+			data.showArchived
+				? "/admin/users/students/export?showArchived=true"
+				: "/admin/users/students/export"
+		);
 
 	const columns: TableColumns = [
 		// Userid	FirstName	LastName	Data	Hidden
@@ -53,7 +56,7 @@
 {/snippet}
 
 {#snippet action(id: string, student: StudentRow)}
-	<a href={resolve(`/admin/students/${id}`)} class="btn btn-primary btn-sm me-1">Edit</a>
+	<a href={resolve(`/admin/users/students/${id}`)} class="btn btn-primary btn-sm me-1">Edit</a>
 	<form method="POST" action="?/toggleHidden" use:enhance style="display:inline;">
 		<input type="hidden" name="id" value={id} />
 		<button type="submit" class="btn btn-outline-secondary btn-sm me-1">
@@ -97,7 +100,7 @@
 		<i class="fa fa-download me-1"></i>Export CSV
 	</a>
 	{#if data.showArchived}
-		<a href={resolve("/admin/students")} class="btn btn-outline-secondary btn-sm"
+		<a href={resolve("/admin/users/students")} class="btn btn-outline-secondary btn-sm"
 			>Show current students only</a
 		>
 	{:else}

@@ -10,3 +10,4 @@
 - Enhanced delete forms must call the framework-provided `cancel()` inside the `use:enhance` submit callback and immediately return; do not rely on a separate `onsubmit` `preventDefault()` handler.
 - When offering passkey setup from an email-link landing page, verify and consume the link and establish the user's session before navigating to enrollment; a GET must never enroll a credential.
 - When a user relocates an existing action, move its control and confirmation to the requested screen while preserving the working server behavior and feedback path unless that behavior also needs to change.
+- When regrouping navigation tabs, preserve every existing child link; verify the shared navigation component supports the intended nesting depth before changing the route tree.

@@ -12,7 +12,7 @@ function event(fields: Record<string, string>) {
 
 	return {
 		input: {
-			request: new Request("http://localhost/admin/students/student@example.com", {
+			request: new Request("http://localhost/admin/users/students/student@example.com", {
 				method: "POST",
 				body: new URLSearchParams(fields)
 			}),
@@ -71,7 +71,7 @@ describe("admin student edit", () => {
 
 		await expect(actions.default(input)).rejects.toMatchObject({
 			status: 303,
-			location: "/admin/students/updated%40example.com"
+			location: "/admin/users/students/updated%40example.com"
 		});
 		expect(set).toHaveBeenCalledWith({
 			userid: "updated@example.com",

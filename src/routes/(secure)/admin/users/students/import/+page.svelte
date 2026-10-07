@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { layoutState } from "../../+layout.svelte";
+	import { layoutState } from "../../../+layout.svelte";
 	import type { PageProps } from "./$types";
 	import * as XLSX from "xlsx";
 	import ImportMapping from "$lib/components/ImportMapping.svelte";
@@ -50,7 +50,7 @@
 <div class="container mt-4">
 	<nav aria-label="breadcrumb">
 		<ol class="breadcrumb">
-			<li class="breadcrumb-item"><a href="/admin/students">Students</a></li>
+			<li class="breadcrumb-item"><a href="/admin/users/students">Students</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Import</li>
 		</ol>
 	</nav>
@@ -68,7 +68,7 @@
 			{#if form?.success}
 				<div class="alert alert-success" role="alert">
 					Successfully imported {form.imported} students!
-					<a href="/admin/students" class="alert-link">Back to students</a>
+					<a href="/admin/users/students" class="alert-link">Back to students</a>
 				</div>
 			{/if}
 
