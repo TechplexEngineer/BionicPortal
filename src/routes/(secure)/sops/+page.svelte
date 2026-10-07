@@ -104,6 +104,7 @@
 							? 'active'
 							: ''}"
 						href={selectedHref(sop.id)}
+						onclick={() => (editorMode = null)}
 					>
 						<div class="fw-semibold">
 							{sop.title}

@@ -1,6 +1,11 @@
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/svelte";
+import { describe, expect, it, vi } from "vitest";
+import Page from "./+page.svelte";
+
+vi.mock("$app/state", () => ({ page: { url: new URL("http://localhost/sops?id=one") } }));
 
 const pageMarkup = readFileSync(resolve(import.meta.dirname, "+page.svelte"), "utf8");
 
@@ -13,6 +18,40 @@ function actionForm(action: string) {
 }
 
 describe("SOP page", () => {
+	it("closes the current editor before selecting another SOP", async () => {
+		const updatedAt = new Date("2026-10-07T12:00:00Z");
+		const first = {
+			id: "one",
+			title: "Shared SOP",
+			content: "First draft",
+			private: false,
+			archived: false,
+			updatedAt
+		};
+		const second = {
+			id: "two",
+			title: "Private SOP",
+			content: "Second draft",
+			private: true,
+			archived: false,
+			updatedAt
+		};
+		render(Page, {
+			data: {
+				user: { role: "mentor", mentorApproved: true },
+				sops: [first, second],
+				selectedSop: first
+			}
+		} as never);
+
+		await fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+		expect(screen.getByRole("button", { name: "Save SOP" })).toBeTruthy();
+		const otherSop = screen.getByRole("link", { name: /Private SOP/ });
+		otherSop.addEventListener("click", (event) => event.preventDefault());
+		await fireEvent.click(otherSop);
+		expect(screen.queryByRole("button", { name: "Save SOP" })).toBeNull();
+	});
+
 	it("shows the shared admin dashboard tabs to admins", () => {
 		const adminLayout = readFileSync(
 			resolve(import.meta.dirname, "../admin/+layout.svelte"),
