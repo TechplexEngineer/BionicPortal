@@ -79,9 +79,11 @@
 									<form
 										method="post"
 										action="?/delete"
-										use:enhance
-										onsubmit={(event) => {
-											if (!confirm(`Delete ${savedForm.name}?`)) event.preventDefault();
+										use:enhance={({ cancel }) => {
+											if (!confirm(`Delete ${savedForm.name}?`)) {
+												cancel();
+												return;
+											}
 										}}
 									>
 										<input type="hidden" name="formId" value={savedForm.id} />
