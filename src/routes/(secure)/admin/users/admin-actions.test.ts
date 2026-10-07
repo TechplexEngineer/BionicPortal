@@ -5,13 +5,15 @@ import { actions as userActions } from "./+page.server";
 import { actions as shopActions } from "../shop/+page.server";
 import * as auth from "$lib/server/auth";
 
-function event(fields: Record<string, string>) {
+function event(fields: Record<string, string>, currentRole = "user") {
 	const values = vi.fn().mockResolvedValue(undefined);
 	const where = vi.fn().mockResolvedValue(undefined);
 	const set = vi.fn().mockReturnValue({ where });
+	const findFirst = vi.fn().mockResolvedValue({ role: currentRole });
 	const db = {
 		insert: vi.fn().mockReturnValue({ values }),
-		update: vi.fn().mockReturnValue({ set })
+		update: vi.fn().mockReturnValue({ set }),
+		query: { user: { findFirst } }
 	};
 	return {
 		input: {
@@ -26,7 +28,8 @@ function event(fields: Record<string, string>) {
 		db,
 		values,
 		set,
-		where
+		where,
+		findFirst
 	};
 }
 
@@ -71,6 +74,34 @@ describe("admin email-only accounts", () => {
 			username: "mentor@example.com",
 			role: "mentor",
 			mentorApproved: true
+		});
+	});
+
+	it("approves a user when an admin promotes them to mentor", async () => {
+		const { input, set } = event({
+			username: "new-mentor@example.com",
+			role: "mentor"
+		});
+
+		await expect(editActions.edit(input)).resolves.toEqual({ success: true });
+		expect(set).toHaveBeenCalledWith({
+			username: "new-mentor@example.com",
+			role: "mentor",
+			mentorApproved: true
+		});
+	});
+
+	it("keeps an existing pending mentor pending when approval is not checked", async () => {
+		const { input, set } = event(
+			{ username: "pending-mentor@example.com", role: "mentor" },
+			"mentor"
+		);
+
+		await expect(editActions.edit(input)).resolves.toEqual({ success: true });
+		expect(set).toHaveBeenCalledWith({
+			username: "pending-mentor@example.com",
+			role: "mentor",
+			mentorApproved: false
 		});
 	});
 
