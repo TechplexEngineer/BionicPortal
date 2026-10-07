@@ -9,6 +9,7 @@ describe("admin navigation", () => {
 			["Parents", "/admin/parents"],
 			["Users", "/admin/users"],
 			["Events", "/admin/events"],
+			["Forms", "/admin/forms"],
 			["Shop", "/admin/shop"],
 			["SOPs", "/sops"]
 		]);

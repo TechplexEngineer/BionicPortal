@@ -6,113 +6,14 @@ import * as table from "$lib/server/db/schema";
 import { getAgeOnDate, getFormStatus } from "$lib/server/formWorkflow";
 import { getProfileCompleteness } from "$lib/server/profileCompleteness";
 import type { Role } from "$lib/roles";
+import { getStandaloneAssignmentStatus } from "./standaloneFormStatus";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user!;
 	const db = locals.db;
 	const role = user.role;
 
-	if (role === "parent") {
-		return redirect(302, "/dashboard/parent");
-		// Load parent-specific data
-		const links = await db
-			.select()
-			.from(table.parentStudentLinks)
-			.where(eq(table.parentStudentLinks.parentId, user.id));
-
-		const studentIds = links.map((l) => l.studentId);
-
-		const studentsWithRegs: {
-			student: typeof table.students.$inferSelect;
-			registrations: {
-				id: string;
-				paid: boolean;
-				formCompleted: boolean;
-				eventId: string;
-				eventName: string;
-				startDate: string;
-				endDate: string;
-				cost: number;
-				forms: { id: string; name: string; completed: boolean }[];
-			}[];
-		}[] = [];
-
-		if (studentIds.length > 0) {
-			// Batch-fetch all linked students in one query
-			const allStudents = await db
-				.select()
-				.from(table.students)
-				.where(inArray(table.students.userid, studentIds));
-
-			// Batch-fetch all registrations for all linked students in one query
-			const allRegs = await db
-				.select({
-					id: table.eventRegistrations.id,
-					paid: table.eventRegistrations.paid,
-					formCompleted: table.eventRegistrations.formCompleted,
-					studentId: table.eventRegistrations.studentId,
-					eventId: table.events.id,
-					eventData: table.events.data
-				})
-				.from(table.eventRegistrations)
-				.innerJoin(table.events, eq(table.eventRegistrations.eventId, table.events.id))
-				.where(inArray(table.eventRegistrations.studentId, studentIds));
-
-			for (const student of allStudents) {
-				const regs = allRegs.filter((r) => r.studentId === student.userid);
-				studentsWithRegs.push({
-					student,
-					registrations: regs.map((r) => {
-						const eventData = r.eventData as table.EventData;
-						return {
-							id: r.id,
-							paid: r.paid,
-							formCompleted: r.formCompleted,
-							eventId: r.eventId,
-							eventName: eventData.name,
-							startDate: eventData.startDate,
-							endDate: eventData.endDate,
-							cost: eventData.cost,
-							forms: []
-						};
-					})
-				});
-			}
-		}
-
-		return {
-			role,
-			profileCompleteness: getProfileCompleteness("parent", null),
-			student: null as typeof table.students.$inferSelect | null,
-			upcomingRegistrations: [] as {
-				id: string;
-				paid: boolean;
-				formCompleted: boolean;
-				invoicePaymentLink: string | null;
-				eventId: string;
-				eventName: string;
-				startDate: string;
-				endDate: string;
-				cost: number;
-				permissionFormUrl: string | undefined;
-				forms: { id: string; name: string; completed: boolean }[];
-			}[],
-			actionItems: [] as {
-				id: string;
-				paid: boolean;
-				formCompleted: boolean;
-				invoicePaymentLink: string | null;
-				eventId: string;
-				eventName: string;
-				startDate: string;
-				endDate: string;
-				cost: number;
-				permissionFormUrl: string | undefined;
-				forms: { id: string; name: string; completed: boolean }[];
-			}[],
-			studentsWithRegs
-		};
-	}
+	if (role === "parent") return redirect(302, "/dashboard/parent");
 
 	// Student dashboard
 	const profile =
@@ -131,6 +32,26 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.select()
 		.from(table.students)
 		.where(eq(table.students.userid, user.username));
+
+	const standaloneRows = await db
+		.select({ assignment: table.standaloneFormAssignments, form: table.standaloneForms })
+		.from(table.standaloneFormAssignments)
+		.innerJoin(
+			table.standaloneForms,
+			eq(table.standaloneFormAssignments.formId, table.standaloneForms.id)
+		)
+		.where(eq(table.standaloneFormAssignments.studentId, user.username));
+	const assignedForms = standaloneRows.map(({ assignment, form }) =>
+		getStandaloneAssignmentStatus(
+			assignment.id,
+			form.name,
+			form.definition,
+			assignment.studentSubmittedAt,
+			assignment.parentCompletedAt,
+			assignment.parentRequired,
+			student?.dateOfBirth ?? null
+		)
+	);
 
 	const registrations = await db
 		.select({
@@ -233,6 +154,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		student: student ?? null,
 		upcomingRegistrations,
 		actionItems,
+		assignedForms,
 		studentsWithRegs: [] as {
 			student: typeof table.students.$inferSelect;
 			registrations: {

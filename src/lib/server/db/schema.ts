@@ -205,6 +205,54 @@ export const eventForms = sqliteTable("event_forms", {
 });
 export type EventForm = typeof eventForms.$inferSelect;
 
+// Forms assigned directly to students, independently of event registration.
+export const standaloneForms = sqliteTable("standalone_forms", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	basePdfKey: text("base_pdf_key").notNull(),
+	definition: text("definition", { mode: "json" }).notNull()
+});
+export type StandaloneForm = typeof standaloneForms.$inferSelect;
+
+export const standaloneFormAssignments = sqliteTable(
+	"standalone_form_assignments",
+	{
+		id: text("id").primaryKey(),
+		formId: text("form_id")
+			.notNull()
+			.references(() => standaloneForms.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.userid, { onDelete: "cascade" }),
+		studentValues: text("student_values", { mode: "json" }).notNull().default({}),
+		parentValues: text("parent_values", { mode: "json" }).notNull().default({}),
+		studentSubmittedAt: integer("student_submitted_at", { mode: "timestamp" }),
+		parentRequired: integer("parent_required", { mode: "boolean" }),
+		parentCompletedAt: integer("parent_completed_at", { mode: "timestamp" }),
+		signedPdfKey: text("signed_pdf_key")
+	},
+	(table) => [unique("standalone_form_assignment_unique").on(table.formId, table.studentId)]
+);
+export type StandaloneFormAssignment = typeof standaloneFormAssignments.$inferSelect;
+
+export const standaloneFormsRelations = relations(standaloneForms, ({ many }) => ({
+	assignments: many(standaloneFormAssignments)
+}));
+
+export const standaloneFormAssignmentsRelations = relations(
+	standaloneFormAssignments,
+	({ one }) => ({
+		form: one(standaloneForms, {
+			fields: [standaloneFormAssignments.formId],
+			references: [standaloneForms.id]
+		}),
+		student: one(students, {
+			fields: [standaloneFormAssignments.studentId],
+			references: [students.userid]
+		})
+	})
+);
+
 // ----------------------------------------------------------------------------
 // Event Registrations Table
 // ----------------------------------------------------------------------------

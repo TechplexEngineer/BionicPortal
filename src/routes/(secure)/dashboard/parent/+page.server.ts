@@ -16,7 +16,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.from(table.parentStudentLinks)
 		.where(eq(table.parentStudentLinks.parentId, locals.user!.id));
 	const studentIds = links.map((link) => link.studentId);
-	if (studentIds.length === 0) return { tasks: [], linkedStudents: [], profileCompleteness };
+	if (studentIds.length === 0)
+		return { tasks: [], standaloneTasks: [], linkedStudents: [], profileCompleteness };
 	const rows = await locals.db
 		.select({
 			submission: table.eventFormSubmissions,
@@ -56,5 +57,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 			studentName: `${student.firstName} ${student.lastName}`,
 			studentId: student.userid
 		}));
-	return { tasks, linkedStudents: studentIds, profileCompleteness };
+	const standaloneRows = await locals.db
+		.select({
+			assignment: table.standaloneFormAssignments,
+			form: table.standaloneForms,
+			student: table.students
+		})
+		.from(table.standaloneFormAssignments)
+		.innerJoin(
+			table.standaloneForms,
+			eq(table.standaloneFormAssignments.formId, table.standaloneForms.id)
+		)
+		.innerJoin(table.students, eq(table.standaloneFormAssignments.studentId, table.students.userid))
+		.where(inArray(table.standaloneFormAssignments.studentId, studentIds));
+	const standaloneTasks = standaloneRows
+		.filter(({ assignment }) =>
+			Boolean(
+				assignment.studentSubmittedAt && assignment.parentRequired && !assignment.parentCompletedAt
+			)
+		)
+		.map(({ assignment, form, student }) => ({
+			assignmentId: assignment.id,
+			formName: form.name,
+			studentName: `${student.firstName} ${student.lastName}`
+		}));
+	return { tasks, standaloneTasks, linkedStudents: studentIds, profileCompleteness };
 };

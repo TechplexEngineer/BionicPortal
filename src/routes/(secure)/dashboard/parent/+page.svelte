@@ -9,7 +9,7 @@
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<div>
 			<h1 class="mb-1">Parent Dashboard</h1>
-			<p class="text-body-secondary mb-0">Manage your student connections and event forms.</p>
+			<p class="text-body-secondary mb-0">Manage your student connections and forms.</p>
 		</div>
 		<a class="btn btn-outline-primary" href="/register/parent">Link another student</a>
 	</div>
@@ -39,7 +39,7 @@
 					<div class="d-flex gap-2">
 						<span class="badge rounded-pill bg-primary align-self-start">3</span>
 						<div>
-							<strong>Event forms</strong>
+							<strong>Forms</strong>
 							<div class="small text-body-secondary">Complete any forms listed in Action Items</div>
 						</div>
 					</div>
@@ -64,9 +64,9 @@
 					<div class="small mt-1">Missing: {data.profileCompleteness.missingFields.join(", ")}</div>
 				</a>
 			{/if}
-			{#if !hasPendingActionItems(data.profileCompleteness.incomplete, data.tasks.length)}
+			{#if !hasPendingActionItems(data.profileCompleteness.incomplete, data.tasks.length + data.standaloneTasks.length)}
 				<div class="alert alert-success mb-0">
-					<strong>You’re all set.</strong> There are no event forms waiting for your signature.
+					<strong>You’re all set.</strong> There are no forms waiting for your signature.
 				</div>
 			{:else}
 				<h3 class="h5">Forms waiting for you</h3>
@@ -84,6 +84,17 @@
 								<strong>{task.formName}</strong><span class="text-nowrap">{task.studentName}</span>
 							</div>
 							<small class="text-muted">{task.eventName} · Select to review and submit</small>
+						</a>
+					{/each}
+					{#each data.standaloneTasks as task (task.assignmentId)}
+						<a
+							class="list-group-item list-group-item-action"
+							href="/dashboard/parent/standalone-forms/{task.assignmentId}"
+						>
+							<div class="d-flex justify-content-between gap-3">
+								<strong>{task.formName}</strong><span class="text-nowrap">{task.studentName}</span>
+							</div>
+							<small class="text-muted">Assigned form · Select to review and submit</small>
 						</a>
 					{/each}
 				</div>

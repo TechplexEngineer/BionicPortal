@@ -76,6 +76,14 @@ export const adminNavPages: Page[] = [
 		]
 	},
 	{
+		name: "Forms",
+		route: "/admin/forms",
+		nested: [
+			{ name: "Overview", route: "/admin/forms" },
+			{ name: "Create Form", route: "/admin/forms/new" }
+		]
+	},
+	{
 		name: "Shop",
 		route: "/admin/shop",
 		nested: [
