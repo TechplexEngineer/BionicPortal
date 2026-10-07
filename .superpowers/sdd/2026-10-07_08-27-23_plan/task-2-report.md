@@ -29,4 +29,4 @@ Complete.
 
 ## Commit
 
-`8314b12` — `feat: filter SOPs by sharing and archive state`.
+`9c3f08a3148b640b37ceb9bcbd36b7485ea4fd9d` — `feat: filter SOPs by sharing and archive state`.
