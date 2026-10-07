@@ -12,3 +12,4 @@
 - When a user relocates an existing action, move its control and confirmation to the requested screen while preserving the working server behavior and feedback path unless that behavior also needs to change.
 - Enforce mentor approval inside every server-side action guard; a layout redirect does not protect direct action submissions. Add regression coverage for each privileged action path.
 - For state-changing SOP actions, include the validated state and sharing rules in the database update predicate and treat zero updated rows as a controlled failure; a prior read can become stale before the write.
+- When create and edit share an enhanced form, capture the submitted operation before awaiting the action response, then choose the post-save destination from it: a new SOP belongs in the active view, while an edit should preserve the current view.

@@ -34,6 +34,7 @@
 	);
 	const isStudent = $derived(data.user.role === "user");
 	const archivedView = $derived(page.url.searchParams.get("archived") === "1");
+	const activeHref = (id: string) => resolve(`/sops?id=${encodeURIComponent(id)}`);
 	const selectedHref = (id: string) =>
 		resolve(`/sops?${archivedView ? "archived=1&" : ""}id=${encodeURIComponent(id)}`);
 </script>
@@ -133,11 +134,14 @@
 							method="post"
 							action={editorMode === "edit" ? "?/update" : "?/create"}
 							use:enhance={() => {
+								const wasCreating = editorMode === "new";
 								return async ({ result, update }) => {
 									await update();
 									if (result.type === "success" && result.data && "id" in result.data) {
+										const id = String(result.data.id);
+										const destination = wasCreating ? activeHref(id) : selectedHref(id);
 										editorMode = null;
-										await goto(selectedHref(String(result.data.id)));
+										await goto(destination);
 									}
 								};
 							}}

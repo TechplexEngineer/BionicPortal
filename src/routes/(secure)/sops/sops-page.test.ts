@@ -30,11 +30,26 @@ describe("SOP page", () => {
 	it("uses full GitHub-flavored Markdown rendering and renders the saved SOP", () => {
 		expect(pageMarkup).toContain('import SvelteMarkdown from "@humanspeak/svelte-markdown"');
 		expect(pageMarkup).toContain("<SvelteMarkdown source={data.selectedSop.content} />");
-		expect(pageMarkup).toContain("goto(selectedHref(String(result.data.id)))");
+		expect(pageMarkup).toContain("await goto(destination)");
 		expect(pageMarkup).toContain('editorMode = "new"');
 		expect(pageMarkup).toContain('action={editorMode === "edit" ? "?/update" : "?/create"}');
 		expect(pageMarkup).toContain('{#if editorMode === "edit" && data.selectedSop}');
 		expect(pageMarkup).toContain("editorMode = null");
+	});
+
+	it("opens a newly created SOP in the active view while keeping an edit in its current view", () => {
+		expect(pageMarkup).toContain(
+			"const activeHref = (id: string) => resolve(`/sops?id=${encodeURIComponent(id)}`)"
+		);
+		expect(pageMarkup).toMatch(
+			/use:enhance=\{\(\) => \{\s*const wasCreating = editorMode === "new";\s*return async/
+		);
+		expect(pageMarkup).toContain(
+			"const destination = wasCreating ? activeHref(id) : selectedHref(id)"
+		);
+		expect(pageMarkup).toMatch(
+			/const destination = [^;]+;\s*editorMode = null;\s*await goto\(destination\)/
+		);
 	});
 
 	it("lets admins and approved mentors open the editor while students cannot", () => {
