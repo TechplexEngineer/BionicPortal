@@ -111,6 +111,8 @@ export const sops = sqliteTable("sops", {
 	id: text("id").primaryKey(),
 	title: text("title").notNull(),
 	content: text("content").notNull(),
+	private: integer("private", { mode: "boolean" }).notNull().default(true),
+	archived: integer("archived", { mode: "boolean" }).notNull().default(false),
 	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),

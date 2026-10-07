@@ -18,7 +18,7 @@
 			]
 		}
 	]);
-	if (data.role === "mentor" || data.role === "admin") {
+	if (["user", "mentor", "admin"].includes(data.role)) {
 		navPages = [
 			...navPages,
 			{

@@ -10,9 +10,8 @@
 - Enhanced delete forms must call the framework-provided `cancel()` inside the `use:enhance` submit callback and immediately return; do not rely on a separate `onsubmit` `preventDefault()` handler.
 - When offering passkey setup from an email-link landing page, verify and consume the link and establish the user's session before navigating to enrollment; a GET must never enroll a credential.
 - When a user relocates an existing action, move its control and confirmation to the requested screen while preserving the working server behavior and feedback path unless that behavior also needs to change.
-<<<<<<< HEAD
-- When role-based access replaces a separate approval workflow, remove the approval control and pending-state behavior from both the UI and server action, while keeping legacy schema columns intact unless a migration is explicitly required.
-=======
 - When regrouping navigation tabs, preserve every existing child link; verify the shared navigation component supports the intended nesting depth before changing the route tree.
 - When role-based access replaces a separate approval workflow, remove the approval control and pending-state behavior from both the UI and server action, while keeping legacy schema columns intact unless a migration is explicitly required.
->>>>>>> eloquent-flamingo
+- Enforce mentor approval inside every server-side action guard; a layout redirect does not protect direct action submissions. Add regression coverage for each privileged action path.
+- For state-changing SOP actions, include the validated state and sharing rules in the database update predicate and treat zero updated rows as a controlled failure; a prior read can become stale before the write.
+- When create and edit share an enhanced form, capture the submitted operation before awaiting the action response, then choose the post-save destination from it: a new SOP belongs in the active view, while an edit should preserve the current view.

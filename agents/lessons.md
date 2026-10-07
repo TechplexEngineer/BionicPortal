@@ -15,3 +15,5 @@
 - **Admin Navigation Grouping**: When an admin area gains a peer dashboard such as Parents, place it in the primary tab list rather than nesting it under a related entity like Students.
 - **Action Placement Corrections**: When moving an existing action to a different screen, remove its old control and place the confirmation with the new control; keep the validated server action when it already supports the flow.
 - **Form Action Placement**: When assigned forms belong in Action Items, render the complete assigned-form status list there and remove duplicate dashboard sections.
+- **Conditional State Changes**: When authorization depends on a row's current state, repeat those conditions in the update predicate and handle zero affected rows as a failed transition; read-then-update-by-ID leaves a race.
+- **Create Navigation**: For a shared create/edit form, capture the operation when submission starts and derive the success destination from that snapshot. Creation should open the new record in its default active view; editing may preserve the current filtered view.
