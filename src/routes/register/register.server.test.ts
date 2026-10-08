@@ -87,25 +87,34 @@ describe("student registration", () => {
 		});
 	});
 
-	it("redirects an authenticated user to the requested return path", async () => {
+	it("loads an authenticated user's existing profile", async () => {
+		const db = {
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([
+						{
+							userid: "student@billericak12.com",
+							customFields: JSON.stringify({ teamGoals: "Build robots" })
+						}
+					])
+				})
+			})
+		};
 		const input = {
 			url: new URL("https://portal.example.org/register?returnTo=%2Fdashboard%2Fparent"),
-			locals: { user: { username: "student@billericak12.com" } }
+			locals: {
+				user: { username: "student@billericak12.com" },
+				db
+			}
 		} as unknown as Parameters<typeof load>[0];
 
-		await expect(load(input)).rejects.toMatchObject({
-			status: 302,
-			location: "/dashboard/parent"
+		expect(await load(input)).toEqual({
+			student: {
+				userid: "student@billericak12.com",
+				customFields: { teamGoals: "Build robots" }
+			},
+			email: "student@billericak12.com"
 		});
-	});
-
-	it("falls back to the dashboard for an authenticated user without a return path", async () => {
-		const input = {
-			url: new URL("https://portal.example.org/register"),
-			locals: { user: { username: "student@billericak12.com" } }
-		} as unknown as Parameters<typeof load>[0];
-
-		await expect(load(input)).rejects.toMatchObject({ status: 302, location: "/dashboard" });
 	});
 
 	it("shows a friendly message when the student name is already registered", async () => {

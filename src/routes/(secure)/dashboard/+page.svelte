@@ -151,16 +151,17 @@
 					</div>
 					<div class="card-body">
 						{#if data.profileCompleteness.incomplete}
-							<a
-								href={`${data.profileCompleteness.href}?returnTo=${encodeURIComponent("/dashboard")}`}
-								class="alert alert-danger d-block text-decoration-none"
-							>
+							<div class="alert alert-danger">
 								<i class="fa fa-user me-2"></i>
 								<strong>Complete your profile</strong>
 								<div class="small mt-1">
 									Missing: {data.profileCompleteness.missingFields.join(", ")}
 								</div>
-							</a>
+								<a
+									href={`${data.profileCompleteness.href}?returnTo=${encodeURIComponent("/dashboard")}`}
+									class="btn btn-danger btn-sm mt-2">Complete profile</a
+								>
+							</div>
 						{/if}
 						{#if data.assignedForms.length > 0 || data.actionItems.length > 0}
 							<ul class="list-group list-group-flush">

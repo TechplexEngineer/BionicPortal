@@ -11,17 +11,30 @@ type RegistrationStudent = Omit<table.Student, "customFields"> & {
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		return redirect(302, getSafeReturnTo(event.url));
+		const [student] = await event.locals.db
+			.select()
+			.from(table.students)
+			.where(eq(table.students.userid, event.locals.user.username));
+		let profile: RegistrationStudent | null = null;
+		if (student) {
+			let customFields: Record<string, string> = {};
+			if (student.customFields) {
+				try {
+					customFields = JSON.parse(student.customFields) as Record<string, string>;
+				} catch {
+					customFields = {};
+				}
+			}
+			profile = { ...student, customFields };
+		}
+
+		return {
+			student: profile,
+			email: event.locals.user.username
+		};
 	}
 
-	if (!event.locals.user) {
-		return redirect(302, getLoginUrl(event.url));
-	}
-
-	return redirect(302, getSafeReturnTo(event.url));
-
-	// This route always redirects above; retain the page data shape for the page component type.
-	return { student: null as RegistrationStudent | null, email: "" };
+	return redirect(302, getLoginUrl(event.url));
 };
 
 export const actions: Actions = {

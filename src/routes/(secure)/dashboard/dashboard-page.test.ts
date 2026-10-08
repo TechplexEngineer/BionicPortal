@@ -20,4 +20,26 @@ describe("dashboard navigation", () => {
 
 		expect(body).toMatch(/<a[^>]*href="\/sops"[^>]*>SOPs<\/a>/);
 	});
+
+	it("shows an explicit profile completion button for incomplete students", () => {
+		const { body } = render(Page, {
+			props: {
+				data: {
+					role: "user",
+					profileCompleteness: {
+						incomplete: true,
+						missingFields: ["date of birth"],
+						href: "/register"
+					},
+					assignedForms: [],
+					actionItems: [],
+					upcomingRegistrations: []
+				}
+			} as never
+		});
+
+		expect(body).toMatch(
+			/<a[^>]*href="\/register\?returnTo=%2Fdashboard"[^>]*class="btn btn-danger btn-sm mt-2"[^>]*>Complete profile<\/a>/
+		);
+	});
 });
