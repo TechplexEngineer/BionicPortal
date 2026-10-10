@@ -2,6 +2,7 @@
 	import Header from "$lib/components/Header.svelte";
 	import Footer from "$lib/components/Footer.svelte";
 	import { browser } from "$app/environment";
+	import { page } from "$app/state";
 	import { onMount } from "svelte";
 	import "../styles/bootstrap.scss";
 	import "@fortawesome/fontawesome-free/css/all.css";
@@ -9,6 +10,7 @@
 	import type { LayoutProps } from "./$types";
 
 	let { data, children }: LayoutProps = $props();
+	let isNerdStream = $derived(page.url.pathname === "/nerd-stream");
 
 	onMount(async () => {
 		if (!browser) return;
@@ -23,6 +25,8 @@
 	});
 </script>
 
-<Header user={data.user} isImpersonating={data.isImpersonating} />
+{#if !isNerdStream}
+	<Header user={data.user} isImpersonating={data.isImpersonating} />
+{/if}
 {@render children()}
 <Footer />
